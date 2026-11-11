@@ -85,7 +85,7 @@ function render(){
  $("activeValue").textContent=money(sum(active));$("activeCount").textContent=active.length;$("soldCount").textContent=sold.length;$("purchaseTotal").textContent=money(sum(items));$("saleTotal").textContent=money(saleSum);$("netTotal").textContent=money(sum(items)-saleSum);$("allCount").textContent=items.length;
  let q=$("search").value.toLowerCase(),f=$("filter").value,list=items.filter(a=>(f==="all"||a.status===f)&&[a.name,a.brand,a.model,a.category].join(" ").toLowerCase().includes(q));
  if(sortKey){
-  const value=a=>({category:a.category||"",purchaseDate:a.purchaseDate||"",amount:base(a),status:a.status==="active"?0:1,days:days(a),dailyCost:(base(a)-sale(a))/days(a})[sortKey];
+  const value=a=>({category:a.category||"",purchaseDate:a.purchaseDate||"",amount:base(a),status:a.status==="active"?0:1,days:days(a),dailyCost:(base(a)-sale(a))/days(a)})[sortKey];
   list.sort((a,b)=>{const av=value(a),bv=value(b);const cmp=typeof av==="string"?av.localeCompare(bv,"zh-Hant"):av-bv;return cmp*sortDirection||String(a.name||"").localeCompare(String(b.name||""),"zh-Hant")});
  }
  document.querySelectorAll("[data-sort]").forEach(button=>{const active=sortKey===button.dataset.sort;button.querySelector(".sort-icon").textContent=active?(sortDirection===1?"↑":"↓"):"↕";button.closest("th").setAttribute("aria-sort",active?(sortDirection===1?"ascending":"descending"):"none")});
