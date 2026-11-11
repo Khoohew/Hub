@@ -12,7 +12,7 @@ button,input,select{font:inherit}button{cursor:pointer}.wrap{max-width:1500px;ma
 header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:28px}.brand{display:flex;align-items:center;gap:14px}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#8ab4ff,#9476e8);display:grid;place-items:center;color:#111827;font-weight:900;font-size:22px}.brand h1{font-size:21px;margin:0;letter-spacing:.2px}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}.header-actions{display:flex;gap:9px;align-items:center}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 13px;border-radius:10px}.btn:hover{border-color:#5876a7;background:#222d40}.btn.primary{background:#9fc2ff;color:#101827;border-color:#9fc2ff;font-weight:700}.btn:disabled{opacity:.5;cursor:not-allowed}
 .auth{max-width:600px;margin:8vh auto 0;padding:clamp(22px,4vw,38px);background:rgba(21,26,36,.94);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 80px #0005}.auth h2{margin:0 0 8px;font-size:24px}.auth p{color:var(--muted);margin:8px 0 18px}.auth label{display:block;font-size:13px;color:#c4ccda;margin-bottom:7px}.token-row{display:flex;gap:9px}.token-row input{min-width:0;flex:1}.field{width:100%;padding:12px 13px;border:1px solid #354156;border-radius:10px;background:#0d121b;color:var(--text);outline:none}.field:focus{border-color:var(--accent);box-shadow:0 0 0 3px #8ab4ff20}.notice{border:1px solid #544b32;background:#282417;color:#e8d7a7;padding:12px 14px;border-radius:12px;font-size:13px;margin-top:17px}.error{color:var(--danger);font-size:13px;min-height:20px;margin-top:8px}.hidden{display:none!important}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0}.toolbar .search{flex:1;min-width:220px}.toolbar select{min-width:150px}.stats{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}.stat{padding:9px 13px;background:var(--panel);border:1px solid var(--line);border-radius:11px;color:var(--muted);font-size:13px}.stat strong{color:var(--text);font-size:16px;margin-right:5px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:15px}.card{background:linear-gradient(160deg,#192130,#131923);border:1px solid var(--line);border-radius:15px;overflow:hidden;min-width:0;transition:transform .16s,border-color .16s}.card:hover{transform:translateY(-2px);border-color:#536a8c}.card-top{height:190px;background:#080b11;position:relative;overflow:hidden}.card-top iframe{width:100%;height:100%;border:0;background:#080b11;pointer-events:none}.card-top .preview-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#9aa6b8;font-size:12px;background:radial-gradient(circle at 50% 40%,#334969,#1b2638 58%,#111722)}.card-top .preview-placeholder span{border:1px solid #9fc2ff88;border-radius:12px;padding:8px 12px;letter-spacing:1px}.card-top.loaded .preview-placeholder{display:none}.card-top .preview-error{color:#ffb4b4}.card-body{padding:14px}.titleline{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.card h3{font-size:16px;margin:0 0 4px;line-height:1.4}.en{font-size:12px;color:var(--muted);overflow-wrap:anywhere}.desc{font-size:13px;color:#c1cad8;margin:10px 0;min-height:39px}.meta{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 13px}.chip{font-size:11px;color:#c7d9f8;background:#26354b;border:1px solid #344a68;border-radius:20px;padding:3px 8px}.chip.status{color:#d6c8a0;background:#302c20;border-color:#554a2e}.card-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}.id{font-size:11px;color:#8290a5;font-variant-numeric:tabular-nums}.empty{padding:50px 15px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:15px}.card{background:linear-gradient(160deg,#192130,#131923);border:1px solid var(--line);border-radius:15px;overflow:hidden;min-width:0;transition:transform .16s,border-color .16s}.card:hover{transform:translateY(-2px);border-color:#536a8c}.card-top{height:190px;background:#080b11;position:relative;overflow:hidden}.card-top{display:grid;place-items:center;background:radial-gradient(circle at 50% 38%,#334969 0,#1b2638 58%,#111722 100%)}.card-art{display:flex;flex-direction:column;align-items:center;gap:9px;color:#c8d8f2}.card-art .art-mark{width:54px;height:54px;border:1px solid #9fc2ff88;border-radius:17px;display:grid;place-items:center;font-size:25px;background:#10182788;box-shadow:0 8px 28px #0004}.card-art small{font-size:11px;letter-spacing:1.5px;color:#9aaecb}.card-body{padding:14px}.titleline{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.card h3{font-size:16px;margin:0 0 4px;line-height:1.4}.en{font-size:12px;color:var(--muted);overflow-wrap:anywhere}.desc{font-size:13px;color:#c1cad8;margin:10px 0;min-height:39px}.meta{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 13px}.chip{font-size:11px;color:#c7d9f8;background:#26354b;border:1px solid #344a68;border-radius:20px;padding:3px 8px}.chip.status{color:#d6c8a0;background:#302c20;border-color:#554a2e}.card-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}.id{font-size:11px;color:#8290a5;font-variant-numeric:tabular-nums}.empty{padding:50px 15px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
 .overlay{position:fixed;inset:0;z-index:10;background:#070a10ed;display:flex;flex-direction:column;padding:14px}.viewer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:3px 2px 12px}.viewer-title{min-width:0}.viewer-title strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.viewer-title small{color:var(--muted)}.viewer-actions{display:flex;gap:8px}.viewer-frame{flex:1;min-height:0;width:100%;border:1px solid #303a4d;border-radius:12px;background:#000}.viewer-foot{color:#8592a5;font-size:12px;padding:8px 2px 0}
 footer{margin-top:30px;color:#758196;font-size:12px;text-align:center}
 @media(max-width:600px){.wrap{padding-top:18px}header{align-items:flex-start}.brand h1{font-size:18px}.header-actions .btn{padding:8px 9px}.token-row{flex-direction:column}.viewer-head{align-items:flex-start}.viewer-actions{flex-wrap:wrap;justify-content:flex-end}.viewer-actions .btn{padding:7px 9px}}
@@ -33,13 +33,14 @@ footer{margin-top:30px;color:#758196;font-size:12px;text-align:center}
  <div class="notice"><strong>安全提示：</strong>只在你信任的瀏覽器與網址使用令牌。不要把令牌貼到聊天、網址或公開地方。本頁不會把令牌寫入儲存空間或傳送到第三方；登出或關閉頁面即可清除本頁持有的令牌。建議使用只讀、僅限 AI-HTML-Archive、30 天有效的 Fine-grained Token。</div>
 </section>
 <section id="galleryPanel" class="hidden">
- <div class="stats"><div class="stat"><strong id="totalCount">0</strong>作品</div><div class="stat"><strong id="shownCount">0</strong>目前顯示</div><div class="stat">來源：<strong>私人 GitHub 倉庫</strong></div></div>
+ <div class="stats"><div class="stat"><strong id="totalCount">0</strong>作品</div><div class="stat"><strong id="shownCount">0</strong>目前顯示</div><div class="stat">來源：<strong>私人 GitHub 倉庫</strong></div><div class="stat">效能模式：<strong>卡片不播放動畫</strong></div></div>
  <div class="toolbar">
   <input class="field search" id="searchInput" type="search" placeholder="搜尋名稱、描述、標籤或編號…" />
   <select class="field" id="categorySelect" aria-label="分類"><option value="">全部分類</option></select>
   <select class="field" id="statusSelect" aria-label="整理狀態"><option value="">全部狀態</option><option value="active">已確認</option><option value="auto_classified">自動整理</option></select>
   <button class="btn" id="refreshBtn">重新載入</button>
  </div>
+ <p style="color:var(--muted);font-size:13px;margin:0 0 12px">為了避免大量動畫同時佔用 CPU，卡片只顯示靜態標記；只有點擊「放大預覽」時才會載入並執行該作品。關閉預覽後會停止動畫。</p>
  <div class="grid" id="cards"></div>
  <div class="empty hidden" id="emptyState">沒有符合條件的作品。</div>
 </section>
@@ -60,7 +61,6 @@ let accessToken="";
 let catalog=null;
 let currentItems=[];
 let currentPreview=null;
-let previewObserver=null;
 const $=id=>document.getElementById(id);
 const authPanel=$("authPanel"),galleryPanel=$("galleryPanel");
 function headers(){return {"Accept":"application/vnd.github+json","Authorization":"Bearer "+accessToken,"X-GitHub-Api-Version":"2022-11-28"};}
@@ -106,9 +106,11 @@ function render(){
  const fragment=document.createDocumentFragment();
  for(const item of currentItems){
   const card=document.createElement("article");card.className="card";
-  const top=document.createElement("div");top.className="card-top";top.dataset.file=item.file;top.dataset.id=item.id;
-  const mini=document.createElement("iframe");mini.title="動畫縮圖 "+item.id;mini.loading="lazy";mini.setAttribute("sandbox","allow-scripts");mini.dataset.preview="1";
-  const placeholder=document.createElement("div");placeholder.className="preview-placeholder";const placeholderText=document.createElement("span");placeholderText.textContent="載入預覽中 · "+item.id;placeholder.append(placeholderText);top.append(mini,placeholder);
+  const top=document.createElement("div");top.className="card-top";
+  const art=document.createElement("div");art.className="card-art";
+  const mark=document.createElement("div");mark.className="art-mark";mark.textContent="✦";
+  const artLabel=document.createElement("small");artLabel.textContent="HTML ANIMATION · "+item.id;
+  art.append(mark,artLabel);top.append(art);
   const body=document.createElement("div");body.className="card-body";
   const line=document.createElement("div");line.className="titleline";
   const titleWrap=document.createElement("div");const title=document.createElement("h3");title.textContent=item.zh_title||item.english_title||item.id;const en=document.createElement("div");en.className="en";en.textContent=item.english_title||"";titleWrap.append(title,en);line.append(titleWrap);
@@ -126,30 +128,6 @@ function render(){
   actionGroup.append(locate,preview);actions.append(id,actionGroup);body.append(line,desc,meta,actions);card.append(top,body);fragment.append(card);
  }
  $("cards").append(fragment);
- setupMiniPreviews();
-}
-
-function setupMiniPreviews(){
- if(previewObserver)previewObserver.disconnect();
- const frames=[...document.querySelectorAll('iframe[data-preview="1"]')];
- if(!("IntersectionObserver" in window)){frames.forEach(frame=>loadMiniPreview(frame));return;}
- previewObserver=new IntersectionObserver(entries=>{
-  for(const entry of entries){if(entry.isIntersecting){previewObserver.unobserve(entry.target);loadMiniPreview(entry.target);}}
- },{rootMargin:"240px"});
- frames.forEach(frame=>previewObserver.observe(frame));
-}
-async function loadMiniPreview(frame){
- const top=frame.parentElement;
- if(frame.dataset.loaded==="1"||!accessToken)return;
- frame.dataset.loaded="1";
- try{
-  const source=await githubFile(top.dataset.file);
-  if(!top.isConnected)return;
-  frame.srcdoc=source;top.classList.add("loaded");
- }catch(error){
-  const placeholder=top.querySelector(".preview-placeholder");
-  if(placeholder){placeholder.classList.add("preview-error");placeholder.textContent="預覽載入失敗";}
- }
 }
 
 async function openPreview(item,button){
