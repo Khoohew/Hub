@@ -200,8 +200,8 @@ $("form").onsubmit=async e=>{
  let i=items.findIndex(x=>x.id===id);if(i<0)items.push(a);else items[i]=a;
  try{await persist();close()}catch(err){alert(err.message)}
 };
-$("logout").onclick=()=>{token="";items=[];sha="";window.name="";window.location.href="../../?v=20261111q"};$("add").onclick=()=>open();$("deleteInEdit").onclick=async()=>{const id=$("id").value;if(id&&await removeItem(id))close()};$("cancel").onclick=close;
-$("addExpense").onclick=()=>{};
+$("logout").onclick=()=>{token="";items=[];sha="";window.name="";window.location.href="../../?v=20261111r"};$("add").onclick=()=>open();$("deleteInEdit").onclick=async()=>{const id=$("id").value;if(id&&await removeItem(id))close()};$("cancel").onclick=close;
+
 $("cancelExpense").onclick=()=>$("expenseModal").classList.add("hidden");
 $("expenseModal").addEventListener("click",e=>{if(e.target===$("expenseModal"))$("expenseModal").classList.add("hidden")});
 $("expenseAmount").oninput=$("expenseRate").oninput=convertExpense;
