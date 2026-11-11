@@ -58,24 +58,24 @@ footer{margin-top:34px;color:#8594aa;font-size:12px;text-align:center}
         <option value="https://github.com/ChewchewHan/Blender_Remote_Monitor">Blender 遠端監控</option>
         <option value="https://github.com/ChewchewHan/Oracle-Monitor">Oracle 伺服器監控</option>
       </optgroup>
-      <optgroup label="安卓">
-        <option value="https://github.com/ChewchewHan/Android-English-Project">英語學習專案</option>
-      </optgroup>
       <optgroup label="Chrome">
         <option value="https://github.com/ChewchewHan/VJshi-keyword-helper">VJ師素材關鍵字助手</option>
         <option value="https://github.com/ChewchewHan/VCG-Title-Keyword-Assistant">視覺中國標題與關鍵字助手</option>
         <option value="https://github.com/ChewchewHan/VCG-Rejected-Asset-Organizer">視覺中國未採納素材整理</option>
-        <option value="https://github.com/ChewchewHan/Multi-Stock-Auto-Fill">多平台自動填表</option>
+        <option value="https://github.com/ChewchewHan/Multi-Stock-Auto-Fill">VJ師素材多平台填表助手</option>
         <option value="https://github.com/ChewchewHan/Chatgpt-claude-batch-image-helper">ChatGPT／Claude 批量圖片助手</option>
       </optgroup>
-      <optgroup label="其他">
+      <optgroup label="個人專案與資料庫">
         <option value="https://github.com/ChewchewHan/AI-Skills">AI 技能與工作流程</option>
-        <option value="https://github.com/ChewchewHan/VCG">視覺中國客戶查詢（廢棄）（公開）</option>
         <option value="https://github.com/ChewchewHan/HomeStudy">家庭 AI 學習系統</option>
         <option value="https://github.com/ChewchewHan/Shanxi-Ancient-Architecture">山西古建檔案庫（公開）</option>
         <option value="https://github.com/ChewchewHan/AI-HTML-Archive">AI HTML 動畫收藏庫</option>
-        <option value="https://github.com/ChewchewHan/Hub">個人工作台（公開）</option>
         <option value="https://github.com/ChewchewHan/Personal-Device-Manager">個人設備資料庫</option>
+        <option value="https://github.com/ChewchewHan/Hub">個人工作台（公開）</option>
+        <option value="https://github.com/ChewchewHan/VCG">視覺中國客戶查詢（廢棄）（公開）</option>
+      </optgroup>
+      <optgroup label="安卓">
+        <option value="https://github.com/ChewchewHan/Android-English-Project">英語學習專案</option>
       </optgroup>
     </select>
   </div>
@@ -122,7 +122,7 @@ document.querySelectorAll("[data-target]").forEach(button=>{
     error.textContent="";
     window.name="PD_MANAGER_TOKEN:"+value;
     const target=button.dataset.target;
-    location.href=(target==="gallery"?"./apps/gallery/":"./apps/devices/")+"?v=20261111e";
+    location.href=(target==="gallery"?"./apps/gallery/":"./apps/devices/")+"?v=20261111f";
   });
 });
 tokenInput.addEventListener("input",()=>{error.textContent="";});
