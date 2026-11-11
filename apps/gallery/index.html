@@ -24,14 +24,7 @@ footer{margin-top:30px;color:#758196;font-size:12px;text-align:center}
  <div class="brand"><div class="logo">A</div><div><h1>AI HTML Gallery</h1><p>私人動畫收藏 · Private Archive</p></div></div>
  <div class="header-actions"><button class="btn hidden" id="logoutBtn">清除令牌 / 登出</button></div>
 </header>
-<section class="auth" id="authPanel">
- <h2>連接你的私人動畫庫</h2>
- <p>輸入 GitHub Fine-grained Personal Access Token，畫廊會直接讀取你的私人倉庫。令牌只保留在目前頁面的記憶體中。</p>
- <label for="tokenInput">GitHub 存取令牌</label>
- <div class="token-row"><input class="field" id="tokenInput" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" /><button class="btn primary" id="connectBtn">連接</button></div>
- <div class="error" id="authError" role="status"></div>
- <div class="notice"><strong>安全提示：</strong>只在你信任的瀏覽器與網址使用令牌。不要把令牌貼到聊天、網址或公開地方。本頁不會把令牌寫入儲存空間或傳送到第三方；登出或關閉頁面即可清除本頁持有的令牌。建議使用只讀、僅限 AI-HTML-Archive、30 天有效的 Fine-grained Token。</div>
-</section>
+<section class="auth" id="authPanel"><h2 id="authTitle">正在連接私人動畫庫</h2><p id="authMessage">請稍候，正在使用 Hub 首頁提供的共用密鑰連接私人倉庫。</p><div class="error" id="authError" role="status"></div><a class="btn" href="../../">返回個人工作台</a><div class="notice"><strong>權限要求：</strong>共用密鑰須包含 AI-HTML-Archive 的 Contents 唯讀權限。若直接開啟本頁，請返回 Hub 首頁輸入共用密鑰。</div></section>
 <section id="galleryPanel" class="hidden">
  <div class="stats"><div class="stat"><strong id="totalCount">0</strong>作品</div><div class="stat"><strong id="shownCount">0</strong>目前顯示</div><div class="stat">來源：<strong>私人 GitHub 倉庫</strong></div><div class="stat">預覽：<strong>靜態圖片</strong></div></div>
  <div class="toolbar">
@@ -56,7 +49,7 @@ const OWNER="ChewchewHan";
 const REPO="AI-HTML-Archive";
 const BRANCH="main";
 const API="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/";
-let accessToken="";
+let accessToken="";let handoffToken="";try{const marker="PD_MANAGER_TOKEN:";if(window.name.startsWith(marker)){handoffToken=window.name.slice(marker.length);window.name="";}}catch{}
 let catalog=null;
 let currentItems=[];
 let currentPreview=null;
@@ -87,22 +80,7 @@ async function githubFile(path){
  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
  return new TextDecoder("utf-8").decode(bytes);
 }
-async function connect(){
- const token=$("tokenInput").value.trim();
- if(!token){$("authError").textContent="請先輸入令牌。";return;}
- $("connectBtn").disabled=true;$("connectBtn").textContent="連接中…";$("authError").textContent="";
- accessToken=token;
- try{
-  const raw=await githubFile("catalog.json");
-  const parsed=JSON.parse(raw);
-  if(!Array.isArray(parsed.items)||!Array.isArray(parsed.categories))throw new Error("catalog.json 格式不正確。");
-  catalog=parsed;
-  authPanel.classList.add("hidden");galleryPanel.classList.remove("hidden");$("logoutBtn").classList.remove("hidden");
-  $("tokenInput").value="";
-  buildCategoryOptions();render();
- }catch(error){accessToken="";catalog=null;$("authError").textContent=error.message||"連接失敗。";}
- finally{$("connectBtn").disabled=false;$("connectBtn").textContent="連接";}
-}
+async function connect(providedToken=""){const token=providedToken;if(!token){$("authTitle").textContent="尚未提供存取密鑰";$("authMessage").textContent="請從 Hub 首頁輸入共用密鑰後進入 AI HTML 畫廊。";return;}$("authTitle").textContent="正在連接私人動畫庫";$("authMessage").textContent="正在讀取私人倉庫內容…";$("authError").textContent="";accessToken=token;try{const raw=await githubFile("catalog.json");const parsed=JSON.parse(raw);if(!Array.isArray(parsed.items)||!Array.isArray(parsed.categories))throw new Error("catalog.json 格式不正確。");catalog=parsed;authPanel.classList.add("hidden");galleryPanel.classList.remove("hidden");$("logoutBtn").classList.remove("hidden");buildCategoryOptions();render();}catch(error){accessToken="";catalog=null;$("authTitle").textContent="連接失敗";$("authMessage").textContent="請返回 Hub 首頁確認共用密鑰及倉庫權限後重新進入。";$("authError").textContent=error.message||"連接失敗。";}}
 function buildCategoryOptions(){
  const select=$("categorySelect");select.innerHTML='<option value="">全部分類</option>';
  for(const category of catalog.categories){const option=document.createElement("option");option.value=category.id;option.textContent=category.name;select.append(option);}
@@ -224,10 +202,9 @@ function logout(){
  accessToken="";catalog=null;currentItems=[];currentPreview=null;
  $("previewFrame").srcdoc="";$("cards").replaceChildren();
  galleryPanel.classList.add("hidden");$("logoutBtn").classList.add("hidden");authPanel.classList.remove("hidden");
- $("tokenInput").value="";$("authError").textContent="";closeViewer();
+ $("authError").textContent="";closeViewer();
 }
-$("connectBtn").addEventListener("click",connect);
-$("tokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")connect();});
+
 $("logoutBtn").addEventListener("click",logout);
 $("searchInput").addEventListener("input",render);
 $("categorySelect").addEventListener("change",render);
@@ -236,6 +213,7 @@ $("closeViewer").addEventListener("click",closeViewer);
 $("viewer").addEventListener("click",e=>{if(e.target===$("viewer"))closeViewer();});
 $("fullscreenBtn").addEventListener("click",async()=>{const frame=$("previewFrame");try{if(!document.fullscreenElement)await frame.requestFullscreen();else await document.exitFullscreen();}catch{alert("瀏覽器未允許全螢幕顯示。");}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("viewer").classList.contains("hidden"))closeViewer();});
+if(handoffToken)connect(handoffToken);else connect();
 </script>
 </body>
 </html>
