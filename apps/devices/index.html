@@ -13,8 +13,51 @@
 <div><label>出售價格（原幣）</label><input class="field" id="salePrice" type="number" min="0" step=".01" value="0"></div><div class="full"><label>備註</label><textarea class="field" id="notes" rows="3"></textarea></div></div><p class="small muted" id="converted">折合人民幣：¥0.00。外幣匯率請按購買當時歷史匯率填寫，儲存後不隨即時匯率變動。</p><div class="foot"><button type="button" class="btn" id="cancel">取消</button><button class="btn primary" id="save">儲存</button></div></form></section></div>
 <script>
 "use strict";const OWNER="ChewchewHan",REPO="Personal-Device-Manager",PATH="data/assets.json";let handoffToken="";try{const marker="PD_MANAGER_TOKEN:";if(window.name.startsWith(marker)){handoffToken=window.name.slice(marker.length);window.name="";}}catch{}let token="",items=[],sha="",saving=false;const $=x=>document.getElementById(x),api="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+PATH;const hdr=()=>({"Accept":"application/vnd.github+json","Authorization":"Bearer "+token,"X-GitHub-Api-Version":"2022-11-28"});const money=n=>"¥"+Number(n||0).toLocaleString("zh-CN",{minimumFractionDigits:2,maximumFractionDigits:2});const base=a=>Number(a.price||0)*Number(a.rate||1),sale=a=>Number(a.salePrice||0)*Number(a.rate||1);const days=(a)=>Math.max(1,Math.floor((new Date((a.status==="active"?new Date().toISOString().slice(0,10):(a.endDate||new Date().toISOString().slice(0,10)))+"T00:00:00")-new Date(a.purchaseDate+"T00:00:00"))/86400000)+1);
-async function load(){let r=await fetch(api,{headers:hdr(),cache:"no-store"});if(!r.ok)throw Error("讀取失敗 HTTP "+r.status+"，請檢查令牌權限。");let j=await r.json();sha=j.sha;let txt=new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\s/g,"")),c=>c.charCodeAt(0)));return JSON.parse(txt).items||[]}
-async function connect(providedToken=""){token=providedToken;if(!token){$("authTitle").textContent="尚未提供存取密鑰";$("authMessage").textContent="請從 Hub 首頁輸入共用密鑰後進入設備管理。";return;}$("error").textContent="連接中…";try{items=await load();$("auth").classList.add("hidden");$("app").classList.remove("hidden");render()}catch(e){token="";$("authTitle").textContent="連接失敗";$("authMessage").textContent="請返回 Hub 首頁確認密鑰及倉庫權限後重新進入。";$("error").textContent=e.message}}
+async function load(){
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),15000);
+ try{
+  const r=await fetch(api,{headers:hdr(),cache:"no-store",signal:controller.signal});
+  let j={};try{j=await r.json()}catch{}
+  if(!r.ok){
+   if(r.status===404)throw Error("GitHub 回傳 404：請確認共用密鑰已授權 Personal-Device-Manager 私有倉庫，且 Contents 至少有讀取權限。");
+   if(r.status===401)throw Error("GitHub 回傳 401：密鑰無效或已過期。");
+   if(r.status===403)throw Error("GitHub 回傳 403：密鑰權限不足，請確認 Personal-Device-Manager 的 Contents 讀寫權限及 API 限額。");
+   throw Error("GitHub 讀取失敗 HTTP "+r.status+"："+(j.message||"未知錯誤"));
+  }
+  if(!j.content)throw Error("GitHub 沒有返回 data/assets.json 的內容。");
+  sha=j.sha;
+  const txt=new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\\s/g,"")),c=>c.charCodeAt(0)));
+  const data=JSON.parse(txt);
+  if(!Array.isArray(data.items))throw Error("設備資料庫格式不正確：找不到 items 清單。");
+  return data.items;
+ }catch(e){
+  if(e.name==="AbortError")throw Error("連接 GitHub 超過 15 秒仍未完成，可能是網路或 GitHub API 暫時無回應。請重新整理後再試。");
+  throw e;
+ }finally{clearTimeout(timeout);}
+}
+async function connect(providedToken=""){
+ token=providedToken;
+ if(!token){
+  $("authTitle").textContent="尚未提供存取密鑰";
+  $("authMessage").textContent="請從 Hub 首頁輸入共用密鑰後進入設備管理。";
+  return;
+ }
+ $("authTitle").textContent="正在連接設備資料庫";
+ $("authMessage").textContent="正在讀取 Personal-Device-Manager 私有倉庫…";
+ $("error").textContent="連接中，最多等待 15 秒…";
+ try{
+  items=await load();
+  $("auth").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  render();
+ }catch(e){
+  token="";
+  $("authTitle").textContent="設備資料庫連接失敗";
+  $("authMessage").textContent="沒有讀取到設備資料。請查看下方原因，修正權限或網路後，回 Hub 首頁重新進入。";
+  $("error").textContent=e.message||"未知錯誤";
+ }
+}
 async function persist(){if(saving)throw Error("正在儲存");saving=true;$("save").disabled=true;try{const txt=JSON.stringify({version:1,updatedAt:new Date().toISOString(),items},null,2),content=btoa(unescape(encodeURIComponent(txt)));const r=await fetch(api,{method:"PUT",headers:hdr(),body:JSON.stringify({message:"Update device asset records",content,sha})});const j=await r.json();if(!r.ok)throw Error(j.message||"儲存失敗");sha=j.content.sha;render();alert("已儲存到私有資料庫。")}finally{saving=false;$("save").disabled=false}}
 function render(){let active=items.filter(x=>x.status==="active"),sold=items.filter(x=>x.status==="sold"),sum=a=>a.reduce((s,x)=>s+base(x),0),saleSum=sold.reduce((s,x)=>s+sale(x),0);$("activeValue").textContent=money(sum(active));$("activeCount").textContent=active.length;$("soldCount").textContent=sold.length;$("purchaseTotal").textContent=money(sum(items));$("saleTotal").textContent=money(saleSum);$("netTotal").textContent=money(sum(items)-saleSum);$("allCount").textContent=items.length;let q=$("search").value.toLowerCase(),f=$("filter").value,list=items.filter(a=>(f==="all"||a.status===f)&&[a.name,a.brand,a.model,a.category].join(" ").toLowerCase().includes(q));$("rows").replaceChildren();for(const a of list){let tr=document.createElement("tr");[a.name,a.category,a.purchaseDate,money(base(a)),({active:"使用中",sold:"已售出"})[a.status],days(a)+" 天",money((base(a)-sale(a))/days(a))].forEach((v,i)=>{let td=document.createElement("td");td.textContent=v;if(i===4)td.className="status "+a.status;tr.append(td)});let td=document.createElement("td"),b=document.createElement("button");b.className="btn";b.textContent="編輯";b.onclick=()=>open(a.id);td.append(b);tr.append(td);$("rows").append(tr)}$("empty").classList.toggle("hidden",list.length>0);$("tablewrap").classList.toggle("hidden",!list.length)}
 function open(id){let a=items.find(x=>x.id===id);$("form").reset();$("id").value=a?.id||"";$("modalTitle").textContent=a?"編輯設備":"添加設備";for(const k of ["name","category","brand","model","currency","price","rate","purchaseDate","status","endDate","salePrice","notes"])$(k).value=a?.[k]??({category:"數碼",currency:"CNY",rate:1,purchaseDate:new Date().toISOString().slice(0,10),status:"active",salePrice:0}[k]??"");convert();$("modal").classList.remove("hidden")}
