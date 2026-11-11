@@ -77,7 +77,7 @@ document.querySelectorAll("[data-target]").forEach(button=>{
     error.textContent="";
     window.name="PD_MANAGER_TOKEN:"+value;
     const target=button.dataset.target;
-    location.href=target==="gallery"?"./apps/gallery/":"./apps/devices/";
+    location.href=(target==="gallery"?"./apps/gallery/":"./apps/devices/")+"?v=20261111c";
   });
 });
 tokenInput.addEventListener("input",()=>{error.textContent="";});
