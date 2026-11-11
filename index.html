@@ -172,8 +172,8 @@ function stopInlinePreview(){
  inlineSequence++;
  if(inlineVisibilityObserver){inlineVisibilityObserver.disconnect();inlineVisibilityObserver=null;}
  if(activeInline){
-  const {frame,button}=activeInline;
-  frame.remove();
+  const {frame,button,controls}=activeInline;
+  frame.remove();if(controls)controls.remove();
   if(button){button.textContent="小窗播放";button.disabled=false;}
   activeInline=null;
  }
