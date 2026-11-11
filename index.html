@@ -13,14 +13,12 @@ main{width:min(100% - 36px,1050px);margin:0 auto;padding:clamp(24px,5vw,58px) 0 
 header{margin-bottom:25px}
 h1{font-size:clamp(28px,5vw,40px);line-height:1.2;margin:0}
 header p{margin:10px 0 0;color:var(--muted)}
-.access-panel{background:linear-gradient(145deg,#192941,#141e30);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,3vw,26px);margin-bottom:20px}
-.access-panel h2{font-size:18px;margin:0 0 5px}
-.access-panel .intro{margin:0 0 18px;color:var(--muted);font-size:13px}
-label{display:block;font-size:13px;margin-bottom:7px;color:#d8e2f0}
-.field{display:block;width:100%;padding:13px 14px;border:1px solid #40516c;border-radius:10px;background:#0d1524;color:var(--text);font:inherit;outline:none}
+.tokenbar{display:flex;align-items:center;gap:12px;margin:0 0 20px}
+.tokenbar label{flex:0 0 auto;font-size:14px;color:#d8e2f0}
+.field{display:block;width:100%;max-width:430px;padding:10px 12px;border:1px solid #40516c;border-radius:9px;background:#0d1524;color:var(--text);font:inherit;outline:none}
 .field:focus{border-color:var(--accent);box-shadow:0 0 0 3px #9fc2ff20}
-.help{font-size:12px;color:var(--muted);margin:10px 0 0}
-.error{font-size:12px;color:var(--danger);min-height:18px;margin:7px 0 0}
+.error{font-size:12px;color:var(--danger);min-height:0;margin:0 0 12px}
+@media(max-width:650px){.tokenbar{gap:8px}.tokenbar .field{min-width:0;flex:1}.tokenbar label{font-size:13px;white-space:nowrap}}
 .apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .app-card{min-width:0;display:flex;flex-direction:column;align-items:flex-start;background:linear-gradient(145deg,#1a2941,#131b2b);border:1px solid var(--line);border-radius:18px;padding:23px}
 .icon{width:48px;height:48px;border-radius:15px;background:#273d5c;display:grid;place-items:center;font-size:24px;margin-bottom:17px}
@@ -40,14 +38,11 @@ footer{margin-top:34px;color:#8594aa;font-size:12px;text-align:center}
   <p>常用工具與個人項目入口</p>
 </header>
 
-<section class="access-panel" aria-labelledby="accessTitle">
-  <h2 id="accessTitle">共用存取密鑰</h2>
-  <p class="intro">在這裡輸入一次 GitHub Fine-grained Token，再從下方選擇要開啟的功能。</p>
+<div class="tokenbar">
   <label for="accessToken">GitHub 存取密鑰</label>
-  <input class="field" id="accessToken" type="password" autocomplete="off" spellcheck="false" placeholder="貼上 github_pat_…" />
-  <p class="error" id="accessError" role="status" aria-live="polite"></p>
-  <p class="help">密鑰需有權限讀取 Personal-Device-Manager 及 AI-HTML-Archive。只在進入應用時暫時傳遞，不寫入網址或永久瀏覽器儲存空間。</p>
-</section>
+  <input class="field" id="accessToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" />
+</div>
+<p class="error" id="accessError" role="status" aria-live="polite"></p>
 
 <section class="apps" aria-label="功能模組">
   <article class="app-card">
