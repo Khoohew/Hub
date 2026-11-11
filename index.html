@@ -121,7 +121,7 @@ document.querySelectorAll("[data-target]").forEach(button=>{
     error.textContent="";
     window.name="PD_MANAGER_TOKEN:"+value;
     const target=button.dataset.target;
-    location.href=(target==="gallery"?"./apps/gallery/":"./apps/devices/")+"?v="+(target==="gallery"?"20261111i":"20261111p");
+    location.href=(target==="gallery"?"./apps/gallery/":"./apps/devices/")+"?v="+(target==="gallery"?"20261111i":"20261111r");
   });
 });
 tokenInput.addEventListener("input",()=>{error.textContent="";});
