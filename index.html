@@ -13,12 +13,17 @@ main{width:min(100% - 36px,1050px);margin:0 auto;padding:clamp(24px,5vw,58px) 0 
 header{margin-bottom:25px}
 h1{font-size:clamp(28px,5vw,40px);line-height:1.2;margin:0}
 header p{margin:10px 0 0;color:var(--muted)}
-.tokenbar{display:flex;align-items:center;gap:12px;margin:0 0 20px}
-.tokenbar label{flex:0 0 auto;font-size:14px;color:#d8e2f0}
-.field{display:block;width:100%;max-width:300px;padding:10px 12px;border:1px solid #40516c;border-radius:9px;background:#0d1524;color:var(--text);font:inherit;outline:none}
+.access-panel{display:flex;align-items:center;gap:16px;margin:0 0 20px;padding:13px 15px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#151f32,#111a2a);box-shadow:0 8px 24px #0002}
+.tokenbar{display:flex;align-items:center;gap:12px;flex:1 1 auto;min-width:0;margin:0}
+.tokenbar label,.repo-picker label{flex:0 0 auto;font-size:14px;color:#d8e2f0;white-space:nowrap}
+.field{display:block;width:100%;max-width:none;min-width:0;padding:10px 12px;border:1px solid #40516c;border-radius:9px;background:#0d1524;color:var(--text);font:inherit;outline:none}
 .field:focus{border-color:var(--accent);box-shadow:0 0 0 3px #9fc2ff20}
+.tokenbar .field{flex:1 1 auto}
+.repo-picker{display:flex;align-items:center;gap:10px;flex:0 1 360px;min-width:250px}
+.repo-picker .field{flex:1 1 auto;cursor:pointer;font-size:14px}
 .error{font-size:12px;color:var(--danger);min-height:0;margin:0 0 12px}
-@media(max-width:650px){.tokenbar{gap:8px}.tokenbar .field{min-width:0;flex:1}.tokenbar label{font-size:13px;white-space:nowrap}}
+@media(max-width:760px){.access-panel{align-items:stretch;flex-direction:column;gap:11px}.tokenbar{gap:9px}.repo-picker{flex:1 1 auto;min-width:0}.tokenbar .field{max-width:none}}
+@media(max-width:650px){.tokenbar{align-items:stretch;flex-direction:column;gap:5px}.tokenbar label,.repo-picker label{font-size:13px}.repo-picker{align-items:stretch;flex-direction:column;gap:5px}.access-panel{padding:12px}.apps{grid-template-columns:1fr}}
 .apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .app-card{min-width:0;display:flex;flex-direction:column;align-items:flex-start;background:linear-gradient(145deg,#1a2941,#131b2b);border:1px solid var(--line);border-radius:18px;padding:23px}
 .icon{width:48px;height:48px;border-radius:15px;background:#273d5c;display:grid;place-items:center;font-size:24px;margin-bottom:17px}
@@ -38,10 +43,40 @@ footer{margin-top:34px;color:#8594aa;font-size:12px;text-align:center}
   <p>常用工具與個人項目入口</p>
 </header>
 
-<div class="tokenbar">
-  <label for="accessToken">GitHub 存取密鑰</label>
-  <input class="field" id="accessToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" />
-</div>
+<section class="access-panel" aria-label="GitHub 存取與專案入口">
+  <div class="tokenbar">
+    <label for="accessToken">GitHub 存取密鑰</label>
+    <input class="field" id="accessToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" />
+  </div>
+  <div class="repo-picker">
+    <label for="repoSelect">GitHub 專案</label>
+    <select class="field" id="repoSelect" aria-label="選擇要開啟的 GitHub 專案">
+      <option value="">選擇專案，直接開啟…</option>
+      <optgroup label="公開專案">
+        <option value="https://github.com/ChewchewHan/Hub">個人工作台</option>
+        <option value="https://github.com/ChewchewHan/RemoteMac">Windows 遠端控制 Mac</option>
+        <option value="https://github.com/ChewchewHan/Shanxi-Ancient-Architecture">山西古建檔案庫</option>
+        <option value="https://github.com/ChewchewHan/VCG">視覺中國素材資料庫</option>
+      </optgroup>
+      <optgroup label="私人專案">
+        <option value="https://github.com/ChewchewHan/AI-HTML-Archive">AI HTML 動畫收藏庫</option>
+        <option value="https://github.com/ChewchewHan/AI-Skills">AI 技能與工作流程</option>
+        <option value="https://github.com/ChewchewHan/Android-English-Project">安卓英語學習專案</option>
+        <option value="https://github.com/ChewchewHan/Android_Signin_Assistant_points">安卓簽到積分助手</option>
+        <option value="https://github.com/ChewchewHan/Blender_Batch_Renderer">Blender 批次渲染器</option>
+        <option value="https://github.com/ChewchewHan/Blender_Remote_Monitor">Blender 遠端監控</option>
+        <option value="https://github.com/ChewchewHan/Chatgpt-claude-batch-image-helper">ChatGPT／Claude 批量圖片助手</option>
+        <option value="https://github.com/ChewchewHan/HomeStudy">家庭 AI 學習系統</option>
+        <option value="https://github.com/ChewchewHan/Multi-Stock-Auto-Fill">多平台股票自動填表</option>
+        <option value="https://github.com/ChewchewHan/Oracle-Monitor">Oracle 伺服器監控</option>
+        <option value="https://github.com/ChewchewHan/Personal-Device-Manager">個人設備資料庫</option>
+        <option value="https://github.com/ChewchewHan/VCG-Rejected-Asset-Organizer">視覺中國退稿素材整理</option>
+        <option value="https://github.com/ChewchewHan/VCG-Title-Keyword-Assistant">視覺中國標題與關鍵字助手</option>
+        <option value="https://github.com/ChewchewHan/VJshi-keyword-helper">VJ師素材關鍵字助手</option>
+      </optgroup>
+    </select>
+  </div>
+</section>
 <p class="error" id="accessError" role="status" aria-live="polite"></p>
 
 <section class="apps" aria-label="功能模組">
@@ -66,6 +101,13 @@ footer{margin-top:34px;color:#8594aa;font-size:12px;text-align:center}
 "use strict";
 const tokenInput=document.getElementById("accessToken");
 const error=document.getElementById("accessError");
+const repoSelect=document.getElementById("repoSelect");
+repoSelect.addEventListener("change",()=>{
+  const url=repoSelect.value;
+  if(!url)return;
+  window.open(url,"_blank","noopener,noreferrer");
+  repoSelect.value="";
+});
 document.querySelectorAll("[data-target]").forEach(button=>{
   button.addEventListener("click",()=>{
     const value=tokenInput.value.trim();
@@ -77,7 +119,7 @@ document.querySelectorAll("[data-target]").forEach(button=>{
     error.textContent="";
     window.name="PD_MANAGER_TOKEN:"+value;
     const target=button.dataset.target;
-    location.href=(target==="gallery"?"./apps/gallery/":"./apps/devices/")+"?v=20261111c";
+    location.href=(target==="gallery"?"./apps/gallery/":"./apps/devices/")+"?v=20261111d";
   });
 });
 tokenInput.addEventListener("input",()=>{error.textContent="";});
