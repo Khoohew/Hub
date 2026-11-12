@@ -72,7 +72,7 @@ footer{margin-top:34px;color:#8594aa;font-size:12px;text-align:center}
         <option value="https://github.com/ChewchewHan/HomeStudy">家庭 AI 學習系統</option>
         <option value="https://github.com/ChewchewHan/Shanxi-Ancient-Architecture">山西古建檔案庫（公開）</option>
         <option value="https://github.com/ChewchewHan/AI-HTML-Archive">AI HTML 動畫收藏庫</option>
-        <option value="https://github.com/ChewchewHan/Personal-Device-Manager">個人設備資料庫</option>
+        <option value="https://github.com/Khoohew/Personal-Device-Manager">個人資產資料庫（私有）</option>
         <option value="https://github.com/ChewchewHan/Hub">個人工作台（公開）</option>
         <option value="https://github.com/ChewchewHan/VCG">視覺中國客戶查詢（廢棄）（公開）</option>
       </optgroup>
@@ -90,6 +90,13 @@ footer{margin-top:34px;color:#8594aa;font-size:12px;text-align:center}
     <h2>設備管理</h2>
     <p>記錄設備、購買價格、使用狀態、出售收入與每日持有成本。</p>
     <button class="btn primary" type="button" data-target="devices">進入設備管理 →</button>
+  </article>
+
+  <article class="app-card">
+    <div class="icon" aria-hidden="true">🥇</div>
+    <h2>黃金管理</h2>
+    <p>管理實物黃金與投資黃金，記錄購入、出售、克重、成本及盈虧，並每日更新國際現貨金價。</p>
+    <button class="btn primary" type="button" data-target="gold">進入黃金管理 →</button>
   </article>
 
   <article class="app-card">
@@ -124,7 +131,8 @@ document.querySelectorAll("[data-target]").forEach(button=>{
     error.textContent="";
     window.name="PD_MANAGER_TOKEN:"+value;
     const target=button.dataset.target;
-    location.href=(target==="gallery"?"./apps/gallery/":"./apps/devices/")+"?v="+(target==="gallery"?"20261111i":"20261111r");
+    const routes={gallery:["./apps/gallery/","20261111i"],devices:["./apps/devices/","20261112a"],gold:["./apps/gold/","20261112a"]};
+    location.href=routes[target][0]+"?v="+routes[target][1];
   });
 });
 tokenInput.addEventListener("input",()=>{error.textContent="";});
