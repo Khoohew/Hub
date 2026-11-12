@@ -6,8 +6,10 @@
 /* Unified authentication screen */
 body:not(.ready){min-height:100vh;background:var(--bg)!important}
 body:not(.ready) .wrap{min-height:100vh;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;padding:24px clamp(14px,3vw,34px)}
-body:not(.ready) header{display:flex!important;margin-bottom:0}
-body:not(.ready) .headerRight,body:not(.ready) #logout{display:none!important}
+body:not(.ready) header{display:flex!important;justify-content:space-between!important;margin-bottom:0}
+body:not(.ready) .brand{display:block!important;visibility:visible!important;opacity:1!important}
+body:not(.ready) .headerRight{display:none!important}
+#logout{margin-left:auto;flex:0 0 auto}
 body:not(.ready) footer{display:none!important}
 body:not(.ready) .auth{width:min(620px,100%);max-width:620px;margin:8vh auto 0;padding:26px;background:#141d30;border:1px solid #293750;border-radius:16px;box-shadow:none}
 body:not(.ready) .auth h2{margin:0 0 14px;font-size:21px}
