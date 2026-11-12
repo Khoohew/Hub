@@ -5,18 +5,20 @@
 
 /* Unified authentication screen */
 body:not(.ready){min-height:100vh;background:var(--bg)!important}
-body:not(.ready) .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-body:not(.ready) header,body:not(.ready) footer{display:none!important}
-body:not(.ready) .auth{width:min(620px,100%);max-width:620px;margin:0;padding:26px;background:#141d30;border:1px solid #293750;border-radius:16px;box-shadow:none}
+body:not(.ready) .wrap{min-height:100vh;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;padding:24px clamp(14px,3vw,34px)}
+body:not(.ready) header{display:flex!important;margin-bottom:0}
+body:not(.ready) .headerRight,body:not(.ready) #logout{display:none!important}
+body:not(.ready) footer{display:none!important}
+body:not(.ready) .auth{width:min(620px,100%);max-width:620px;margin:8vh auto 0;padding:26px;background:#141d30;border:1px solid #293750;border-radius:16px;box-shadow:none}
 body:not(.ready) .auth h2{margin:0 0 14px;font-size:21px}
 body:not(.ready) .auth p{margin:0 0 12px}
 body:not(.ready) .auth .notice{margin-top:16px}
 @media(max-width:600px){body:not(.ready) .wrap{padding:16px}body:not(.ready) .auth{padding:20px}}
 
-</style></head><body><main class="wrap">
+</style></head><body><main class="wrap"><header><div class="brand"><h1>🥇 黃金管理</h1><div class="muted small">實物黃金 · 投資黃金 · 持倉成本與盈虧</div></div><div class="headerRight"><div class="goldprice"><div><div class="small">國際黃金現貨 · 人民幣 / 克</div><strong id="marketPrice">讀取中…</strong><div class="small" id="marketUpdated">價格來源：Gold API · XAU/CNY</div></div><button class="btn" id="refreshPrice">↻ 更新</button></div></div><button class="btn" id="logout">登出</button></header>
 <section class="panel auth" id="auth"><h2 id="authTitle">正在連接黃金資料庫</h2><p class="muted" id="authMessage">正在使用 Hub 首頁提供的共用密鑰連接私有資料庫。</p><p id="error" class="error"></p><a class="btn" href="../../">返回個人工作台</a><div class="notice">資料保存在 Personal-Device-Manager 私有倉庫的 data/gold/gold.json。密鑰只保留在本頁記憶體中。</div></section>
 <section id="app" class="hidden">
-<header><div class="brand"><h1>🥇 黃金管理</h1><div class="muted small">實物黃金 · 投資黃金 · 持倉成本與盈虧</div></div><div class="headerRight"><div class="goldprice"><div><div class="small">國際黃金現貨 · 人民幣 / 克</div><strong id="marketPrice">讀取中…</strong><div class="small" id="marketUpdated">價格來源：Gold API · XAU/CNY</div></div><button class="btn" id="refreshPrice">↻ 更新</button></div></div><button class="btn" id="logout">登出</button></header>
+
 <div class="stats">
 <div class="stat"><span>目前持有克重</span><strong id="holdingGrams">0 g</strong></div>
 <div class="stat"><span>持倉成本</span><strong id="holdingCost">¥0.00</strong></div>
