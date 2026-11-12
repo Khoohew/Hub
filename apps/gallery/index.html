@@ -16,6 +16,17 @@ header{display:flex;align-items:center;justify-content:space-between;gap:18px;ma
 .overlay{position:fixed;inset:0;z-index:10;background:#070a10ed;display:flex;flex-direction:column;padding:14px}.viewer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:3px 2px 12px}.viewer-title{min-width:0}.viewer-title strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.viewer-title small{color:var(--muted)}.viewer-actions{display:flex;gap:8px}.viewer-frame{flex:1;min-height:0;width:100%;border:1px solid #303a4d;border-radius:12px;background:#000}.viewer-foot{color:#8592a5;font-size:12px;padding:8px 2px 0}
 footer{margin-top:30px;color:#758196;font-size:12px;text-align:center}
 @media(max-width:600px){.wrap{padding-top:18px}header{align-items:flex-start}.brand h1{font-size:18px}.header-actions .btn{padding:8px 9px}.token-row{flex-direction:column}.viewer-head{align-items:flex-start}.viewer-actions{flex-wrap:wrap;justify-content:flex-end}.viewer-actions .btn{padding:7px 9px}}
+
+/* Unified authentication screen */
+body:not(.ready){min-height:100vh;background:var(--bg)!important}
+body:not(.ready) .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+body:not(.ready) header,body:not(.ready) footer{display:none!important}
+body:not(.ready) .auth{width:min(620px,100%);max-width:620px;margin:0;padding:26px;background:#141d30;border:1px solid #293750;border-radius:16px;box-shadow:none}
+body:not(.ready) .auth h2{margin:0 0 14px;font-size:21px}
+body:not(.ready) .auth p{margin:0 0 12px}
+body:not(.ready) .auth .notice{margin-top:16px}
+@media(max-width:600px){body:not(.ready) .wrap{padding:16px}body:not(.ready) .auth{padding:20px}}
+
 </style>
 </head>
 <body>
@@ -80,7 +91,7 @@ async function githubFile(path){
  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
  return new TextDecoder("utf-8").decode(bytes);
 }
-async function connect(providedToken=""){const token=providedToken;if(!token){$("authTitle").textContent="尚未提供存取密鑰";$("authMessage").textContent="請從 Hub 首頁輸入共用密鑰後進入 AI HTML 畫廊。";return;}$("authTitle").textContent="正在連接私人動畫庫";$("authMessage").textContent="正在讀取私人倉庫內容…";$("authError").textContent="";accessToken=token;try{const raw=await githubFile("catalog.json");const parsed=JSON.parse(raw);if(!Array.isArray(parsed.items)||!Array.isArray(parsed.categories))throw new Error("catalog.json 格式不正確。");catalog=parsed;authPanel.classList.add("hidden");galleryPanel.classList.remove("hidden");$("logoutBtn").classList.remove("hidden");buildCategoryOptions();render();}catch(error){accessToken="";catalog=null;$("authTitle").textContent="連接失敗";$("authMessage").textContent="請返回 Hub 首頁確認共用密鑰及倉庫權限後重新進入。";$("authError").textContent=error.message||"連接失敗。";}}
+async function connect(providedToken=""){const token=providedToken;if(!token){$("authTitle").textContent="尚未提供存取密鑰";$("authMessage").textContent="請從 Hub 首頁輸入共用密鑰後進入 AI HTML 畫廊。";return;}$("authTitle").textContent="正在連接私人動畫庫";$("authMessage").textContent="正在讀取私人倉庫內容…";$("authError").textContent="";accessToken=token;try{const raw=await githubFile("catalog.json");const parsed=JSON.parse(raw);if(!Array.isArray(parsed.items)||!Array.isArray(parsed.categories))throw new Error("catalog.json 格式不正確。");catalog=parsed;authPanel.classList.add("hidden");galleryPanel.classList.remove("hidden");document.body.classList.add("ready");$("logoutBtn").classList.remove("hidden");buildCategoryOptions();render();}catch(error){accessToken="";catalog=null;$("authTitle").textContent="連接失敗";$("authMessage").textContent="請返回 Hub 首頁確認共用密鑰及倉庫權限後重新進入。";$("authError").textContent=error.message||"連接失敗。";}}
 function buildCategoryOptions(){
  const select=$("categorySelect");select.innerHTML='<option value="">全部分類</option>';
  for(const category of catalog.categories){const option=document.createElement("option");option.value=category.id;option.textContent=category.name;select.append(option);}
