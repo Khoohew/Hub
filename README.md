@@ -3,8 +3,12 @@
 個人常用工具入口：https://khoohew.github.io/Hub/
 
 - `index.html`：工作台入口
-- `apps/devices/`：設備管理，資料存放於私有倉庫 Personal-Device-Manager 的 `data/devices/assets.json`
-- `apps/gold/`：黃金管理，資料存放於同一私有倉庫的 `data/gold/gold.json`
+- `apps/devices/`：設備管理前端
+- `apps/gold/`：黃金管理前端
 - `apps/gallery/`：AI HTML 畫廊（保持獨立運作）
 
-各管理模組前端獨立，資料統一保存在私有倉庫的 `data/` 分類目錄下，方便日後擴充。
+各管理模組前端獨立。涉及個人資料的後端資料存放於獨立的私有資料庫，不屬於本公開倉庫；私有資料庫名稱、路徑及內容不在此公開。
+
+## AI / Agent 導航
+
+AI 助手、程式代理與自動化工具請先閱讀 [AI-INDEX.md](AI-INDEX.md)。該文件列出可公開存取的專案入口、標準資料路徑及隱私邊界。不要對整個帳戶進行無差別搜尋，也不要推測或揭露未列出的私有倉庫。
