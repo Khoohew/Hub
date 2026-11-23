@@ -23,6 +23,15 @@ header p{margin:10px 0 0;color:var(--muted)}
 .field:focus{border-color:var(--accent);box-shadow:0 0 0 3px #9fc2ff20}
 .tokenbar .field,.repo-picker .field{width:100%;flex:1 1 auto}
 .repo-picker .field{cursor:pointer;font-size:14px}
+.repo-combobox{position:relative;width:100%}
+.repo-combobox input.field{padding-right:38px;cursor:text}
+.repo-combobox:after{content:"▾";position:absolute;right:13px;top:50%;transform:translateY(-50%);color:#aebdd2;pointer-events:none}
+.repo-options{position:absolute;z-index:20;top:calc(100% + 5px);left:0;right:0;max-height: min( min(60vh, 420px), 420px);overflow-y:auto;padding:6px;border:1px solid #40516c;border-radius:10px;background:#111c2e;box-shadow:0 12px 28px #0008}
+.repo-options[hidden]{display:none}
+.repo-group-label{padding:8px 10px 4px;color:#8fa4c2;font-size:12px;font-weight:700}
+.repo-option{display:block;width:100%;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:var(--text);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.repo-option:hover,.repo-option.active{background:#263b59}
+.repo-empty{padding:12px 10px;color:var(--muted);font-size:13px}
 .error{font-size:12px;color:var(--danger);min-height:0;margin:0 0 12px}
 @media(max-width:650px){.access-panel{grid-template-columns:1fr;gap:11px;padding:12px}.tokenbar label,.repo-picker label{font-size:13px}}
 .apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
@@ -51,10 +60,12 @@ footer{margin-top:34px;color:#8594aa;font-size:12px;text-align:center}
     <input class="field" id="accessToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" />
   </div>
   <div class="repo-picker">
-    <label for="repoSearch">搜索 GitHub 專案</label>
-    <input class="field" id="repoSearch" type="search" autocomplete="off" placeholder="輸入名稱或關鍵字篩選…" />
-    <label for="repoSelect">GitHub 專案</label>
-    <select class="field" id="repoSelect" aria-label="選擇要開啟的 GitHub 專案">
+    <label for="repoSearch">GitHub 專案</label>
+    <div class="repo-combobox" id="repoCombobox">
+      <input class="field" id="repoSearch" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="repoOptions" autocomplete="off" placeholder="選擇或輸入關鍵字搜尋專案…" />
+      <div class="repo-options" id="repoOptions" role="listbox" hidden></div>
+    </div>
+    <select class="field" id="repoSelect" aria-label="選擇要開啟的 GitHub 專案" hidden>
       <option value="">選擇專案，直接開啟…</option>
       <optgroup label="電腦">
         <option value="https://github.com/ChewchewHan/Android_Signin_Assistant_points">安卓手機簽到助手</option>
@@ -117,24 +128,102 @@ const tokenInput=document.getElementById("accessToken");
 const error=document.getElementById("accessError");
 const repoSelect=document.getElementById("repoSelect");
 const repoSearch=document.getElementById("repoSearch");
-repoSearch.addEventListener("input",()=>{
+const repoCombobox=document.getElementById("repoCombobox");
+const repoOptions=document.getElementById("repoOptions");
+let activeOption=-1;
+let visibleOptions=[];
+function closeRepoOptions(){
+  repoOptions.hidden=true;
+  repoSearch.setAttribute("aria-expanded","false");
+  repoSearch.removeAttribute("aria-activedescendant");
+  activeOption=-1;
+}
+function openRepoOptions(){
+  renderRepoOptions();
+  repoOptions.hidden=false;
+  repoSearch.setAttribute("aria-expanded","true");
+}
+function renderRepoOptions(){
   const keyword=repoSearch.value.trim().toLocaleLowerCase();
+  repoOptions.replaceChildren();
+  visibleOptions=[];
   repoSelect.querySelectorAll("optgroup").forEach(group=>{
-    let visibleCount=0;
-    group.querySelectorAll("option").forEach(option=>{
-      const matched=!keyword||(option.textContent+" "+option.value).toLocaleLowerCase().includes(keyword);
-      option.hidden=!matched;
-      if(matched)visibleCount++;
+    const matches=[...group.querySelectorAll("option")].filter(option=>
+      (option.textContent+" "+option.value).toLocaleLowerCase().includes(keyword)
+    );
+    if(!matches.length)return;
+    const heading=document.createElement("div");
+    heading.className="repo-group-label";
+    heading.textContent=group.label;
+    repoOptions.appendChild(heading);
+    matches.forEach(option=>{
+      const item=document.createElement("button");
+      item.type="button";
+      item.className="repo-option";
+      item.setAttribute("role","option");
+      item.textContent=option.textContent;
+      item.dataset.url=option.value;
+      item.dataset.index=String(visibleOptions.length);
+      item.addEventListener("mousedown",event=>event.preventDefault());
+      item.addEventListener("click",()=>selectRepo(option.value,option.textContent));
+      visibleOptions.push(item);
+      repoOptions.appendChild(item);
     });
-    group.hidden=visibleCount===0;
   });
-  repoSelect.selectedIndex=0;
-});
-repoSelect.addEventListener("change",()=>{
-  const url=repoSelect.value;
+  if(!visibleOptions.length){
+    const empty=document.createElement("div");
+    empty.className="repo-empty";
+    empty.textContent="沒有符合的 GitHub 專案";
+    repoOptions.appendChild(empty);
+  }
+  activeOption=-1;
+}
+function highlightRepoOption(index){
+  if(!visibleOptions.length)return;
+  activeOption=Math.max(0,Math.min(index,visibleOptions.length-1));
+  visibleOptions.forEach((item,i)=>{
+    item.classList.toggle("active",i===activeOption);
+    item.setAttribute("aria-selected",i===activeOption?"true":"false");
+  });
+  const active=visibleOptions[activeOption];
+  repoSearch.setAttribute("aria-activedescendant","repo-option-"+activeOption);
+  active.id="repo-option-"+activeOption;
+  active.scrollIntoView({block:"nearest"});
+}
+function selectRepo(url,label){
   if(!url)return;
+  repoSearch.value="";
+  closeRepoOptions();
   window.open(url,"_blank","noopener,noreferrer");
-  repoSelect.value="";
+}
+repoSearch.addEventListener("focus",openRepoOptions);
+repoSearch.addEventListener("click",openRepoOptions);
+repoSearch.addEventListener("input",()=>{
+  openRepoOptions();
+});
+repoSearch.addEventListener("keydown",event=>{
+  if(event.key==="ArrowDown"){
+    event.preventDefault();
+    if(repoOptions.hidden)openRepoOptions();
+    highlightRepoOption(activeOption+1);
+  }else if(event.key==="ArrowUp"){
+    event.preventDefault();
+    highlightRepoOption(activeOption<0?visibleOptions.length-1:activeOption-1);
+  }else if(event.key==="Enter"){
+    if(!repoOptions.hidden&&activeOption>=0){
+      event.preventDefault();
+      const item=visibleOptions[activeOption];
+      selectRepo(item.dataset.url,item.textContent);
+    }else if(!repoOptions.hidden&&visibleOptions.length===1){
+      event.preventDefault();
+      selectRepo(visibleOptions[0].dataset.url,visibleOptions[0].textContent);
+    }
+  }else if(event.key==="Escape"){
+    closeRepoOptions();
+  }
+});
+document.addEventListener("click",event=>{
+  if(!repoCombobox.contains(event.target))closeRepoOptions();
 });
 document.querySelectorAll("[data-target]").forEach(button=>{
   button.addEventListener("click",()=>{
