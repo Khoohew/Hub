@@ -9,22 +9,22 @@
 </head>
 <body>
 <header class="topbar">
-  <div><div class="eyebrow">PERSONAL FAMILY VAULT</div><h1>家庭資料庫</h1><p>GitHub 雲端直存 · 端到端加密 · 跨裝置使用</p></div>
+  <div><div class="eyebrow">PERSONAL FAMILY VAULT</div><h1>家庭資料庫</h1><p>GitHub 私人倉庫直存 · 明文優先 · 附件可選加密</p></div>
   <div class="topActions"><span id="cloudState" class="state">雲端尚未連接</span><button id="lockBtn" class="secondary" hidden>鎖定</button></div>
 </header>
 <main>
 <section id="gate" class="panel gate">
-  <div class="gateMark">🔐</div><h2 id="gateTitle">建立家庭資料保險庫</h2>
-  <p id="gateDesc">先連接 GitHub 私人倉庫。人物、關係、事件、照片與醫療資料都會在瀏覽器端加密後直接保存至 GitHub；本機不作正式資料庫。忘記密碼且沒有恢復金鑰，資料將無法解密。</p>
+  <div class="gateMark">👪</div><h2 id="gateTitle">連接家庭資料私人倉庫</h2>
+  <p id="gateDesc">一般人物、關係、事件與醫療文字預設明文保存。只有你勾選加密的附件會在本機加密後上傳。</p>
   <form id="gateForm">
-    <label id="passwordLabel">設定保險庫密碼<input id="vaultPassword" type="password" minlength="12" autocomplete="new-password" required></label>
-    <label id="confirmWrap">再次輸入密碼<input id="vaultConfirm" type="password" minlength="12" autocomplete="new-password" required></label>
+    <label id="passwordLabel" hidden>設定保險庫密碼<input id="vaultPassword" type="password" autocomplete="off"></label>
+    <label id="confirmWrap" hidden>再次輸入密碼<input id="vaultConfirm" type="password" autocomplete="off"></label>
     <p id="gateError" class="error" role="alert"></p>
-    <button id="gateSubmit" class="primary" type="submit">建立加密保險庫</button>
+    <button id="gateSubmit" class="primary" type="submit" disabled>請先連接 GitHub</button>
     <div class="restoreGate"><label>或從完整加密備份還原<input id="restoreInput" type="file" accept=".familyvault,.zip,application/zip"></label><button id="restoreBtn" type="button" class="secondary">檢查並還原備份</button></div>
   </form>
   <div class="cloudBar cloudGate">
-    <div><strong>GitHub 私人雲端備份</strong><small id="githubStatus">連接私人倉庫後，資料將直接加密寫入 GitHub；Token 僅保存在目前頁面記憶體。</small></div>
+    <div><strong>GitHub 私人資料倉庫</strong><small id="githubStatus">一般資料以明文 JSON 保存；Token 僅保存在目前頁面記憶體。</small></div>
     <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepo" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
     <label class="tokenField">GitHub Fine-grained Token<input id="githubToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" /></label>
     <button id="connectGitHubBtn" type="button" class="secondary">連接 GitHub</button>
@@ -34,15 +34,15 @@
 </section>
 
 <section id="workspace" hidden>
-  <div id="storageNotice" class="notice"><strong>尚未連接雲端。</strong>連接 GitHub 私人倉庫後，正式資料將直接加密保存至雲端，不寫入本機資料庫。</div>
-  <div class="backupBar"><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載加密備份</button></div>
+  <div id="storageNotice" class="notice"><strong>尚未連接雲端。</strong>連接 GitHub 私人倉庫後，正式資料將直接保存至雲端，不寫入本機資料庫。</div>
+  <div class="backupBar"><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載備份</button></div>
   <div class="cloudBar" hidden>
     <div><strong>GitHub 雲端直存</strong><small id="githubWorkspaceStatus">雲端資料由上方已授權的私人倉庫直接讀寫</small></div>
     <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepoWorkspace" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
     <label class="tokenField">GitHub Fine-grained Token<input id="githubTokenWorkspace" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" /></label>
     <button id="connectGitHubWorkspaceBtn" class="secondary">連接／重新連接</button>
-    <button id="githubUploadBtn" class="primary" disabled>上傳加密備份</button>
-    <button id="githubDownloadWorkspaceBtn" class="secondary" disabled>下載並還原</button>
+    <button id="githubUploadBtn" class="primary" disabled>上傳備份</button>
+    <button id="githubDownloadWorkspaceBtn" class="secondary" disabled>下載備份</button>
   </div>
   <section class="panel treePanel">
     <div class="sectionHead"><div><h2>族譜視圖</h2><small id="treeInfo">選擇人物查看其上下三代關係</small></div><button id="treeFit" type="button" class="secondary">重置視圖</button></div>
@@ -96,10 +96,10 @@
         <div id="eventList" class="eventList"></div>
       </section>
       <section id="mediaSection" class="mediaSection" hidden>
-        <div class="sectionHead"><div><h3>照片與文件</h3><small>附件獨立加密保存，不嵌入人物資料</small></div></div>
+        <div class="sectionHead"><div><h3>照片與文件</h3><small>附件獨立保存；新附件預設明文，敏感原件應另行選擇加密</small></div></div>
         <form id="mediaForm" class="mediaForm">
           <label>選擇照片或文件<input id="mediaFile" type="file" accept="image/*,application/pdf,audio/*,video/*,.doc,.docx,.xls,.xlsx,.txt"></label>
-          <label>說明／備註<input id="mediaCaption" maxlength="240" placeholder="例如：祖父青年時期、家族老屋"></label>
+          <label>說明／備註<input id="mediaCaption" maxlength="240" placeholder="例如：祖父青年時期、家族老屋"></label>\n          <label class="mediaEncryptOption"><input id="mediaEncrypt" type="checkbox">加密保存此附件（密碼只用於這個附件，請自行保管）</label>
           <button type="submit" class="secondary">＋ 添加附件</button>
         </form>
         <div id="mediaList" class="mediaGrid"></div>
@@ -107,11 +107,11 @@
     </section>
   </div>
   <section class="panel healthPanel">
-    <div><div class="eyebrow">SEPARATE ENCRYPTED VAULT</div><h2>醫療資料保險庫</h2><p>病歷、過敏、用藥、手術與檢查紀錄使用另一把加密金鑰；加密後直接保存至同一私人 GitHub 倉庫中的獨立資料區。</p></div>
-    <div class="healthActions"><span id="healthState" class="state">尚未建立</span><button id="healthUnlock" class="secondary">建立／解鎖醫療保險庫</button></div>
+    <div><div class="eyebrow">MEDICAL RECORDS</div><h2>醫療紀錄</h2><p>醫療摘要及文字紀錄預設以明文保存於私人倉庫，方便整理與查詢；敏感病歷原件可選擇另外加密保存。</p></div>
+    <div class="healthActions"><span id="healthState" class="state">尚未建立</span><button id="healthUnlock" class="secondary">重新載入醫療紀錄</button></div>
   </section>
   <section id="medicalSection" class="panel medicalSection" hidden>
-    <div class="sectionHead"><div><h2>醫療紀錄</h2><small>僅在獨立醫療保險庫解鎖時顯示；不與一般族譜資料混存</small></div></div>
+    <div class="sectionHead"><div><h2>醫療紀錄</h2><small>醫療紀錄獨立分類保存，與族譜人物資料分開管理</small></div></div>
     <form id="medicalForm" class="medicalForm">
       <label>紀錄類型<select id="medicalRecordType"><option value="allergy">過敏</option><option value="condition">疾病／健康狀況</option><option value="medication">用藥</option><option value="surgery">手術</option><option value="vaccination">疫苗</option><option value="test">檢查／檢驗</option><option value="visit">門診</option><option value="hospitalization">住院</option><option value="other">其他</option></select></label>
       <label>紀錄摘要<input id="medicalSummary" maxlength="240" required placeholder="例如：青黴素過敏、膝關節手術"></label>
@@ -143,7 +143,7 @@
     <div id="medicalList" class="medicalList"></div>
   </section>
 </section>
-<footer>家庭資料庫 V2 · GitHub 雲端直存 · 用戶端加密</footer>
+<footer>家庭資料庫 V2 · GitHub 私人倉庫直存 · 明文優先／附件可選加密</footer>
 </main>
 <script type="module" src="./src/main.js"></script>
 </body>
