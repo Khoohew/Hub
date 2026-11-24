@@ -9,13 +9,13 @@
 </head>
 <body>
 <header class="topbar">
-  <div><div class="eyebrow">PERSONAL FAMILY VAULT</div><h1>家庭資料庫</h1><p>加密保存 · 分類管理 · 長期可攜</p></div>
+  <div><div class="eyebrow">PERSONAL FAMILY VAULT</div><h1>家庭資料庫</h1><p>GitHub 雲端直存 · 端到端加密 · 跨裝置使用</p></div>
   <div class="topActions"><span id="cloudState" class="state">雲端尚未連接</span><button id="lockBtn" class="secondary" hidden>鎖定</button></div>
 </header>
 <main>
 <section id="gate" class="panel gate">
   <div class="gateMark">🔐</div><h2 id="gateTitle">建立家庭資料保險庫</h2>
-  <p id="gateDesc">資料會先在本機加密，再保存到加密快取。請設定至少 12 個字元的高強度密碼。忘記密碼且沒有恢復金鑰，資料將無法解密。</p>
+  <p id="gateDesc">先連接 GitHub 私人倉庫。人物、關係、事件、照片與醫療資料都會在瀏覽器端加密後直接保存至 GitHub；本機不作正式資料庫。忘記密碼且沒有恢復金鑰，資料將無法解密。</p>
   <form id="gateForm">
     <label id="passwordLabel">設定保險庫密碼<input id="vaultPassword" type="password" minlength="12" autocomplete="new-password" required></label>
     <label id="confirmWrap">再次輸入密碼<input id="vaultConfirm" type="password" minlength="12" autocomplete="new-password" required></label>
@@ -24,7 +24,7 @@
     <div class="restoreGate"><label>或從完整加密備份還原<input id="restoreInput" type="file" accept=".familyvault,.zip,application/zip"></label><button id="restoreBtn" type="button" class="secondary">檢查並還原備份</button></div>
   </form>
   <div class="cloudBar cloudGate">
-    <div><strong>GitHub 私人雲端備份</strong><small id="githubStatus">可用細粒度 Token 連接私人倉庫；Token 僅保存在目前頁面記憶體。</small></div>
+    <div><strong>GitHub 私人雲端備份</strong><small id="githubStatus">連接私人倉庫後，資料將直接加密寫入 GitHub；Token 僅保存在目前頁面記憶體。</small></div>
     <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepo" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
     <label class="tokenField">GitHub Fine-grained Token<input id="githubToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" /></label>
     <button id="connectGitHubBtn" type="button" class="secondary">連接 GitHub</button>
@@ -34,8 +34,8 @@
 </section>
 
 <section id="workspace" hidden>
-  <div id="storageNotice" class="notice"><strong>加密本機保存。</strong>人物資料保存在本機加密快取；如需跨裝置使用，請手動上傳並在另一裝置還原加密備份。這不是即時同步。</div>
-  <div class="backupBar"><div><strong>加密備份</strong><small>匯出可攜式完整封裝，還原採新增模式，不覆蓋本機既有資料。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載加密備份</button></div>
+  <div id="storageNotice" class="notice"><strong>尚未連接雲端。</strong>連接 GitHub 私人倉庫後，正式資料將直接加密保存至雲端，不寫入本機資料庫。</div>
+  <div class="backupBar"><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載加密備份</button></div>
   <div class="cloudBar">
     <div><strong>GitHub 加密雲端備份</strong><small id="githubWorkspaceStatus">尚未連接 GitHub 私人倉庫</small></div>
     <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepoWorkspace" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
@@ -107,7 +107,7 @@
     </section>
   </div>
   <section class="panel healthPanel">
-    <div><div class="eyebrow">SEPARATE ENCRYPTED VAULT</div><h2>醫療資料保險庫</h2><p>病歷、過敏、用藥、手術與檢查紀錄會使用另一把加密金鑰，需獨立解鎖。</p></div>
+    <div><div class="eyebrow">SEPARATE ENCRYPTED VAULT</div><h2>醫療資料保險庫</h2><p>病歷、過敏、用藥、手術與檢查紀錄使用另一把加密金鑰；加密後直接保存至同一私人 GitHub 倉庫中的獨立資料區。</p></div>
     <div class="healthActions"><span id="healthState" class="state">尚未建立</span><button id="healthUnlock" class="secondary">建立／解鎖醫療保險庫</button></div>
   </section>
   <section id="medicalSection" class="panel medicalSection" hidden>
@@ -143,7 +143,7 @@
     <div id="medicalList" class="medicalList"></div>
   </section>
 </section>
-<footer>家庭資料庫 V2 · 本機加密核心測試階段</footer>
+<footer>家庭資料庫 V2 · GitHub 雲端直存 · 用戶端加密</footer>
 </main>
 <script type="module" src="./src/main.js"></script>
 </body>
