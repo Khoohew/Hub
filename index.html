@@ -116,6 +116,12 @@ footer{margin-top:34px;color:#8594aa;font-size:12px;text-align:center}
   </article>
 
   <article class="app-card">
+    <div class="app-heading"><div class="icon" aria-hidden="true">👨‍👩‍👧‍👦</div><h2>家庭資料</h2></div>
+    <p>整理家族人物、親屬關係、照片與家庭檔案。</p>
+    <button class="btn primary" type="button" data-target="family">進入家庭資料 →</button>
+  </article>
+
+  <article class="app-card">
     <div class="app-heading"><div class="icon" aria-hidden="true">🖼️</div><h2>AI HTML 畫廊</h2></div>
     <p>瀏覽私人動畫庫中的 HTML 作品，搜尋分類並播放動畫預覽。</p>
     <button class="btn primary" type="button" data-target="gallery">進入 AI HTML 畫廊 →</button>
@@ -238,7 +244,7 @@ document.querySelectorAll("[data-target]").forEach(button=>{
     error.textContent="";
     window.name="PD_MANAGER_TOKEN:"+value;
     const target=button.dataset.target;
-    const routes={gallery:["./apps/gallery/","20261111i"],devices:["./apps/devices/","20261112a"],gold:["./apps/gold/","20261123c"]};
+    const routes={family:["./apps/family/","20261124a"],gallery:["./apps/gallery/","20261111i"],devices:["./apps/devices/","20261112a"],gold:["./apps/gold/","20261123c"]};
     location.href=routes[target][0]+"?v="+routes[target][1];
   });
 });
