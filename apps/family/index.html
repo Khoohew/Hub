@@ -23,7 +23,7 @@
     <button id="gateSubmit" class="primary" type="submit" disabled>請先連接 GitHub</button>
     <div class="restoreGate" hidden><label>或從完整加密備份還原<input id="restoreInput" type="file" accept=".familyvault,.zip,application/zip"></label><button id="restoreBtn" type="button" class="secondary">檢查並還原備份</button></div>
   </form>
-  <div class="cloudBar cloudGate">
+  <div class="cloudBar cloudGate" hidden>
     <div><strong>GitHub 私人資料倉庫</strong><small id="githubStatus">一般資料以明文 JSON 保存；Token 僅保存在目前頁面記憶體。</small></div>
     <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepo" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
     <label class="tokenField">GitHub Fine-grained Token<input id="githubToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" /></label>
