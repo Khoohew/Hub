@@ -47,7 +47,7 @@ export class GitHubContentsCache {
   metaPath(key) { return META + "/" + safePart(key) + ".json"; }
   async read(path) {
     try {
-      const result = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/") + "?ref=main");
+      const result = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/") + "?ref=" + encodeURIComponent(this.github.branch || "main") + "");
       if (result.type !== "file") throw new Error("GitHub 回傳的資料檔格式不正確。");
       let raw = result.content;
       if (!raw && result.download_url) {
@@ -63,7 +63,7 @@ export class GitHubContentsCache {
     }
   }
   async write(path, value, sha = null) {
-    const body = { message: "Update encrypted family vault data", content: encodeBase64(serialize(value)), branch: "main" };
+    const body = { message: "Update encrypted family vault data", content: encodeBase64(serialize(value)), branch: this.github.branch || "main" };
     if (sha) body.sha = sha;
     const result = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/"), {
       method: "PUT",
@@ -97,7 +97,7 @@ export class GitHubContentsCache {
     await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/"), {
       method: "DELETE",
       headers: { "Content-Type": "application/vnd.github+json" },
-      body: JSON.stringify({ message: "Delete encrypted family vault data", sha: current.sha, branch: "main" })
+      body: JSON.stringify({ message: "Delete encrypted family vault data", sha: current.sha, branch: this.github.branch || "main" })
     });
     return { deleted: true };
   }
