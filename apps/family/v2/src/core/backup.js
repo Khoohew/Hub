@@ -1,4 +1,5 @@
 import { createStoredZip, readStoredZip } from "./zip-store.js";
+import { unlockVaultKey, decryptJson } from "./crypto.js";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -29,7 +30,8 @@ async function sha256Hex(bytes) {
 function safeObjectPath() { return "objects/"+crypto.randomUUID()+".json"; }
 
 /** Build a self-contained backup containing ciphertext only. */
-export async function exportEncryptedBackup(cache,{includeMedical=false}={}) {
+export async function exportEncryptedBackup(cache,{includeMedical=false,sealManifest}={}) {
+  if(typeof sealManifest!=="function")throw new Error("匯出備份前必須使用家庭保險庫金鑰認證 manifest。");
   const family=await cache.getMeta(META_FAMILY);
   if(!family)throw new Error("找不到家庭保險庫設定。");
   const descriptors=[family];
@@ -47,7 +49,7 @@ export async function exportEncryptedBackup(cache,{includeMedical=false}={}) {
   for(const item of stored){
     const parts=item.objectId.split(":");
     const scope=parts[0],collection=parts[1];
-    if(!scopes.has(scope)||collection==="connections")continue;
+    if(!scopes.has(scope))continue;
     const record=await cache.get(item.objectId);
     if(!record?.envelope)continue;
     const data=jsonBytes({version:record.version,updatedAt:record.updatedAt,envelope:record.envelope});
@@ -58,12 +60,13 @@ export async function exportEncryptedBackup(cache,{includeMedical=false}={}) {
   }
   const manifest={
     format:"family-vault-backup",
-    formatVersion:1,
+    formatVersion:2,
     createdAt:new Date().toISOString(),
     encryption:"AES-256-GCM",
     objectCount,
     files:manifestFiles
   };
+  manifest.seal=await sealManifest(manifest);
   entries.push({name:"manifest.json",data:encoder.encode(JSON.stringify(manifest,null,2))});
   const zip=createStoredZip(entries);
   return new Blob([zip],{type:"application/zip"});
@@ -75,7 +78,7 @@ export async function inspectEncryptedBackup(fileOrBytes) {
   const entries=readStoredZip(bytes);
   if(!entries.has("manifest.json")||!entries.has("vaults.json"))throw new Error("備份缺少必要索引檔。");
   const manifest=parseJsonBytes(entries.get("manifest.json"));
-  if(manifest.format!=="family-vault-backup"||manifest.formatVersion!==1)throw new Error("不支援此備份版本。");
+  if(manifest.format!=="family-vault-backup"||manifest.formatVersion!==2||!manifest.seal)throw new Error("不支援此備份版本或缺少清單認證。");
   if(!Array.isArray(manifest.files)||manifest.files.length!==entries.size-1)throw new Error("備份檔案清單與 ZIP 內容不一致。");
   const listed=new Set();
   for(const file of manifest.files){
@@ -103,11 +106,29 @@ export async function inspectEncryptedBackup(fileOrBytes) {
     objects.push({objectId,scope:descriptor.scope,collection:envelope.collection,recordId:envelope.recordId,version:stored.version||1,updatedAt:stored.updatedAt||null,envelope});
   }
   if(objects.length!==manifest.objectCount)throw new Error("備份物件數量與索引不一致。");
-  return {manifest,descriptors,objects,preview:{createdAt:manifest.createdAt,objectCount:objects.length,scopes:descriptors.map(x=>x.scope)}};
+  return {manifest,descriptors,objects,verified:false,preview:{createdAt:manifest.createdAt,objectCount:objects.length,scopes:descriptors.map(x=>x.scope)}};
+}
+
+/** Authenticate the manifest with the family vault password before any restore writes. */
+export async function verifyEncryptedBackup(plan,passphrase) {
+  const descriptor=plan?.descriptors?.find(item=>item.scope==="family");
+  if(!descriptor||!plan.manifest?.seal)throw new Error("備份缺少家庭保險庫清單認證。");
+  try {
+    const key=await unlockVaultKey(passphrase,descriptor);
+    const context={vaultId:descriptor.vaultId,collection:"backup-manifest",recordId:"manifest",schemaVersion:1};
+    const authenticated=await decryptJson(key,plan.manifest.seal,context);
+    const payload={...plan.manifest};
+    delete payload.seal;
+    if(JSON.stringify(authenticated)!==JSON.stringify(payload))throw new Error("MANIFEST_MISMATCH");
+    return {...plan,verified:true};
+  } catch {
+    throw new Error("家庭保險庫密碼錯誤，或備份清單已被修改。");
+  }
 }
 
 /** Restore is additive only: existing objects and different vault IDs are never overwritten. */
 export async function applyEncryptedBackup(cache,plan) {
+  if(plan?.verified!==true)throw new Error("還原前必須先驗證備份清單。");
   const conflicts=[],restored=[];
   const usableScopes=new Set();
   for(const descriptor of plan.descriptors){

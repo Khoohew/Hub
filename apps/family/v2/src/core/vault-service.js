@@ -103,6 +103,14 @@ export class VaultService {
     return { bytes: await decryptBytes(key, stored.envelope, context), version: stored.version };
   }
 
+  async sealBackupManifest(manifest) {
+    const key=this.keys.get("family");
+    const descriptor=this.descriptors.get("family");
+    if(!key||!descriptor)throw new Error("請先解鎖家庭保險庫，再認證備份清單。");
+    const context={vaultId:descriptor.vaultId,collection:"backup-manifest",recordId:"manifest",schemaVersion:1};
+    return encryptJson(key,context,manifest);
+  }
+
   async delete(scope, collection, recordId, expectedVersion = null) {
     if (!this.keys.has(scope)) throw new Error("請先解鎖對應保險庫。");
     return this.cache.delete(scope + ":" + collection + ":" + recordId, expectedVersion);

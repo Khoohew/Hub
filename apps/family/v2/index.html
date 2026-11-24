@@ -22,17 +22,31 @@
     <button id="gateSubmit" class="primary" type="submit">建立加密保險庫</button>
     <div class="restoreGate"><label>或從完整加密備份還原<input id="restoreInput" type="file" accept=".familyvault,.zip,application/zip"></label><button id="restoreBtn" type="button" class="secondary">檢查並還原備份</button></div>
   </form>
+  <div class="cloudBar cloudGate">
+    <div><strong>GitHub 私人雲端備份</strong><small id="githubStatus">可用細粒度 Token 連接私人倉庫；Token 僅保存在目前頁面記憶體。</small></div>
+    <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepo" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
+    <label class="tokenField">GitHub Fine-grained Token<input id="githubToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" /></label>
+    <button id="connectGitHubBtn" type="button" class="secondary">連接 GitHub</button>
+    <button id="downloadCloudBtn" type="button" class="secondary" disabled>從雲端還原</button>
+    <small class="tokenWarning">Token 只在本頁記憶體使用，鎖定或重新整理即清除。請只授權此私人倉庫的 Contents 讀寫權限，並設定到期日。</small>
+  </div>
 </section>
 
 <section id="workspace" hidden>
-  <div class="notice"><strong>目前是加密本機階段。</strong>尚未連接雲端帳戶，資料只在此瀏覽器的加密快取中。請勿把它當成跨裝置同步或唯一備份。</div>
+  <div id="storageNotice" class="notice"><strong>加密本機保存。</strong>人物資料保存在本機加密快取；如需跨裝置使用，請手動上傳並在另一裝置還原加密備份。這不是即時同步。</div>
   <div class="backupBar"><div><strong>加密備份</strong><small>匯出可攜式完整封裝，還原採新增模式，不覆蓋本機既有資料。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載加密備份</button></div>
   <div class="cloudBar">
-    <div><strong>Dropbox 雲端同步</strong><small id="dropboxStatus">尚未設定 Dropbox App Key</small></div>
-    <button id="connectDropboxBtn" class="secondary" disabled>連接 Dropbox</button>
-    <button id="syncFamilyBtn" class="primary" disabled>同步家庭資料</button>
-    <button id="syncMedicalBtn" class="secondary" disabled hidden>同步醫療資料</button>
+    <div><strong>GitHub 加密雲端備份</strong><small id="githubWorkspaceStatus">尚未連接 GitHub 私人倉庫</small></div>
+    <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepoWorkspace" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
+    <label class="tokenField">GitHub Fine-grained Token<input id="githubTokenWorkspace" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" /></label>
+    <button id="connectGitHubWorkspaceBtn" class="secondary">連接／重新連接</button>
+    <button id="githubUploadBtn" class="primary" disabled>上傳加密備份</button>
+    <button id="githubDownloadWorkspaceBtn" class="secondary" disabled>下載並還原</button>
   </div>
+  <section class="panel treePanel">
+    <div class="sectionHead"><div><h2>族譜視圖</h2><small id="treeInfo">選擇人物查看其上下三代關係</small></div><button id="treeFit" type="button" class="secondary">重置視圖</button></div>
+    <div id="treeViewport" class="treeViewport"><svg id="treeSvg" xmlns="http://www.w3.org/2000/svg" width="700" height="180" viewBox="0 0 700 180"></svg></div>
+  </section>
   <div class="workspaceGrid">
     <aside class="panel peoplePanel">
       <div class="sectionHead"><div><h2>家庭成員</h2><small id="peopleCount">0 位人物</small></div><button id="addPersonBtn" class="primary">＋ 新增</button></div>
@@ -66,11 +80,66 @@
         </div>
         <div id="relationsList" class="relationsList"></div>
       </section>
+      <section id="eventSection" class="eventSection" hidden>
+        <div class="sectionHead"><div><h3>人生事件與家庭故事</h3><small>出生、婚姻、遷居、就學、工作及家族記憶</small></div></div>
+        <form id="eventForm" class="eventForm">
+          <label>事件類型<select id="eventType"><option value="birth">出生</option><option value="death">逝世</option><option value="marriage">婚姻</option><option value="move">遷居</option><option value="education">就學</option><option value="career">工作</option><option value="military">服役</option><option value="reunion">家族聚會</option><option value="story">家庭故事</option><option value="other">其他</option></select></label>
+          <label>事件名稱<input id="eventTitle" maxlength="180" required placeholder="例如：成婚、搬遷至重慶"></label>
+          <label>日期<input id="eventDate" type="date"></label>
+          <label>日期精度<select id="eventDatePrecision"><option value="day">精確到日</option><option value="month">只知月份</option><option value="year">只知年份</option><option value="approximate">約略日期</option><option value="unknown">不詳</option></select></label>
+          <label>地點<input id="eventLocation" maxlength="180" placeholder="地名或地址"></label>
+          <label>關聯其他人物<select id="eventOtherPeople" multiple size="3"></select></label>
+          <label class="eventDescription">事件描述／家族故事<textarea id="eventDescription" rows="3" maxlength="4000" placeholder="記錄事件經過、人物回憶或家族口述"></textarea></label>
+          <div class="eventFormActions"><button id="eventSaveBtn" type="submit" class="secondary">保存事件</button><button id="eventCancelEdit" type="button" class="secondary" hidden>取消編輯</button></div>
+        </form>
+        <div id="eventList" class="eventList"></div>
+      </section>
+      <section id="mediaSection" class="mediaSection" hidden>
+        <div class="sectionHead"><div><h3>照片與文件</h3><small>附件獨立加密保存，不嵌入人物資料</small></div></div>
+        <form id="mediaForm" class="mediaForm">
+          <label>選擇照片或文件<input id="mediaFile" type="file" accept="image/*,application/pdf,audio/*,video/*,.doc,.docx,.xls,.xlsx,.txt"></label>
+          <label>說明／備註<input id="mediaCaption" maxlength="240" placeholder="例如：祖父青年時期、家族老屋"></label>
+          <button type="submit" class="secondary">＋ 添加附件</button>
+        </form>
+        <div id="mediaList" class="mediaGrid"></div>
+      </section>
     </section>
   </div>
   <section class="panel healthPanel">
     <div><div class="eyebrow">SEPARATE ENCRYPTED VAULT</div><h2>醫療資料保險庫</h2><p>病歷、過敏、用藥、手術與檢查紀錄會使用另一把加密金鑰，需獨立解鎖。</p></div>
     <div class="healthActions"><span id="healthState" class="state">尚未建立</span><button id="healthUnlock" class="secondary">建立／解鎖醫療保險庫</button></div>
+  </section>
+  <section id="medicalSection" class="panel medicalSection" hidden>
+    <div class="sectionHead"><div><h2>醫療紀錄</h2><small>僅在獨立醫療保險庫解鎖時顯示；不與一般族譜資料混存</small></div></div>
+    <form id="medicalForm" class="medicalForm">
+      <label>紀錄類型<select id="medicalRecordType"><option value="allergy">過敏</option><option value="condition">疾病／健康狀況</option><option value="medication">用藥</option><option value="surgery">手術</option><option value="vaccination">疫苗</option><option value="test">檢查／檢驗</option><option value="visit">門診</option><option value="hospitalization">住院</option><option value="other">其他</option></select></label>
+      <label>紀錄摘要<input id="medicalSummary" maxlength="240" required placeholder="例如：青黴素過敏、膝關節手術"></label>
+      <label>紀錄日期<input id="medicalRecordDate" type="date"></label>
+      <label>結束日期<input id="medicalEndDate" type="date"></label>
+      <label>醫療提供者<input id="medicalProvider" maxlength="160"></label>
+      <label>醫院／機構<input id="medicalFacility" maxlength="160"></label>
+      <div id="medicalMedicationFields" class="medicalSubform" hidden>
+        <strong>用藥資訊</strong>
+        <label>藥物名稱<input id="medicalMedicationName" maxlength="160"></label>
+        <label>劑量<input id="medicalMedicationDose" maxlength="100"></label>
+        <label>給藥途徑<input id="medicalMedicationRoute" maxlength="100"></label>
+        <label>頻率<input id="medicalMedicationFrequency" maxlength="100"></label>
+        <label>開始日期<input id="medicalMedicationStart" type="date"></label>
+        <label>結束日期<input id="medicalMedicationEnd" type="date"></label>
+        <label>狀態<select id="medicalMedicationStatus"><option value="active">使用中</option><option value="stopped">已停用</option><option value="unknown">不詳</option></select></label>
+      </div>
+      <div id="medicalAllergyFields" class="medicalSubform" hidden>
+        <strong>過敏資訊</strong>
+        <label>過敏物質<input id="medicalAllergySubstance" maxlength="160"></label>
+        <label>反應<input id="medicalAllergyReaction" maxlength="240"></label>
+        <label>嚴重程度<select id="medicalAllergySeverity"><option value="unknown">不詳</option><option value="mild">輕微</option><option value="moderate">中等</option><option value="severe">嚴重</option></select></label>
+      </div>
+      <label class="medicalWide">詳細內容<textarea id="medicalDetails" rows="3" maxlength="4000"></textarea></label>
+      <label class="medicalWide">備註<textarea id="medicalNotes" rows="2" maxlength="2000"></textarea></label>
+      <label class="medicalVerified"><input id="medicalVerified" type="checkbox">已由使用者核對原始資料</label>
+      <div class="medicalActions"><button id="medicalSaveBtn" type="submit" class="secondary">保存醫療紀錄</button><button id="medicalCancelEdit" type="button" class="secondary" hidden>取消編輯</button></div>
+    </form>
+    <div id="medicalList" class="medicalList"></div>
   </section>
 </section>
 <footer>家庭資料庫 V2 · 本機加密核心測試階段</footer>

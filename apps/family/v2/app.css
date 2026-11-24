@@ -25,3 +25,45 @@ footer{text-align:center;color:#74849b;font-size:11px;padding:30px 0 0}
 .cloudBar>div{flex:1 1 230px}.cloudBar strong{display:block}.cloudBar small{display:block;color:var(--muted);font-size:12px}
 button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:560px){.cloudBar>*{width:100%}}
+
+.tokenField{flex:1 1 260px;min-width:220px}.tokenWarning{flex:1 1 100%;line-height:1.5}.cloudGate{margin-top:16px}.cloudGate .tokenField{flex:1 1 100%}.cloudGate button{width:100%}
+
+.mediaSection{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}
+.mediaForm{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) auto;gap:10px;align-items:end}
+.mediaGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-top:14px}
+.mediaCard{min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;background:#101a2a;display:flex;flex-direction:column;gap:5px}
+.mediaCard strong{font-size:13px;overflow-wrap:anywhere}.mediaCard small{color:var(--muted);font-size:11px}
+.mediaPreview{width:100%;height:135px;object-fit:cover;border-radius:7px;background:#0b1020}
+.mediaFileMark{height:135px;display:grid;place-items:center;background:#0b1020;border-radius:7px;font-size:38px;color:var(--muted)}
+.mediaActions{display:flex;gap:6px;margin-top:auto;padding-top:7px}.mediaActions button{flex:1;padding:6px 8px;font-size:12px}
+@media(max-width:700px){.mediaForm{grid-template-columns:1fr}.mediaGrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
+
+.treePanel{margin-bottom:16px}.treeViewport{height:370px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:radial-gradient(circle at 1px 1px,#29374d 1px,transparent 0);background-size:22px 22px;cursor:grab;touch-action:pan-x pan-y}
+.treeViewport:active{cursor:grabbing}.treeViewport svg{display:block;max-width:none;user-select:none}
+.treeEdge{fill:none;stroke:#64748b;stroke-width:2.2;opacity:.85}.treeEdge.spouse_of{stroke:#c49b54;stroke-width:2.5}.treeEdge.sibling_of{stroke:#7c9bb8;stroke-dasharray:4 4}
+.treeNode{cursor:pointer}.treeNode rect{fill:#1a2940;stroke:#526782;stroke-width:1.5}.treeNode.selected rect{fill:#263d5e;stroke:#9dc6ff;stroke-width:2.5}.treeNode:hover rect{stroke:#d3e4fa}
+.treeName{fill:#f3f6fb;font-size:15px;font-weight:650}.treeDetail{fill:#aab8ca;font-size:11px}.treeEmpty{fill:#9aa9bd;font-size:14px}
+
+.eventSection{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}
+.eventForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
+.eventForm label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
+.eventForm input,.eventForm select,.eventForm textarea{width:100%;min-width:0}
+.eventDescription{grid-column:1/-1}.eventFormActions{display:flex;gap:8px;grid-column:1/-1}
+.eventList{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.eventCard{padding:12px;border:1px solid var(--line);border-radius:10px;background:#101a2a;display:flex;flex-direction:column;gap:7px}
+.eventHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.eventHead strong{overflow-wrap:anywhere}
+.eventType{font-size:11px;color:#c5d8f1;background:#24364e;border-radius:999px;padding:3px 8px;white-space:nowrap}
+.eventCard small{color:var(--muted);font-size:11px}.eventCard p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font-size:13px}
+.eventActions{display:flex;gap:8px}.eventActions button{padding:6px 10px;font-size:12px}
+@media(max-width:700px){.eventForm{grid-template-columns:1fr}.eventDescription,.eventFormActions{grid-column:auto}}
+
+.medicalSection{margin-top:16px;border-color:#7c8ea8}.medicalForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
+.medicalForm label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
+.medicalForm input,.medicalForm select,.medicalForm textarea{width:100%;min-width:0}
+.medicalSubform{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#101a2a}
+.medicalSubform[hidden]{display:none}.medicalSubform strong{grid-column:1/-1;color:#c8d8ec}
+.medicalWide,.medicalActions{grid-column:1/-1}.medicalVerified{flex-direction:row!important;align-items:center}.medicalVerified input{width:auto}
+.medicalActions{display:flex;gap:8px}.medicalList{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.medicalCard{padding:12px;border:1px solid var(--line);border-radius:10px;background:#101a2a;display:flex;flex-direction:column;gap:7px}
+.medicalCard p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font-size:13px}.medicalCard small{font-size:11px;color:var(--muted)}
+@media(max-width:700px){.medicalForm{grid-template-columns:1fr}.medicalSubform{grid-template-columns:1fr}.medicalWide,.medicalActions{grid-column:auto}}
