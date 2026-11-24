@@ -3,7 +3,7 @@ import { createId, nowIso } from "./core/id.js";
 import { buildRelationshipIndex } from "./core/relationship-index.js";
 import { validateFamilyData } from "./core/validate.js";
 import { exportEncryptedBackup, inspectEncryptedBackup, verifyEncryptedBackup, applyEncryptedBackup } from "./core/backup.js";
-import { GitHubReleaseStorage } from "./storage/github-release-storage.js";
+import { GitHubReleaseStorage } from "./storage/github-release-storage.js?v=20261125d";
 import { GitHubPlainContentsCache } from "./storage/github-plain-contents-cache.js";
 import { buildTreeLayout } from "./core/tree-layout.js";
 import { validateMedicalRecord } from "./core/medical-validation.js";
@@ -440,7 +440,9 @@ async function enterWorkspace() {
       $("gateError").textContent="一般家庭資料已載入；舊版醫療資料暫未載入："+error.message;
     }
     await updateHealthState();
+    document.body.classList.add("ready");
   } catch(error) {
+    document.body.classList.remove("ready");
     $("gateError").textContent=error.message||"資料載入失敗";
     $("gate").hidden=false;
     $("workspace").hidden=true;
