@@ -50,11 +50,13 @@ export class GitHubContentsCache {
       const result = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/") + "?ref=" + encodeURIComponent(this.github.branch || "main") + "");
       if (result.type !== "file") throw new Error("GitHub 回傳的資料檔格式不正確。");
       let raw = result.content;
-      if (!raw && result.download_url) {
-        const response = await this.github.fetchImpl(result.download_url, { headers: this.github.headers({ Accept: "application/vnd.github.raw" }) });
+      if (!raw) {
+        const rawUrl = this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/");
+        const response = await this.github.fetchImpl("https://api.github.com" + rawUrl, {
+          headers: this.github.headers({ Accept: "application/vnd.github.raw+json" })
+        });
         if (!response.ok) throw new Error("讀取 GitHub 原始資料失敗（" + response.status + "）。");
-        raw = await response.text();
-        return { value: deserialize(raw), sha: result.sha };
+        return { value: deserialize(await response.text()), sha: result.sha };
       }
       return { value: deserialize(decodeBase64(raw)), sha: result.sha };
     } catch (error) {
