@@ -13,9 +13,14 @@ function decodeBase64(value) {
   const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }
+function bytesToBase64(bytes) {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(binary);
+}
 function serialize(value) {
   return JSON.stringify(value, (_, item) => item instanceof Uint8Array
-    ? { __familyVaultBinary: encodeBase64(String.fromCharCode(...item)) }
+    ? { __familyVaultBinary: bytesToBase64(item) }
     : item);
 }
 function deserialize(value) {
