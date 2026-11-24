@@ -4,6 +4,7 @@ import { buildRelationshipIndex } from "./core/relationship-index.js";
 import { validateFamilyData } from "./core/validate.js";
 import { exportEncryptedBackup, inspectEncryptedBackup, verifyEncryptedBackup, applyEncryptedBackup } from "./core/backup.js";
 import { GitHubReleaseStorage } from "./storage/github-release-storage.js";
+import { GitHubContentsCache } from "./storage/github-contents-cache.js";
 import { buildTreeLayout } from "./core/tree-layout.js";
 import { validateMedicalRecord } from "./core/medical-validation.js";
 
@@ -174,7 +175,7 @@ async function savePerson(event) {
     if(old) persons=persons.map(x=>x.id===p.id?p:x); else persons.push(p);
     selectedId=p.id;selectedVersion=result.version;editing=false;
     $("formTitle").textContent=p.name;$("relationsSection").hidden=false;$("eventSection").hidden=false;$("mediaSection").hidden=false;
-    message("已加密保存");renderPeople();renderRelations();renderTree();renderEvents();await renderMedia();
+    message("已加密並保存至 GitHub 雲端");renderPeople();renderRelations();renderTree();renderEvents();await renderMedia();
     await updateHealthState();if((await vault.status("medical")).unlocked)renderMedicalRecords();
   } catch(error) {
     message(error.message==="LOCAL_VERSION_CONFLICT"?"資料版本已改變，請重新載入後再保存。":"保存失敗："+error.message,true);
@@ -201,7 +202,7 @@ async function addRelation() {
   if(!checked.valid)return message(checked.errors[0],true);
   try {
     await vault.save("family","relationships",rel.id,1,rel,null);
-    relationships.push(rel);renderRelations();renderTree();message("親屬關係已加密保存");
+    relationships.push(rel);renderRelations();renderTree();message("親屬關係已加密並保存至 GitHub");
   } catch(error) { message("關係保存失敗："+error.message,true); }
 }
 
@@ -287,7 +288,7 @@ async function saveEvent(event) {
   if(!checked.valid){alert(checked.errors[0]);return;}
   try{
     await vault.save("family","events",item.id,1,item,old?selectedEventVersion:null);
-    events=nextEvents;resetEventForm();renderEvents();message("人生事件已加密保存");
+    events=nextEvents;resetEventForm();renderEvents();message("人生事件已加密並保存至 GitHub");
   }catch(error){alert("事件保存失敗："+error.message);}
 }
 
@@ -410,16 +411,19 @@ async function deleteMedia(item) {
 }
 
 async function start() {
-  const status=await vault.status("family");
-  $("gateTitle").textContent=status.exists?"解鎖家庭資料保險庫":"建立家庭資料保險庫";
-  $("gateDesc").textContent=status.exists?"輸入保險庫密碼，在本機解鎖加密家庭資料。":"請設定至少 12 個字元的高強度密碼。此版本只保存加密本機資料，尚未啟用雲端同步。";
-  $("passwordLabel").firstChild.textContent=status.exists?"保險庫密碼":"設定保險庫密碼";
-  $("confirmWrap").hidden=status.exists;
-  $("gateSubmit").textContent=status.exists?"解鎖":"建立加密保險庫";
+  $("gateTitle").textContent="先連接 GitHub 私人倉庫";
+  $("gateDesc").textContent="家庭人物、親屬關係、事件、照片及醫療資料只保存到 GitHub 私人倉庫；本機不作正式資料庫。請先連接倉庫，再建立或解鎖加密保險庫。";
+  $("gateSubmit").disabled=true;
+  $("githubRepo").value=localStorage.getItem("familyVaultRepo")||"";
+  $("passwordLabel").firstChild.textContent="保險庫密碼";
+  $("confirmWrap").hidden=true;
+  $("gateSubmit").textContent="請先連接 GitHub";
   $("gateForm").addEventListener("submit",async event=>{
     event.preventDefault();$("gateError").textContent="";
+    if(!githubStorage?.connected){$("gateError").textContent="請先連接 GitHub 私人倉庫。";return;}
     const password=$("vaultPassword").value;
     try {
+      const status=await vault.status("family");
       if(status.exists) await vault.unlock("family",password);
       else {
         if(password!==$("vaultConfirm").value) throw new Error("兩次輸入的密碼不一致。");
@@ -430,7 +434,7 @@ async function start() {
     } catch(error) {$("gateError").textContent=error.message||"操作失敗";}
     finally {$("vaultPassword").value="";$("vaultConfirm").value="";}
   });
-  $("lockBtn").addEventListener("click",()=>{githubStorage?.clearToken();githubStorage=null;clearMediaUrls();persons=[];relationships=[];events=[];mediaItems=[];medicalRecords=[];selectedId=null;selectedEventId=null;selectedEventVersion=null;selectedMedicalId=null;selectedMedicalVersion=null;selectedVersion=null;editing=false;$("personForm").reset();$("peopleList").replaceChildren();$("relationsList").replaceChildren();$("eventList").replaceChildren();$("mediaList").replaceChildren();$("eventForm").reset();$("medicalForm").reset();$("medicalList").replaceChildren();$("medicalSection").hidden=true;$("search").value="";$("mediaFile").value="";vault.lock();$("workspace").hidden=true;$("gate").hidden=false;$("lockBtn").hidden=true;$("gateTitle").textContent="解鎖家庭資料保險庫";$("gateDesc").textContent="請重新輸入密碼。";$("passwordLabel").firstChild.textContent="保險庫密碼";$("confirmWrap").hidden=true;$("gateSubmit").textContent="解鎖";$("githubToken").value="";$("githubTokenWorkspace").value="";$("githubStatus").textContent="已鎖定；重新連接時需再次輸入 Token。";$("githubWorkspaceStatus").textContent="尚未連接 GitHub 私人倉庫";$("githubUploadBtn").disabled=true;$("githubDownloadWorkspaceBtn").disabled=true;$("cloudState").textContent="GitHub 尚未連接";$("storageNotice").textContent="人物資料保存在本機加密快取；如需跨裝置使用，請手動上傳並在另一裝置還原加密備份。這不是即時同步。";});
+  $("lockBtn").addEventListener("click",()=>{githubStorage?.clearToken();githubStorage=null;clearMediaUrls();persons=[];relationships=[];events=[];mediaItems=[];medicalRecords=[];selectedId=null;selectedEventId=null;selectedEventVersion=null;selectedMedicalId=null;selectedMedicalVersion=null;selectedVersion=null;editing=false;$("personForm").reset();$("peopleList").replaceChildren();$("relationsList").replaceChildren();$("eventList").replaceChildren();$("mediaList").replaceChildren();$("eventForm").reset();$("medicalForm").reset();$("medicalList").replaceChildren();$("medicalSection").hidden=true;$("search").value="";$("mediaFile").value="";vault.lock();$("workspace").hidden=true;$("gate").hidden=false;$("lockBtn").hidden=true;$("gateTitle").textContent="解鎖家庭資料保險庫";$("gateDesc").textContent="請重新輸入密碼。";$("passwordLabel").firstChild.textContent="保險庫密碼";$("confirmWrap").hidden=true;$("gateSubmit").textContent="解鎖";$("githubToken").value="";$("githubTokenWorkspace").value="";$("githubStatus").textContent="已鎖定；重新連接時需再次輸入 Token。";$("githubWorkspaceStatus").textContent="尚未連接 GitHub 私人倉庫";$("githubUploadBtn").disabled=true;$("githubDownloadWorkspaceBtn").disabled=true;$("cloudState").textContent="GitHub 尚未連接";$("storageNotice").textContent="已鎖定。正式資料只保存在 GitHub 私人倉庫；重新連接後即可從雲端解鎖。";});
   $("addPersonBtn").addEventListener("click",newPerson);$("emptyAdd").addEventListener("click",newPerson);
   $("cancelEdit").addEventListener("click",()=>selectedId?showPerson(selectedId):clearDetail());
   $("personForm").addEventListener("submit",savePerson);
@@ -487,19 +491,28 @@ async function connectGitHub(event) {
     if(!match)throw new Error("請輸入私人 GitHub 倉庫路徑，格式為 owner/repository。");
     const service=new GitHubReleaseStorage({owner:match[1],repo:match[2]});
     service.setToken(token);
-    const result=await service.connect();
+    await service.connect();
     githubStorage=service;
+    vault.cache.close?.();
+    vault.cache=new GitHubContentsCache(service);
     try{localStorage.setItem("familyVaultRepo",repoPath);}catch{}
     $("githubRepo").value=repoPath;$("githubRepoWorkspace").value=repoPath;
     $("githubToken").value="";$("githubTokenWorkspace").value="";
-    const state=result.hasBackup?"已連接私人倉庫，找到雲端備份。":"已連接私人倉庫，尚無雲端備份。";
+    const remoteStatus=await vault.status("family");
+    const state=remoteStatus.exists?"已連接私人倉庫，雲端保險庫已存在。":"已連接私人倉庫，尚未建立雲端保險庫。";
     $("githubStatus").textContent=state;
-    $("githubWorkspaceStatus").textContent=state;
+    $("githubWorkspaceStatus").textContent="資料直接讀寫 GitHub 私人倉庫；每次保存均即時加密上傳。";
     $("cloudState").textContent="GitHub 私人倉庫已連接";
-    $("storageNotice").textContent="已連接 GitHub 私人倉庫。每次修改人物或附件後，請手動上傳加密備份；此功能不是即時同步。";
-    $("downloadCloudBtn").disabled=!result.hasBackup;
-    $("githubUploadBtn").disabled=false;
-    $("githubDownloadWorkspaceBtn").disabled=!result.hasBackup;
+    $("storageNotice").textContent="雲端直存模式：所有正式資料加密後直接寫入 GitHub 私人倉庫，不使用本機資料庫。保存失敗會明確提示。";
+    $("gateTitle").textContent=remoteStatus.exists?"解鎖雲端家庭資料保險庫":"建立雲端家庭資料保險庫";
+    $("gateDesc").textContent=remoteStatus.exists?"輸入保險庫密碼，解鎖 GitHub 私人倉庫中的加密資料。":"設定至少 12 個字元的高強度密碼，建立雲端加密保險庫。";
+    $("passwordLabel").firstChild.textContent=remoteStatus.exists?"保險庫密碼":"設定保險庫密碼";
+    $("confirmWrap").hidden=remoteStatus.exists;
+    $("gateSubmit").textContent=remoteStatus.exists?"解鎖雲端資料":"建立雲端保險庫";
+    $("gateSubmit").disabled=false;
+    $("downloadCloudBtn").disabled=true;
+    $("githubUploadBtn").disabled=true;
+    $("githubDownloadWorkspaceBtn").disabled=true;
   } catch(error) {
     githubStorage?.clearToken();githubStorage=null;
     $("githubToken").value="";$("githubTokenWorkspace").value="";
@@ -701,7 +714,7 @@ async function saveMedicalRecord(event) {
     const result=await vault.save("medical","health",id,1,payload,old?selectedMedicalVersion:null);
     medicalRecords=medicalRecords.filter(item=>item.id!==id);
     medicalRecords.push({id,version:result.version,...payload});
-    resetMedicalForm();renderMedicalRecords();alert("醫療紀錄已在獨立保險庫中加密保存。");
+    resetMedicalForm();renderMedicalRecords();alert("醫療紀錄已在獨立醫療保險庫中加密並保存至 GitHub。");
   }catch(error){alert("醫療紀錄保存失敗："+error.message);}
 }
 
