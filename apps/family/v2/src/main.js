@@ -3,10 +3,13 @@ import { createId, nowIso } from "./core/id.js";
 import { buildRelationshipIndex } from "./core/relationship-index.js";
 import { validateFamilyData } from "./core/validate.js";
 import { exportEncryptedBackup, inspectEncryptedBackup, applyEncryptedBackup } from "./core/backup.js";
+import { DropboxConnectionService } from "./storage/dropbox-connection-service.js";
+import { DROPBOX_APP_KEY } from "./storage/dropbox-config.js";
 
 const $ = id => document.getElementById(id);
 const vault = new VaultService();
 let persons = [], relationships = [], selectedId = null, selectedVersion = null, editing = false;
+let dropbox = null, dropboxConnected = false;
 
 function message(text, error = false) {
   $("saveStatus").textContent = text;
@@ -144,19 +147,98 @@ async function start() {
         await vault.create("family",password);
       }
       $("gate").hidden=true;$("workspace").hidden=false;$("lockBtn").hidden=false;
-      await loadAll();await updateHealthState();
+      await loadAll();await updateHealthState();await setupDropbox();
     } catch(error) {$("gateError").textContent=error.message||"操作失敗";}
     finally {$("vaultPassword").value="";$("vaultConfirm").value="";}
   });
-  $("lockBtn").addEventListener("click",()=>{vault.lock();$("workspace").hidden=true;$("gate").hidden=false;$("lockBtn").hidden=true;$("gateTitle").textContent="解鎖家庭資料保險庫";$("gateDesc").textContent="請重新輸入密碼。";$("passwordLabel").firstChild.textContent="保險庫密碼";$("confirmWrap").hidden=true;$("gateSubmit").textContent="解鎖";});
+  $("lockBtn").addEventListener("click",()=>{dropbox?.clearSession();dropboxConnected=false;vault.lock();$("workspace").hidden=true;$("gate").hidden=false;$("lockBtn").hidden=true;$("gateTitle").textContent="解鎖家庭資料保險庫";$("gateDesc").textContent="請重新輸入密碼。";$("passwordLabel").firstChild.textContent="保險庫密碼";$("confirmWrap").hidden=true;$("gateSubmit").textContent="解鎖";});
   $("addPersonBtn").addEventListener("click",newPerson);$("emptyAdd").addEventListener("click",newPerson);
   $("cancelEdit").addEventListener("click",()=>selectedId?showPerson(selectedId):clearDetail());
   $("personForm").addEventListener("submit",savePerson);
   $("search").addEventListener("input",renderPeople);
   $("addRelation").addEventListener("click",addRelation);
   $("healthUnlock").addEventListener("click",unlockHealth);
+  $("connectDropboxBtn").addEventListener("click",connectDropbox);
+  $("syncFamilyBtn").addEventListener("click",()=>syncCloud("family"));
+  $("syncMedicalBtn").addEventListener("click",()=>syncCloud("medical"));
   $("exportBackupBtn").addEventListener("click",downloadBackup);
   $("restoreBtn").addEventListener("click",restoreBackup);
+}
+
+
+async function setupDropbox() {
+  if(!DROPBOX_APP_KEY) {
+    $("dropboxStatus").textContent="尚未設定 App Key；Dropbox 雲端功能暫未啟用。";
+    $("connectDropboxBtn").disabled=true;
+    $("syncFamilyBtn").disabled=true;
+    $("syncMedicalBtn").disabled=true;
+    $("connectDropboxBtn").textContent="等待設定 App Key";
+    return;
+  }
+  try {
+    dropbox=new DropboxConnectionService({vault,appKey:DROPBOX_APP_KEY});
+    const params=new URLSearchParams(location.search);
+    if(params.has("code")||params.has("error")) {
+      const result=await dropbox.completeAuthorization(location.search);
+      history.replaceState(null,"",location.pathname);
+      $("dropboxStatus").textContent="Dropbox 已連接 · "+(result.accountId||"帳戶已授權");
+    } else {
+      const result=await dropbox.loadSavedConnection();
+      $("dropboxStatus").textContent="Dropbox 已連接 · "+(result.accountId||"授權有效");
+    }
+    dropboxConnected=true;
+    $("connectDropboxBtn").textContent="重新授權";
+    $("connectDropboxBtn").disabled=false;
+    $("syncFamilyBtn").disabled=false;
+    const medical=await vault.status("medical");
+    $("syncMedicalBtn").hidden=!medical.exists;
+    $("syncMedicalBtn").disabled=!medical.unlocked;
+  } catch(error) {
+    if(location.search.includes("code=")||location.search.includes("error=")) {
+      $("dropboxStatus").textContent="Dropbox 授權處理失敗："+error.message;
+      history.replaceState(null,"",location.pathname);
+    } else {
+      $("dropboxStatus").textContent="尚未連接 Dropbox："+error.message;
+    }
+    dropboxConnected=false;
+    $("connectDropboxBtn").textContent="連接 Dropbox";
+    $("connectDropboxBtn").disabled=false;
+    $("syncFamilyBtn").disabled=true;
+    $("syncMedicalBtn").disabled=true;
+  }
+}
+async function connectDropbox() {
+  if(!dropbox) {
+    try { dropbox=new DropboxConnectionService({vault,appKey:DROPBOX_APP_KEY}); }
+    catch(error) { alert(error.message);return; }
+  }
+  try { location.assign(await dropbox.beginAuthorization()); }
+  catch(error) { alert("無法開始 Dropbox 授權："+error.message); }
+}
+async function syncCloud(scope) {
+  if(!dropboxConnected||!dropbox)return;
+  if(scope==="medical"&&!(await vault.status("medical")).unlocked) {
+    alert("請先解鎖醫療保險庫，再同步醫療資料。");return;
+  }
+  const button=scope==="family"?$("syncFamilyBtn"):$("syncMedicalBtn");
+  const original=button.textContent;button.disabled=true;button.textContent="同步中…";
+  try {
+    const result=await dropbox.sync(scope);
+    $("dropboxStatus").textContent=scope==="family"
+      ? `家庭同步完成：上傳 ${result.uploaded}、下載 ${result.downloaded}、衝突 ${result.conflicts.length}`
+      : `醫療同步完成：上傳 ${result.uploaded}、下載 ${result.downloaded}、衝突 ${result.conflicts.length}`;
+    if(result.conflicts.length) {
+      const detail=result.conflicts.slice(0,5).map(x=>x.objectId+": "+x.reason).join("\\n");
+      alert("有 "+result.conflicts.length+" 筆資料需要人工處理，系統沒有覆蓋任何衝突資料。\\n"+detail);
+    }
+    if(scope==="family")await loadAll();
+  } catch(error) {
+    $("dropboxStatus").textContent="同步失敗："+error.message;
+    alert("Dropbox 同步失敗："+error.message);
+  } finally {
+    button.textContent=original;
+    button.disabled=!dropboxConnected;
+  }
 }
 
 async function downloadBackup() {
@@ -192,6 +274,8 @@ async function updateHealthState() {
   const status=await vault.status("medical");
   $("healthState").textContent=status.unlocked?"已解鎖":status.exists?"已建立／已鎖定":"尚未建立";
   $("healthUnlock").textContent=status.unlocked?"鎖定醫療保險庫":status.exists?"解鎖醫療保險庫":"建立醫療保險庫";
+  $("syncMedicalBtn").hidden=!status.exists;
+  $("syncMedicalBtn").disabled=!dropboxConnected||!status.unlocked;
 }
 async function unlockHealth() {
   const status=await vault.status("medical");
