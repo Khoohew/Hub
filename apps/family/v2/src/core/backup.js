@@ -45,8 +45,9 @@ export async function exportEncryptedBackup(cache,{includeMedical=false}={}) {
   manifestFiles.push({path:"vaults.json",sha256:await sha256Hex(descriptorBytes),size:descriptorBytes.length});
   let objectCount=0;
   for(const item of stored){
-    const scope=item.objectId.split(":")[0];
-    if(!scopes.has(scope))continue;
+    const parts=item.objectId.split(":");
+    const scope=parts[0],collection=parts[1];
+    if(!scopes.has(scope)||collection==="connections")continue;
     const record=await cache.get(item.objectId);
     if(!record?.envelope)continue;
     const data=jsonBytes({version:record.version,updatedAt:record.updatedAt,envelope:record.envelope});
