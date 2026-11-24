@@ -493,7 +493,7 @@ async function connectGitHub(event) {
     service.setToken(token);
     await service.connect();
     githubStorage=service;
-    vault.cache.close?.();
+    vault.cache?.close?.();
     vault.cache=new GitHubContentsCache(service);
     try{localStorage.setItem("familyVaultRepo",repoPath);}catch{}
     $("githubRepo").value=repoPath;$("githubRepoWorkspace").value=repoPath;
