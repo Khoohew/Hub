@@ -426,40 +426,50 @@ async function deleteMedia(item) {
   }catch(error){alert("刪除附件失敗："+error.message);}
 }
 
+async function enterWorkspace() {
+  if(!githubStorage?.connected) throw new Error("尚未連接私人資料倉庫。請返回 Hub 首頁重新進入。");
+  try {
+    $("gate").hidden=true;
+    $("workspace").hidden=false;
+    $("lockBtn").hidden=false;
+    await loadAll();
+    try { await loadMedicalRecords(); }
+    catch(error) {
+      $("healthState").textContent="舊版加密紀錄待遷移";
+      $("healthUnlock").textContent="讀取舊版醫療資料";
+      $("gateError").textContent="一般家庭資料已載入；舊版醫療資料暫未載入："+error.message;
+    }
+    await updateHealthState();
+  } catch(error) {
+    $("gateError").textContent=error.message||"資料載入失敗";
+    $("gate").hidden=false;
+    $("workspace").hidden=true;
+    throw error;
+  }
+}
+
 async function start() {
-  $("gateTitle").textContent="連接家庭資料私人倉庫";
-  $("gateDesc").textContent="一般家庭資料預設以明文 JSON 保存於私人 GitHub 倉庫；連接後即可直接讀取。只有勾選加密的附件會在上傳前於本機加密。";
+  $("gateTitle").textContent="正在連接家庭資料";
+  $("gateDesc").textContent="正在使用 Hub 首頁提供的共用密鑰連接私人倉庫；一般資料以明文保存，附件可逐件選擇加密。";
+  $("gateSubmit").hidden=true;
   $("gateSubmit").disabled=true;
-  try { $("githubRepo").value=localStorage.getItem("familyVaultRepo")||"Khoohew/Personal-Data-Manager"; } catch { $("githubRepo").value=""; }
   $("passwordLabel").hidden=true;
   $("confirmWrap").hidden=true;
-  $("gateSubmit").textContent="請先連接 GitHub";
+  $("restoreInput")?.closest(".restoreGate")?.setAttribute("hidden","");
+
   $("gateForm").addEventListener("submit",async event=>{
     event.preventDefault();
-    $("gateError").textContent="";
-    if(!githubStorage?.connected){$("gateError").textContent="請先連接 GitHub 私人倉庫。";return;}
-    try {
-      $("gate").hidden=true;
-      $("workspace").hidden=false;
-      $("lockBtn").hidden=false;
-      await loadAll();
-      try { await loadMedicalRecords(); } catch(error) { $("healthState").textContent="舊版加密紀錄待遷移"; $("healthUnlock").textContent="讀取舊版醫療資料"; $("gateError").textContent="一般家庭資料已載入；舊版醫療資料暫未載入："+error.message; }
-      await updateHealthState();
-    } catch(error) {
-      $("gateError").textContent=error.message||"資料載入失敗";
-      $("gate").hidden=false;
-      $("workspace").hidden=true;
-    }
+    try { await enterWorkspace(); }
+    catch(error) { $("gateError").textContent=error.message||"資料載入失敗"; }
   });
   $("lockBtn").addEventListener("click",()=>{
     githubStorage?.clearToken();githubStorage=null;clearMediaUrls();persons=[];relationships=[];events=[];mediaItems=[];medicalRecords=[];selectedId=null;selectedEventId=null;selectedEventVersion=null;selectedMedicalId=null;selectedMedicalVersion=null;selectedVersion=null;editing=false;
     $("personForm").reset();$("peopleList").replaceChildren();$("relationsList").replaceChildren();$("eventList").replaceChildren();$("mediaList").replaceChildren();$("eventForm").reset();$("medicalForm").reset();$("medicalList").replaceChildren();$("medicalSection").hidden=true;$("search").value="";$("mediaFile").value="";
     vault.lock();$("workspace").hidden=true;$("gate").hidden=false;$("lockBtn").hidden=true;
-    $("gateTitle").textContent="重新連接 GitHub 私人倉庫";$("gateDesc").textContent="重新連接後即可讀取私人倉庫中的家庭資料。";
-    $("gateSubmit").textContent="請先連接 GitHub";$("gateSubmit").disabled=true;$("githubToken").value="";$("githubTokenWorkspace").value="";
-    $("githubStatus").textContent="已鎖定；重新連接時需再次輸入 Token。";$("githubWorkspaceStatus").textContent="尚未連接 GitHub 私人倉庫";
-    $("githubUploadBtn").disabled=true;$("githubDownloadWorkspaceBtn").disabled=true;$("cloudState").textContent="GitHub 尚未連接";
-    $("storageNotice").textContent="已鎖定。資料保存在 GitHub 私人倉庫；重新連接後即可讀取。";
+    $("gateTitle").textContent="家庭資料已鎖定";$("gateDesc").textContent="為保護私人資料，請返回 Hub 首頁重新輸入共用密鑰並進入家庭資料。";
+    $("gateError").textContent="本頁不再要求重複輸入倉庫路徑或 Token。";
+    $("githubStatus").textContent="已鎖定；請從 Hub 首頁重新進入。";
+    $("cloudState").textContent="GitHub 尚未連接";
   });
   $("addPersonBtn").addEventListener("click",newPerson);$("emptyAdd").addEventListener("click",newPerson);
   $("cancelEdit").addEventListener("click",()=>selectedId?showPerson(selectedId):clearDetail());
@@ -479,15 +489,30 @@ async function start() {
   $("connectGitHubBtn").addEventListener("click",connectGitHub);$("connectGitHubWorkspaceBtn").addEventListener("click",connectGitHub);
   $("downloadCloudBtn").addEventListener("click",downloadCloudBackup);$("githubUploadBtn").addEventListener("click",uploadCloudBackup);
   $("githubDownloadWorkspaceBtn").addEventListener("click",downloadCloudBackup);$("exportBackupBtn").addEventListener("click",downloadBackup);$("restoreBtn").addEventListener("click",restoreBackup);
+
+  let handoffToken="";
+  try {
+    const marker="PD_MANAGER_TOKEN:";
+    if(window.name.startsWith(marker)){handoffToken=window.name.slice(marker.length);window.name="";}
+  } catch {}
+  if(!handoffToken) {
+    $("gateTitle").textContent="請從 Hub 首頁進入";
+    $("gateDesc").textContent="家庭資料與黃金、設備共用同一個 GitHub 存取密鑰。請返回 Hub 首頁輸入密鑰，再點擊「家庭資料」即可直接進入。";
+    $("gateError").textContent="目前沒有收到 Hub 傳入的存取密鑰。";
+    return;
+  }
+  await connectGitHub({token:handoffToken,repoPath:"Khoohew/Personal-Data-Manager",autoEnter:true});
 }
 
-async function connectGitHub(event) {
-  const fromWorkspace=event?.currentTarget?.id==="connectGitHubWorkspaceBtn";
-  const token=(fromWorkspace?$("githubTokenWorkspace").value:$("githubToken").value).trim()
-    ||(fromWorkspace?$("githubToken").value:$("githubTokenWorkspace").value).trim();
-  const repoPath=(fromWorkspace?$("githubRepoWorkspace").value:$("githubRepo").value).trim()
-    ||(fromWorkspace?$("githubRepo").value:$("githubRepoWorkspace").value).trim();
+async function connectGitHub(eventOrOptions = {}) {
+  const options=eventOrOptions && typeof eventOrOptions==="object" && "token" in eventOrOptions ? eventOrOptions : {};
+  const fromWorkspace=eventOrOptions?.currentTarget?.id==="connectGitHubWorkspaceBtn";
+  const token=String(options.token||((fromWorkspace?$("githubTokenWorkspace").value:$("githubToken").value).trim()
+    ||(fromWorkspace?$("githubToken").value:$("githubTokenWorkspace").value).trim()));
+  const repoPath=String(options.repoPath||((fromWorkspace?$("githubRepoWorkspace").value:$("githubRepo").value).trim()
+    ||(fromWorkspace?$("githubRepo").value:$("githubRepoWorkspace").value).trim()||"Khoohew/Personal-Data-Manager"));
   try {
+    if(!token)throw new Error("沒有收到 Hub 首頁提供的共用存取密鑰，請返回 Hub 首頁重新進入。");
     const match=/^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)$/.exec(repoPath);
     if(!match)throw new Error("請輸入私人 GitHub 倉庫路徑，格式為 owner/repository。");
     const service=new GitHubReleaseStorage({owner:match[1],repo:match[2]});
@@ -514,6 +539,7 @@ async function connectGitHub(event) {
     $("downloadCloudBtn").disabled=true;
     $("githubUploadBtn").disabled=true;
     $("githubDownloadWorkspaceBtn").disabled=true;
+    if(options.autoEnter) await enterWorkspace();
   } catch(error) {
     githubStorage?.clearToken();githubStorage=null;
     $("githubToken").value="";$("githubTokenWorkspace").value="";
