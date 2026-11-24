@@ -29,7 +29,10 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .tokenField{flex:1 1 260px;min-width:220px}.tokenWarning{flex:1 1 100%;line-height:1.5}.cloudGate{margin-top:16px}.cloudGate .tokenField{flex:1 1 100%}.cloudGate button{width:100%}
 
 .mediaSection{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}
-.mediaForm{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) auto;gap:10px;align-items:end}
+.mediaForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
+.mediaEncryptOption{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:12px}
+.mediaEncryptOption input{width:auto;min-width:18px;min-height:18px}
+.mediaForm>button{align-self:stretch}
 .mediaGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-top:14px}
 .mediaCard{min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;background:#101a2a;display:flex;flex-direction:column;gap:5px}
 .mediaCard strong{font-size:13px;overflow-wrap:anywhere}.mediaCard small{color:var(--muted);font-size:11px}
