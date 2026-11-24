@@ -68,6 +68,8 @@ export class EncryptedLocalCache {
       collection,
       envelope: encryptedEnvelope,
       version: (current?.version || 0) + 1,
+      remoteVersion: current?.remoteVersion ?? null,
+      syncedLocalVersion: current?.syncedLocalVersion ?? null,
       updatedAt: new Date().toISOString()
     };
     store.put(next);
@@ -100,9 +102,26 @@ export class EncryptedLocalCache {
       ? await requestResult(tx.objectStore(STORE).index("collection").getAll(collection))
       : await requestResult(tx.objectStore(STORE).getAll());
     await done;
-    return values.map(({ objectId, collection: kind, version, updatedAt }) => ({
-      objectId, collection: kind, version, updatedAt
+    return values.map(({ objectId, collection: kind, version, remoteVersion, syncedLocalVersion, updatedAt }) => ({
+      objectId, collection: kind, version, remoteVersion: remoteVersion ?? null, syncedLocalVersion: syncedLocalVersion ?? null, updatedAt
     }));
+  }
+
+  async markSynced(objectId, localVersion, remoteVersion) {
+    await this.open();
+    const tx = this.db.transaction(STORE, "readwrite");
+    const done = transactionDone(tx);
+    const store = tx.objectStore(STORE);
+    const current = await requestResult(store.get(objectId));
+    if (!current || current.version !== localVersion) {
+      tx.abort();
+      await done.catch(() => {});
+      throw new Error("LOCAL_VERSION_CONFLICT");
+    }
+    current.remoteVersion = remoteVersion;
+    current.syncedLocalVersion = localVersion;
+    store.put(current);
+    await done;
   }
 
   async getMeta(key) {
