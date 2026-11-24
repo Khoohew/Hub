@@ -5,10 +5,6 @@ on:
     paths:
       - "apps/family/**"
       - ".github/workflows/family-app-check.yml"
-  pull_request:
-    paths:
-      - "apps/family/**"
-      - ".github/workflows/family-app-check.yml"
 jobs:
   checks:
     runs-on: ubuntu-latest
