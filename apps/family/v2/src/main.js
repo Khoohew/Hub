@@ -414,7 +414,7 @@ async function start() {
   $("gateTitle").textContent="先連接 GitHub 私人倉庫";
   $("gateDesc").textContent="家庭人物、親屬關係、事件、照片及醫療資料只保存到 GitHub 私人倉庫；本機不作正式資料庫。請先連接倉庫，再建立或解鎖加密保險庫。";
   $("gateSubmit").disabled=true;
-  $("githubRepo").value=localStorage.getItem("familyVaultRepo")||"";
+  try{$("githubRepo").value=localStorage.getItem("familyVaultRepo")||"";}catch{$("githubRepo").value="";}
   $("passwordLabel").firstChild.textContent="保險庫密碼";
   $("confirmWrap").hidden=true;
   $("gateSubmit").textContent="請先連接 GitHub";
