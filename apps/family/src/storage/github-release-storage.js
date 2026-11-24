@@ -9,7 +9,7 @@ async function sha256Hex(blob) {
 }
 
 export class GitHubReleaseStorage {
-  constructor({ owner, repo, tagName = DEFAULT_TAG, fetchImpl = globalThis.fetch } = {}) {
+  constructor({ owner, repo, tagName = DEFAULT_TAG, fetchImpl = (...args) => globalThis.fetch(...args) } = {}) {
     if (!owner || !repo) throw new Error("GitHub 倉庫資訊不完整。");
     this.owner = owner;
     this.repo = repo;
