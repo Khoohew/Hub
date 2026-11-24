@@ -524,7 +524,6 @@ async function connectGitHub(eventOrOptions = {}) {
     try{localStorage.setItem("familyVaultRepo",repoPath);}catch{}
     $("githubRepo").value=repoPath;$("githubRepoWorkspace").value=repoPath;
     $("githubToken").value="";$("githubTokenWorkspace").value="";
-    const remoteStatus=await vault.status("family");
     const state="已連接私人倉庫；一般資料明文保存，附件可逐件加密。";
     $("githubStatus").textContent=state;
     $("githubWorkspaceStatus").textContent="資料直接讀寫 GitHub 私人倉庫；新資料以明文 JSON 保存。";
@@ -546,6 +545,9 @@ async function connectGitHub(eventOrOptions = {}) {
     $("githubStatus").textContent="連接失敗："+error.message;
     $("githubWorkspaceStatus").textContent="連接失敗："+error.message;
     $("cloudState").textContent="GitHub 尚未連接";
+    $("gateTitle").textContent="家庭資料連接失敗";
+    $("gateDesc").textContent="請確認 Hub 首頁輸入的共用密鑰有 Personal-Data-Manager 私人倉庫的 Contents 讀寫權限，再返回首頁重試。";
+    $("gateError").textContent=error.message||"GitHub 連接失敗";
     $("downloadCloudBtn").disabled=true;
     $("githubUploadBtn").disabled=true;
     $("githubDownloadWorkspaceBtn").disabled=true;
