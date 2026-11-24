@@ -4,7 +4,7 @@ import { buildRelationshipIndex } from "./core/relationship-index.js";
 import { validateFamilyData } from "./core/validate.js";
 import { exportEncryptedBackup, inspectEncryptedBackup, verifyEncryptedBackup, applyEncryptedBackup } from "./core/backup.js";
 import { GitHubReleaseStorage } from "./storage/github-release-storage.js";
-import { GitHubContentsCache } from "./storage/github-contents-cache.js";
+import { GitHubPlainContentsCache } from "./storage/github-plain-contents-cache.js";
 import { buildTreeLayout } from "./core/tree-layout.js";
 import { validateMedicalRecord } from "./core/medical-validation.js";
 
@@ -138,7 +138,7 @@ async function showPerson(id) {
   selectedVersion = stored?.version ?? null;
   $("emptyDetail").hidden = true; $("personForm").hidden = false; $("relationsSection").hidden = false; $("eventSection").hidden = false; $("mediaSection").hidden = false;
   resetEventForm();resetMedicalForm();
-  $("formTitle").textContent = p.name; fillForm(p); message("已載入加密資料");
+  $("formTitle").textContent = p.name; fillForm(p); message("已載入家庭資料");
   renderPeople(); renderRelations(); renderTree(); renderEvents(); await renderMedia();
   await updateHealthState();
   if((await vault.status("medical")).unlocked)renderMedicalRecords();
@@ -175,7 +175,7 @@ async function savePerson(event) {
     if(old) persons=persons.map(x=>x.id===p.id?p:x); else persons.push(p);
     selectedId=p.id;selectedVersion=result.version;editing=false;
     $("formTitle").textContent=p.name;$("relationsSection").hidden=false;$("eventSection").hidden=false;$("mediaSection").hidden=false;
-    message("已加密並保存至 GitHub 雲端");renderPeople();renderRelations();renderTree();renderEvents();await renderMedia();
+    message("已保存至 GitHub 私人倉庫（明文）");renderPeople();renderRelations();renderTree();renderEvents();await renderMedia();
     await updateHealthState();if((await vault.status("medical")).unlocked)renderMedicalRecords();
   } catch(error) {
     message(error.message==="REMOTE_VERSION_CONFLICT"?"資料版本已改變，請重新載入後再保存。":"保存失敗："+error.message,true);
@@ -202,7 +202,7 @@ async function addRelation() {
   if(!checked.valid)return message(checked.errors[0],true);
   try {
     await vault.save("family","relationships",rel.id,1,rel,null);
-    relationships.push(rel);renderRelations();renderTree();message("親屬關係已加密並保存至 GitHub");
+    relationships.push(rel);renderRelations();renderTree();message("親屬關係已保存至 GitHub（明文）");
   } catch(error) { message("關係保存失敗："+error.message,true); }
 }
 
@@ -288,7 +288,7 @@ async function saveEvent(event) {
   if(!checked.valid){alert(checked.errors[0]);return;}
   try{
     await vault.save("family","events",item.id,1,item,old?selectedEventVersion:null);
-    events=nextEvents;resetEventForm();renderEvents();message("人生事件已加密並保存至 GitHub");
+    events=nextEvents;resetEventForm();renderEvents();message("人生事件已保存至 GitHub（明文）");
   }catch(error){alert("事件保存失敗："+error.message);}
 }
 
@@ -333,9 +333,9 @@ async function renderMedia() {
     const card=document.createElement("article");card.className="mediaCard";
     const title=document.createElement("strong");title.textContent=item.caption||item.originalName||"未命名附件";
     const detail=document.createElement("small");
-    detail.textContent=(item.kind==="photo"?"照片":item.kind==="document"?"文件":item.kind==="audio"?"音訊":item.kind==="video"?"影片":"附件")+" · "+Math.max(1,Math.round((item.sizeBytes||0)/1024))+" KB";
+    detail.textContent=(item.kind==="photo"?"照片":item.kind==="document"?"文件":item.kind==="audio"?"音訊":item.kind==="video"?"影片":"附件")+" · "+Math.max(1,Math.round((item.sizeBytes||0)/1024))+" KB"+(item.encrypted?" · 已加密":" · 明文");
     card.append(title,detail);
-    if(item.kind==="photo"&&(item.mimeType||"").startsWith("image/")){
+    if(item.kind==="photo"&&(item.mimeType||"").startsWith("image/")&&!item.encrypted){
       try{
         const loaded=await vault.loadBytes("family","media-blobs",item.id);
         if(selectedId!==personId)return;
@@ -344,7 +344,7 @@ async function renderMedia() {
         mediaObjectUrls.set(item.id,url);
         const img=document.createElement("img");img.className="mediaPreview";img.src=url;img.alt=item.caption||item.originalName||"家庭照片";card.prepend(img);
       }catch(error){
-        const failed=document.createElement("small");failed.className="error";failed.textContent="照片解密或校驗失敗："+error.message;card.append(failed);
+        const failed=document.createElement("small");failed.className="error";failed.textContent="照片讀取或校驗失敗："+error.message;card.append(failed);
       }
     }else{
       const mark=document.createElement("div");mark.className="mediaFileMark";mark.textContent=item.kind==="document"?"📄":item.kind==="audio"?"♫":item.kind==="video"?"▶":"📎";card.prepend(mark);
@@ -366,14 +366,24 @@ async function addMedia(event) {
   try{
     const bytes=new Uint8Array(await file.arrayBuffer());
     const objectId="family:media-blobs:"+id;
-    await vault.saveBytes("family","media-blobs",id,1,bytes,null);
-    const stored=await vault.cache.get(objectId);
+    const encrypted=$("mediaEncrypt").checked;
+    let attachmentPassword=null;
+    if(encrypted){
+      attachmentPassword=prompt("為這個附件設定獨立加密密碼（至少 12 個字元）。請自行妥善保存，遺失後無法復原：");
+      if(!attachmentPassword)return;
+      const confirmPassword=prompt("請再次輸入附件加密密碼：");
+      if(attachmentPassword!==confirmPassword)throw new Error("兩次輸入的密碼不一致。");
+      await vault.saveEncryptedBytes("family","media-blobs",id,1,bytes,attachmentPassword,null);
+      attachmentPassword="";
+    }else{
+      await vault.saveBytes("family","media-blobs",id,1,bytes,null);
+    }
     const metadata={
       schemaVersion:1,id,kind:mediaKind(file),encryptedObjectId:objectId,
       originalName:file.name.slice(0,240),mimeType:file.type||"application/octet-stream",
       sizeBytes:file.size,personIds:[personId],eventIds:[],
       caption:$("mediaCaption").value.trim(),
-      takenAt:null,cipher:{algorithm:"AES-256-GCM",iv:stored.envelope.iv,keyVersion:1},createdAt
+      takenAt:null,encrypted,createdAt
     };
     const checked=validateFamilyData({persons,relationships,events,media:[...mediaItems,metadata],sources:[]});
     if(!checked.valid)throw new Error(checked.errors[0]);
@@ -381,7 +391,7 @@ async function addMedia(event) {
     mediaItems.push(metadata);
     $("mediaForm").reset();
     await renderMedia();
-    message("附件已獨立加密保存");
+    message(encrypted?"附件已加密後保存至 GitHub":"附件已以明文保存至 GitHub");
   }catch(error){
     await vault.delete("family","media-blobs",id).catch(()=>{});
     alert("附件保存失敗："+error.message);
@@ -390,7 +400,13 @@ async function addMedia(event) {
 
 async function downloadMedia(item) {
   try{
-    const loaded=await vault.loadBytes("family","media-blobs",item.id);
+    let attachmentPassword=null;
+    if(item.encrypted){
+      attachmentPassword=prompt("此附件已加密，請輸入保存時設定的附件密碼：");
+      if(!attachmentPassword)return;
+    }
+    const loaded=await vault.loadBytes("family","media-blobs",item.id,attachmentPassword);
+    attachmentPassword="";
     if(loaded.bytes.length!==item.sizeBytes)throw new Error("附件大小與索引不一致。");
     const blob=new Blob([loaded.bytes],{type:item.mimeType||"application/octet-stream"});
     const url=URL.createObjectURL(blob),anchor=document.createElement("a");
@@ -400,7 +416,7 @@ async function downloadMedia(item) {
 }
 
 async function deleteMedia(item) {
-  if(!confirm("確定刪除此人物的附件？此操作會直接刪除 GitHub 私人倉庫中的加密附件。"))return;
+  if(!confirm("確定刪除此人物的附件？此操作會直接刪除 GitHub 私人倉庫中的附件。"))return;
   try{
     await vault.delete("family","media",item.id);
     await vault.delete("family","media-blobs",item.id);
@@ -411,74 +427,59 @@ async function deleteMedia(item) {
 }
 
 async function start() {
-  $("gateTitle").textContent="先連接 GitHub 私人倉庫";
-  $("gateDesc").textContent="家庭人物、親屬關係、事件、照片及醫療資料只保存到 GitHub 私人倉庫；本機不作正式資料庫。請先連接倉庫，再建立或解鎖加密保險庫。";
+  $("gateTitle").textContent="連接家庭資料私人倉庫";
+  $("gateDesc").textContent="一般家庭資料預設以明文 JSON 保存於私人 GitHub 倉庫；連接後即可直接讀取。只有勾選加密的附件會在上傳前於本機加密。";
   $("gateSubmit").disabled=true;
-  try{$("githubRepo").value=localStorage.getItem("familyVaultRepo")||"";}catch{$("githubRepo").value="";}
-  $("passwordLabel").firstChild.textContent="保險庫密碼";
+  try { $("githubRepo").value=localStorage.getItem("familyVaultRepo")||"Khoohew/Personal-Data-Manager"; } catch { $("githubRepo").value=""; }
+  $("passwordLabel").hidden=true;
   $("confirmWrap").hidden=true;
   $("gateSubmit").textContent="請先連接 GitHub";
   $("gateForm").addEventListener("submit",async event=>{
-    event.preventDefault();$("gateError").textContent="";
+    event.preventDefault();
+    $("gateError").textContent="";
     if(!githubStorage?.connected){$("gateError").textContent="請先連接 GitHub 私人倉庫。";return;}
-    const password=$("vaultPassword").value;
     try {
-      const status=await vault.status("family");
-      if(status.exists) await vault.unlock("family",password);
-      else {
-        if(password!==$("vaultConfirm").value) throw new Error("兩次輸入的密碼不一致。");
-        await vault.create("family",password);
-      }
-      $("gate").hidden=true;$("workspace").hidden=false;$("lockBtn").hidden=false;
-      await loadAll();await updateHealthState();
-    } catch(error) {$("gateError").textContent=error.message||"操作失敗";}
-    finally {$("vaultPassword").value="";$("vaultConfirm").value="";}
+      $("gate").hidden=true;
+      $("workspace").hidden=false;
+      $("lockBtn").hidden=false;
+      await loadAll();
+      try { await loadMedicalRecords(); } catch(error) { $("healthState").textContent="舊版加密紀錄待遷移"; $("healthUnlock").textContent="讀取舊版醫療資料"; $("gateError").textContent="一般家庭資料已載入；舊版醫療資料暫未載入："+error.message; }
+      await updateHealthState();
+    } catch(error) {
+      $("gateError").textContent=error.message||"資料載入失敗";
+      $("gate").hidden=false;
+      $("workspace").hidden=true;
+    }
   });
-  $("lockBtn").addEventListener("click",()=>{githubStorage?.clearToken();githubStorage=null;clearMediaUrls();persons=[];relationships=[];events=[];mediaItems=[];medicalRecords=[];selectedId=null;selectedEventId=null;selectedEventVersion=null;selectedMedicalId=null;selectedMedicalVersion=null;selectedVersion=null;editing=false;$("personForm").reset();$("peopleList").replaceChildren();$("relationsList").replaceChildren();$("eventList").replaceChildren();$("mediaList").replaceChildren();$("eventForm").reset();$("medicalForm").reset();$("medicalList").replaceChildren();$("medicalSection").hidden=true;$("search").value="";$("mediaFile").value="";vault.lock();$("workspace").hidden=true;$("gate").hidden=false;$("lockBtn").hidden=true;$("gateTitle").textContent="重新連接 GitHub 雲端資料";$("gateDesc").textContent="請重新連接私人倉庫，再輸入保險庫密碼。";$("passwordLabel").firstChild.textContent="保險庫密碼";$("confirmWrap").hidden=true;$("gateSubmit").textContent="請先連接 GitHub";$("gateSubmit").disabled=true;$("githubToken").value="";$("githubTokenWorkspace").value="";$("githubStatus").textContent="已鎖定；重新連接時需再次輸入 Token。";$("githubWorkspaceStatus").textContent="尚未連接 GitHub 私人倉庫";$("githubUploadBtn").disabled=true;$("githubDownloadWorkspaceBtn").disabled=true;$("cloudState").textContent="GitHub 尚未連接";$("storageNotice").textContent="已鎖定。正式資料只保存在 GitHub 私人倉庫；重新連接後即可從雲端解鎖。";});
+  $("lockBtn").addEventListener("click",()=>{
+    githubStorage?.clearToken();githubStorage=null;clearMediaUrls();persons=[];relationships=[];events=[];mediaItems=[];medicalRecords=[];selectedId=null;selectedEventId=null;selectedEventVersion=null;selectedMedicalId=null;selectedMedicalVersion=null;selectedVersion=null;editing=false;
+    $("personForm").reset();$("peopleList").replaceChildren();$("relationsList").replaceChildren();$("eventList").replaceChildren();$("mediaList").replaceChildren();$("eventForm").reset();$("medicalForm").reset();$("medicalList").replaceChildren();$("medicalSection").hidden=true;$("search").value="";$("mediaFile").value="";
+    vault.lock();$("workspace").hidden=true;$("gate").hidden=false;$("lockBtn").hidden=true;
+    $("gateTitle").textContent="重新連接 GitHub 私人倉庫";$("gateDesc").textContent="重新連接後即可讀取私人倉庫中的家庭資料。";
+    $("gateSubmit").textContent="請先連接 GitHub";$("gateSubmit").disabled=true;$("githubToken").value="";$("githubTokenWorkspace").value="";
+    $("githubStatus").textContent="已鎖定；重新連接時需再次輸入 Token。";$("githubWorkspaceStatus").textContent="尚未連接 GitHub 私人倉庫";
+    $("githubUploadBtn").disabled=true;$("githubDownloadWorkspaceBtn").disabled=true;$("cloudState").textContent="GitHub 尚未連接";
+    $("storageNotice").textContent="已鎖定。資料保存在 GitHub 私人倉庫；重新連接後即可讀取。";
+  });
   $("addPersonBtn").addEventListener("click",newPerson);$("emptyAdd").addEventListener("click",newPerson);
   $("cancelEdit").addEventListener("click",()=>selectedId?showPerson(selectedId):clearDetail());
-  $("personForm").addEventListener("submit",savePerson);
-  $("search").addEventListener("input",renderPeople);
-  $("addRelation").addEventListener("click",addRelation);
-  $("mediaForm").addEventListener("submit",addMedia);
-  $("eventForm").addEventListener("submit",saveEvent);
-  $("eventCancelEdit").addEventListener("click",resetEventForm);
+  $("personForm").addEventListener("submit",savePerson);$("search").addEventListener("input",renderPeople);
+  $("addRelation").addEventListener("click",addRelation);$("mediaForm").addEventListener("submit",addMedia);
+  $("eventForm").addEventListener("submit",saveEvent);$("eventCancelEdit").addEventListener("click",resetEventForm);
   $("eventDate").addEventListener("change",()=>{if($("eventDate").value&&$("eventDatePrecision").value==="unknown")$("eventDatePrecision").value="day";});
-  $("medicalForm").addEventListener("submit",saveMedicalRecord);
-  $("medicalCancelEdit").addEventListener("click",resetMedicalForm);
+  $("medicalForm").addEventListener("submit",saveMedicalRecord);$("medicalCancelEdit").addEventListener("click",resetMedicalForm);
   $("medicalRecordType").addEventListener("change",toggleMedicalFields);
   $("treeFit").addEventListener("click",()=>{treeZoom=1;renderTree();$("treeViewport").scrollTo({left:0,top:0,behavior:"smooth"});});
-  const treeViewport=$("treeViewport");
-  let treeDrag=null;
-  treeViewport.addEventListener("pointerdown",event=>{
-    if(event.target.closest(".treeNode"))return;
-    treeDrag={x:event.clientX,y:event.clientY,left:treeViewport.scrollLeft,top:treeViewport.scrollTop};
-    treeViewport.setPointerCapture(event.pointerId);
-  });
-  treeViewport.addEventListener("pointermove",event=>{
-    if(!treeDrag)return;
-    treeViewport.scrollLeft=treeDrag.left-(event.clientX-treeDrag.x);
-    treeViewport.scrollTop=treeDrag.top-(event.clientY-treeDrag.y);
-  });
-  const stopTreeDrag=()=>{treeDrag=null;};
-  treeViewport.addEventListener("pointerup",stopTreeDrag);
-  treeViewport.addEventListener("pointercancel",stopTreeDrag);
-  treeViewport.addEventListener("wheel",event=>{
-    event.preventDefault();
-    const before=treeZoom;treeZoom=Math.max(0.55,Math.min(1.8,treeZoom*(event.deltaY<0?1.08:0.92)));
-    const ratio=treeZoom/before,left=treeViewport.scrollLeft,top=treeViewport.scrollTop;
-    renderTree();treeViewport.scrollLeft=left*ratio;treeViewport.scrollTop=top*ratio;
-  },{passive:false});
+  const treeViewport=$("treeViewport");let treeDrag=null;
+  treeViewport.addEventListener("pointerdown",event=>{if(event.target.closest(".treeNode"))return;treeDrag={x:event.clientX,y:event.clientY,left:treeViewport.scrollLeft,top:treeViewport.scrollTop};treeViewport.setPointerCapture(event.pointerId);});
+  treeViewport.addEventListener("pointermove",event=>{if(!treeDrag)return;treeViewport.scrollLeft=treeDrag.left-(event.clientX-treeDrag.x);treeViewport.scrollTop=treeDrag.top-(event.clientY-treeDrag.y);});
+  const stopTreeDrag=()=>{treeDrag=null;};treeViewport.addEventListener("pointerup",stopTreeDrag);treeViewport.addEventListener("pointercancel",stopTreeDrag);
+  treeViewport.addEventListener("wheel",event=>{event.preventDefault();const before=treeZoom;treeZoom=Math.max(0.55,Math.min(1.8,treeZoom*(event.deltaY<0?1.08:0.92)));const ratio=treeZoom/before,left=treeViewport.scrollLeft,top=treeViewport.scrollTop;renderTree();treeViewport.scrollLeft=left*ratio;treeViewport.scrollTop=top*ratio;},{passive:false});
   $("healthUnlock").addEventListener("click",unlockHealth);
-  $("connectGitHubBtn").addEventListener("click",connectGitHub);
-  $("connectGitHubWorkspaceBtn").addEventListener("click",connectGitHub);
-  $("downloadCloudBtn").addEventListener("click",downloadCloudBackup);
-  $("githubUploadBtn").addEventListener("click",uploadCloudBackup);
-  $("githubDownloadWorkspaceBtn").addEventListener("click",downloadCloudBackup);
-  $("exportBackupBtn").addEventListener("click",downloadBackup);
-  $("restoreBtn").addEventListener("click",restoreBackup);
+  $("connectGitHubBtn").addEventListener("click",connectGitHub);$("connectGitHubWorkspaceBtn").addEventListener("click",connectGitHub);
+  $("downloadCloudBtn").addEventListener("click",downloadCloudBackup);$("githubUploadBtn").addEventListener("click",uploadCloudBackup);
+  $("githubDownloadWorkspaceBtn").addEventListener("click",downloadCloudBackup);$("exportBackupBtn").addEventListener("click",downloadBackup);$("restoreBtn").addEventListener("click",restoreBackup);
 }
-
 
 async function connectGitHub(event) {
   const fromWorkspace=event?.currentTarget?.id==="connectGitHubWorkspaceBtn";
@@ -494,21 +495,21 @@ async function connectGitHub(event) {
     await service.connect();
     githubStorage=service;
     vault.cache?.close?.();
-    vault.cache=new GitHubContentsCache(service);
+    vault.cache=new GitHubPlainContentsCache(service);
     try{localStorage.setItem("familyVaultRepo",repoPath);}catch{}
     $("githubRepo").value=repoPath;$("githubRepoWorkspace").value=repoPath;
     $("githubToken").value="";$("githubTokenWorkspace").value="";
     const remoteStatus=await vault.status("family");
-    const state=remoteStatus.exists?"已連接私人倉庫，雲端保險庫已存在。":"已連接私人倉庫，尚未建立雲端保險庫。";
+    const state="已連接私人倉庫；一般資料明文保存，附件可逐件加密。";
     $("githubStatus").textContent=state;
-    $("githubWorkspaceStatus").textContent="資料直接讀寫 GitHub 私人倉庫；每次保存均即時加密上傳。";
+    $("githubWorkspaceStatus").textContent="資料直接讀寫 GitHub 私人倉庫；新資料以明文 JSON 保存。";
     $("cloudState").textContent="GitHub 私人倉庫已連接";
-    $("storageNotice").textContent="雲端直存模式：所有正式資料加密後直接寫入 GitHub 私人倉庫，不使用本機資料庫。保存失敗會明確提示。";
-    $("gateTitle").textContent=remoteStatus.exists?"解鎖雲端家庭資料保險庫":"建立雲端家庭資料保險庫";
-    $("gateDesc").textContent=remoteStatus.exists?"輸入保險庫密碼，解鎖 GitHub 私人倉庫中的加密資料。":"設定至少 12 個字元的高強度密碼，建立雲端加密保險庫。";
-    $("passwordLabel").firstChild.textContent=remoteStatus.exists?"保險庫密碼":"設定保險庫密碼";
-    $("confirmWrap").hidden=remoteStatus.exists;
-    $("gateSubmit").textContent=remoteStatus.exists?"解鎖雲端資料":"建立雲端保險庫";
+    $("storageNotice").textContent="雲端直存模式：人物、關係、事件及醫療文字以明文 JSON 寫入 GitHub 私人倉庫；附件可逐件選擇加密。";
+    $("gateTitle").textContent="已連接家庭資料私人倉庫";
+    $("gateDesc").textContent="一般家庭資料將以明文保存；勾選加密的附件會在本機加密後上傳。";
+    $("passwordLabel").hidden=true;
+    $("confirmWrap").hidden=true;
+    $("gateSubmit").textContent="進入家庭資料";
     $("gateSubmit").disabled=false;
     $("downloadCloudBtn").disabled=true;
     $("githubUploadBtn").disabled=true;
@@ -714,7 +715,7 @@ async function saveMedicalRecord(event) {
     const result=await vault.save("medical","health",id,1,payload,old?selectedMedicalVersion:null);
     medicalRecords=medicalRecords.filter(item=>item.id!==id);
     medicalRecords.push({id,version:result.version,...payload});
-    resetMedicalForm();renderMedicalRecords();alert("醫療紀錄已在獨立醫療保險庫中加密並保存至 GitHub。");
+    resetMedicalForm();renderMedicalRecords();alert("醫療紀錄已以明文保存至 GitHub 私人倉庫。");
   }catch(error){alert("醫療紀錄保存失敗："+error.message);}
 }
 
@@ -729,28 +730,20 @@ async function deleteMedicalRecord(item) {
 }
 
 async function updateHealthState() {
-  const status=await vault.status("medical");
-  $("healthState").textContent=status.unlocked?"已解鎖":status.exists?"已建立／已鎖定":"尚未建立";
-  $("healthUnlock").textContent=status.unlocked?"鎖定醫療保險庫":status.exists?"解鎖醫療保險庫":"建立醫療保險庫";
+  $("healthState").textContent="明文保存";
+  $("healthUnlock").textContent="重新載入醫療紀錄";
   $("healthState").dataset.scope="medical";
-  $("medicalSection").hidden=!(status.unlocked&&selectedId);
+  $("medicalSection").hidden=!selectedId;
 }
 async function unlockHealth() {
-  const status=await vault.status("medical");
-  if(status.unlocked){
-    vault.lock("medical");medicalRecords=[];resetMedicalForm();$("medicalList").replaceChildren();
-    await updateHealthState();return;
-  }
-  const password=prompt(status.exists?"輸入醫療保險庫密碼：":"設定獨立醫療保險庫密碼（至少 12 個字元）：");
-  if(!password)return;
   try {
-    if(status.exists) await vault.unlock("medical",password);
-    else await vault.create("medical",password);
     await loadMedicalRecords();
     await updateHealthState();
     if(selectedId)renderMedicalRecords();
-    alert("醫療保險庫已獨立解鎖。紀錄只在此保險庫中加密保存。");
-  } catch(error) { alert("醫療保險庫操作失敗："+error.message); }
+  } catch(error) {
+    alert("醫療資料讀取失敗："+error.message+"。若這是舊版加密紀錄，需要先完成舊資料解鎖與遷移。");
+  }
 }
+
 
 start().catch(error=>{$("gateError").textContent="啟動失敗："+error.message;});
