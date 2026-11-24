@@ -18,7 +18,7 @@ body:not(.ready) .auth .notice{margin-top:16px;background:transparent;border:0;b
 @media(max-width:600px){body:not(.ready) .wrap{padding:16px}body:not(.ready) .auth{padding:20px}}
 
 </style></head><body><main class="wrap"><header><div class="brand"><h1>🥇 黃金管理</h1><div class="muted small">實物黃金 · 投資黃金 · 持倉成本與盈虧</div></div><div class="headerRight"><div class="goldprice"><div><div class="small">國際黃金現貨 · 人民幣 / 克</div><strong id="marketPrice">讀取中…</strong><div class="small" id="marketUpdated">價格來源：Gold API · XAU/CNY</div></div><button class="btn" id="refreshPrice">↻ 更新</button></div></div><button class="btn" id="logout">登出</button></header>
-<section class="panel auth" id="auth"><h2 id="authTitle">正在連接黃金資料庫</h2><p class="muted" id="authMessage">正在使用 Hub 首頁提供的共用密鑰連接私有資料庫。</p><p id="error" class="error"></p><a class="btn" href="../../">返回個人工作台</a><div class="notice">資料保存在 Personal-Device-Manager 私有倉庫的 data/gold/gold.json。密鑰只保留在本頁記憶體中。</div></section>
+<section class="panel auth" id="auth"><h2 id="authTitle">正在連接黃金資料庫</h2><p class="muted" id="authMessage">正在使用 Hub 首頁提供的共用密鑰連接私有資料庫。</p><p id="error" class="error"></p><a class="btn" href="../../">返回個人工作台</a><div class="notice">資料保存在 Personal-Data-Manager 私有倉庫的 data/gold/gold.json。密鑰只保留在本頁記憶體中。</div></section>
 <section id="app" class="hidden">
 
 <div class="stats">
@@ -51,7 +51,7 @@ body:not(.ready) .auth .notice{margin-top:16px;background:transparent;border:0;b
 </div><p class="hint" id="calcHint">交易總額：¥0.00</p><p class="error" id="formError"></p><div class="foot"><button type="button" class="btn danger hidden" id="deleteItem">刪除此筆交易</button><button type="button" class="btn" id="cancel">取消</button><button type="submit" class="btn primary">儲存交易</button></div></form></section></div>
 <script>
 "use strict";
-const OWNER="Khoohew",REPO="Personal-Device-Manager",PATH="data/gold/gold.json";
+const OWNER="Khoohew",REPO="Personal-Data-Manager",PATH="data/gold/gold.json";
 let handoffToken="";try{const marker="PD_MANAGER_TOKEN:";if(window.name.startsWith(marker)){handoffToken=window.name.slice(marker.length);window.name="";}}catch{}
 let token="",data={version:1,market:{},transactions:[]},sha="",saving=false,pendingPhoto="",sortKey="date",sortDir=-1;
 const $=id=>document.getElementById(id),api="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+PATH;
