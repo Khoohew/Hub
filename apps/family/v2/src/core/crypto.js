@@ -149,6 +149,37 @@ export async function decryptJson(key, envelope, expectedContext) {
   return JSON.parse(decoder.decode(plaintext));
 }
 
+/** Encrypt one attachment with its own password; no vault-wide key is required. */
+export async function encryptBytesWithPassword(passphrase, context, bytes) {
+  if (typeof passphrase !== "string" || passphrase.length < 12) throw new Error("附件加密密碼至少需要 12 個字元。");
+  const salt = randomBytes(SALT_BYTES);
+  const iv = randomBytes(IV_BYTES);
+  const wrappingKey = await deriveWrappingKey(passphrase, salt);
+  const aad = encoder.encode(JSON.stringify(["family-attachment-v1", context.collection, context.recordId, context.schemaVersion]));
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: aad }, wrappingKey, bytes);
+  return {
+    formatVersion: 1, algorithm: "AES-256-GCM-PBKDF2",
+    collection: context.collection, recordId: context.recordId, schemaVersion: context.schemaVersion,
+    kdf: { name: "PBKDF2", hash: "SHA-256", iterations: PBKDF2_ITERATIONS, salt: bytesToBase64(salt) },
+    iv: bytesToBase64(iv), ciphertext: new Uint8Array(ciphertext)
+  };
+}
+
+/** Decrypt one attachment using the password supplied for that attachment. */
+export async function decryptBytesWithPassword(passphrase, envelope, expectedContext) {
+  if (envelope?.formatVersion !== 1 || envelope?.algorithm !== "AES-256-GCM-PBKDF2" ||
+      envelope.collection !== expectedContext.collection || envelope.recordId !== expectedContext.recordId ||
+      envelope.schemaVersion !== expectedContext.schemaVersion) throw new Error("加密附件格式或識別資訊不正確。");
+  const iterations = Number(envelope.kdf?.iterations);
+  if (!Number.isInteger(iterations) || iterations < 300000 || iterations > 2000000) throw new Error("附件金鑰參數不安全。");
+  const salt = base64ToBytes(envelope.kdf.salt), iv = base64ToBytes(envelope.iv);
+  if (salt.length !== SALT_BYTES || iv.length !== IV_BYTES) throw new Error("附件加密參數長度不正確。");
+  const wrappingKey = await deriveWrappingKey(passphrase, salt, iterations);
+  const aad = encoder.encode(JSON.stringify(["family-attachment-v1", expectedContext.collection, expectedContext.recordId, expectedContext.schemaVersion]));
+  const cipher = envelope.ciphertext instanceof Uint8Array ? envelope.ciphertext : base64ToBytes(envelope.ciphertext);
+  return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv, additionalData: aad }, wrappingKey, cipher));
+}
+
 /** Encrypts binary media without converting the original file to a data URL. */
 export async function encryptBytes(key, context, bytes) {
   const iv = randomBytes(IV_BYTES);
