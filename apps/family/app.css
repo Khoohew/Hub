@@ -41,7 +41,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .mediaActions{display:flex;gap:6px;margin-top:auto;padding-top:7px}.mediaActions button{flex:1;padding:6px 8px;font-size:12px}
 @media(max-width:700px){.mediaForm{grid-template-columns:1fr}.mediaGrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
 
-.treePanel{margin-bottom:16px}.treeViewport{height:370px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:radial-gradient(circle at 1px 1px,#29374d 1px,transparent 0);background-size:22px 22px;cursor:grab;touch-action:pan-x pan-y}
+.treePanel{margin-bottom:18px}.treeViewport{height:clamp(520px,68vh,820px);min-height:520px;width:100%;overflow:auto;border:1px solid var(--line);border-radius:10px;background:radial-gradient(circle at 1px 1px,#29374d 1px,transparent 0);background-size:22px 22px;cursor:grab;touch-action:pan-x pan-y}
 .treeViewport:active{cursor:grabbing}.treeViewport svg{display:block;max-width:none;user-select:none}
 .treeEdge{fill:none;stroke:#64748b;stroke-width:2.2;opacity:.85}.treeEdge.spouse_of{stroke:#c49b54;stroke-width:2.5}.treeEdge.sibling_of{stroke:#7c9bb8;stroke-dasharray:4 4}
 .treeNode{cursor:pointer}.treeNode rect{fill:#1a2940;stroke:#526782;stroke-width:1.5}.treeNode.selected rect{fill:#263d5e;stroke:#9dc6ff;stroke-width:2.5}.treeNode:hover rect{stroke:#d3e4fa}
@@ -89,3 +89,7 @@ body:not(.ready) footer{display:none!important}
   body:not(.ready) main{padding:0 16px 20px}
   body:not(.ready) .gate{padding:20px;margin:8vh auto 0}
 }
+
+/* Family tree is the primary workspace; keep auxiliary panels below it. */
+.treePanel{width:100%}.treeViewport svg{max-width:none}
+@media(max-width:700px){.treeViewport{height:62vh;min-height:440px;max-height:680px}}
