@@ -17,6 +17,35 @@ body:not(.ready) .auth p{margin:0 0 12px}
 body:not(.ready) .auth .notice{margin-top:16px;background:transparent;border:0;border-top:1px solid #293750;border-radius:0;padding:12px 0 0;color:var(--muted)}
 @media(max-width:600px){body:not(.ready) .wrap{padding:16px}body:not(.ready) .auth{padding:20px}}
 
+
+/* Mobile layout correction 2026-11-24 */
+@media(max-width:600px){
+  header{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"brand logout" "price price";
+    align-items:start;
+    column-gap:10px;
+    row-gap:12px;
+  }
+  header>.brand{grid-area:brand;min-width:0}
+  header>.headerRight{grid-area:price;display:block;width:100%;min-width:0}
+  header>.headerRight>.goldprice{width:100%;min-width:0;margin:0;display:flex;align-items:center;justify-content:space-between}
+  header>.headerRight>.goldprice>div{min-width:0}
+  header>.headerRight .goldprice strong{font-size:clamp(21px,6vw,26px)}
+  header>#logout{grid-area:logout;align-self:start;margin:0;white-space:nowrap}
+  .toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
+  .toolbar input{grid-column:1/-1;width:100%;min-width:0}
+  .toolbar select{grid-column:1/-1;width:100%;max-width:none!important}
+  .toolbar button{width:100%;min-width:0}
+}
+@media(max-width:380px){
+  .stats{grid-template-columns:minmax(0,1fr)}
+  .toolbar{grid-template-columns:minmax(0,1fr)}
+  .toolbar input,.toolbar select{grid-column:1}
+  header>.headerRight>.goldprice{align-items:flex-start}
+  header>.headerRight .goldprice strong{font-size:20px}
+}
 </style></head><body><main class="wrap"><header><div class="brand"><h1>🥇 黃金管理</h1><div class="muted small">實物黃金 · 投資黃金 · 持倉成本與盈虧</div></div><div class="headerRight"><div class="goldprice"><div><div class="small">國際黃金現貨 · 人民幣 / 克</div><strong id="marketPrice">讀取中…</strong><div class="small" id="marketUpdated">價格來源：Gold API · XAU/CNY</div></div><button class="btn" id="refreshPrice">↻ 更新</button></div></div><button class="btn" id="logout">登出</button></header>
 <section class="panel auth" id="auth"><h2 id="authTitle">正在連接黃金資料庫</h2><p class="muted" id="authMessage">正在使用 Hub 首頁提供的共用密鑰連接私有資料庫。</p><p id="error" class="error"></p><a class="btn" href="../../">返回個人工作台</a><div class="notice">資料保存在 Personal-Data-Manager 私有倉庫的 data/gold/gold.json。密鑰只保留在本頁記憶體中。</div></section>
 <section id="app" class="hidden">
