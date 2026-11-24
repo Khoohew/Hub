@@ -1,11 +1,10 @@
 import { createVaultKey, unlockVaultKey, encryptJson, decryptJson, encryptBytes, decryptBytes } from "./crypto.js";
-import { EncryptedLocalCache } from "../storage/indexeddb-cache.js";
 import { createId, nowIso } from "./id.js";
 
 const SCOPE_KEYS = { family: "vault:family:descriptor", medical: "vault:medical:descriptor" };
 
 export class VaultService {
-  constructor(cache = new EncryptedLocalCache()) {
+  constructor(cache = null) {
     this.cache = cache;
     this.keys = new Map();
     this.descriptors = new Map();
