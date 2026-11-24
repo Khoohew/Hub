@@ -70,7 +70,8 @@ export class GitHubReleaseStorage {
     const repository = await this.api(this.basePath());
     if (!repository.private) throw new Error("指定的 GitHub 倉庫不是私人倉庫，為避免家庭資料外洩已停止連接。");
     const release = await this.getRelease();
-    return { repository: repository.full_name, private: repository.private, hasBackup: Boolean(release) };
+    this.branch = repository.default_branch || "main";
+    return { repository: repository.full_name, private: repository.private, defaultBranch: this.branch, hasBackup: Boolean(release) };
   }
 
   async ensureRelease() {
