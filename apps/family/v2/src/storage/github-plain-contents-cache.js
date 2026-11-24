@@ -1,4 +1,4 @@
-const ROOT = "family-data/v1/objects";
+const ROOT = "data/family/v1/objects";
 const LEGACY_ROOT = "family-vault/v2/objects";
 const LEGACY_META = "family-vault/v2/meta";
 
