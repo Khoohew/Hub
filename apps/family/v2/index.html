@@ -27,6 +27,12 @@
 <section id="workspace" hidden>
   <div class="notice"><strong>目前是加密本機階段。</strong>尚未連接雲端帳戶，資料只在此瀏覽器的加密快取中。請勿把它當成跨裝置同步或唯一備份。</div>
   <div class="backupBar"><div><strong>加密備份</strong><small>匯出可攜式完整封裝，還原採新增模式，不覆蓋本機既有資料。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載加密備份</button></div>
+  <div class="cloudBar">
+    <div><strong>Dropbox 雲端同步</strong><small id="dropboxStatus">尚未設定 Dropbox App Key</small></div>
+    <button id="connectDropboxBtn" class="secondary" disabled>連接 Dropbox</button>
+    <button id="syncFamilyBtn" class="primary" disabled>同步家庭資料</button>
+    <button id="syncMedicalBtn" class="secondary" disabled hidden>同步醫療資料</button>
+  </div>
   <div class="workspaceGrid">
     <aside class="panel peoplePanel">
       <div class="sectionHead"><div><h2>家庭成員</h2><small id="peopleCount">0 位人物</small></div><button id="addPersonBtn" class="primary">＋ 新增</button></div>
