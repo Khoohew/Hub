@@ -105,7 +105,7 @@ export class GitHubContentsCache {
     const scopes = collection ? ["family", "medical"] : ["family", "medical"];
     const output = [];
     for (const scope of scopes) {
-      const collections = collection ? [collection] : ["persons", "relationships", "events", "media", "media-blobs", "health"];
+      const collections = collection ? [collection] : ["persons", "relationships", "events", "media", "media-blobs", "health", "sources"];
       for (const kind of collections) {
         const path = OBJECTS + "/" + safePart(scope) + "/" + safePart(kind);
         let entries;
