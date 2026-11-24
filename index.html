@@ -117,7 +117,7 @@ footer{margin-top:34px;color:#8594aa;font-size:12px;text-align:center}
 
   <article class="app-card">
     <div class="app-heading"><div class="icon" aria-hidden="true">👨‍👩‍👧‍👦</div><h2>家庭資料</h2></div>
-    <p>整理家族人物、親屬關係、照片與家庭檔案。</p>
+    <p>本機加密保存家族人物與親屬關係；雲端、照片及醫療功能逐步接入。</p>
     <button class="btn primary" type="button" data-target="family">進入家庭資料 →</button>
   </article>
 
@@ -235,6 +235,14 @@ document.addEventListener("click",event=>{
 });
 document.querySelectorAll("[data-target]").forEach(button=>{
   button.addEventListener("click",()=>{
+    const target=button.dataset.target;
+    const routes={family:["./apps/family/v2/","20261124c"],gallery:["./apps/gallery/","20261111i"],devices:["./apps/devices/","20261112a"],gold:["./apps/gold/","20261123c"]};
+    if(target==="family"){
+      error.textContent="";
+      window.name="";
+      location.href=routes[target][0]+"?v="+routes[target][1];
+      return;
+    }
     const value=tokenInput.value.trim();
     if(!value){
       error.textContent="請先在上方輸入共用存取密鑰。";
@@ -243,8 +251,6 @@ document.querySelectorAll("[data-target]").forEach(button=>{
     }
     error.textContent="";
     window.name="PD_MANAGER_TOKEN:"+value;
-    const target=button.dataset.target;
-    const routes={family:["./apps/family/","20261124b"],gallery:["./apps/gallery/","20261111i"],devices:["./apps/devices/","20261112a"],gold:["./apps/gold/","20261123c"]};
     location.href=routes[target][0]+"?v="+routes[target][1];
   });
 });
