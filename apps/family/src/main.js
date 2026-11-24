@@ -14,7 +14,7 @@ let persons = [], relationships = [], events = [], mediaItems = [], selectedId =
 let selectedEventId = null, selectedEventVersion = null;
 let medicalRecords = [], selectedMedicalId = null, selectedMedicalVersion = null;
 let mediaObjectUrls = new Map();
-let treeZoom = 1;
+let treeZoom = 1.15;
 let githubStorage = null;
 
 function message(text, error = false) {
