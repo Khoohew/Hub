@@ -1,4 +1,4 @@
-import { createVaultKey, unlockVaultKey, encryptJson, decryptJson, encryptBytes, decryptBytes } from "./crypto.js";
+import { createVaultKey, unlockVaultKey, encryptJson, decryptJson, encryptBytes, decryptBytes, encryptBytesWithPassword, decryptBytesWithPassword } from "./crypto.js";
 import { createId, nowIso } from "./id.js";
 
 const SCOPE_KEYS = { family: "vault:family:descriptor", medical: "vault:medical:descriptor" };
@@ -48,58 +48,56 @@ export class VaultService {
   }
 
   async save(scope, collection, recordId, schemaVersion, value, expectedVersion = null) {
-    const key = this.keys.get(scope);
-    const descriptor = this.descriptors.get(scope);
-    if (!key || !descriptor) throw new Error("請先解鎖對應保險庫。");
-    const context = { vaultId: descriptor.vaultId, collection, recordId, schemaVersion };
-    const envelope = await encryptJson(key, context, value);
     const objectId = scope + ":" + collection + ":" + recordId;
-    const result = await this.cache.put(objectId, collection, envelope, expectedVersion);
-    return { ...result, objectId };
+    const result = await this.cache.put(objectId, collection, value, expectedVersion);
+    return { ...result, objectId, encrypted: false };
   }
 
   async load(scope, collection, recordId) {
     const key = this.keys.get(scope);
     const descriptor = this.descriptors.get(scope);
-    if (!key || !descriptor) throw new Error("請先解鎖對應保險庫。");
     const objectId = scope + ":" + collection + ":" + recordId;
     const stored = await this.cache.get(objectId);
     if (!stored) return null;
-    const context = {
-      vaultId: descriptor.vaultId,
-      collection,
-      recordId,
-      schemaVersion: stored.envelope.schemaVersion
-    };
-    return { value: await decryptJson(key, stored.envelope, context), version: stored.version };
+    if (Object.prototype.hasOwnProperty.call(stored, "value")) return { value: stored.value, version: stored.version, encrypted: false };
+    if (!key || !descriptor) throw new Error("此紀錄仍是舊版加密資料；請使用舊保險庫密碼解鎖後遷移。");
+    const context = { vaultId: descriptor.vaultId, collection, recordId, schemaVersion: stored.envelope.schemaVersion };
+    return { value: await decryptJson(key, stored.envelope, context), version: stored.version, encrypted: true };
   }
 
 
   async saveBytes(scope, collection, recordId, schemaVersion, bytes, expectedVersion = null) {
-    const key = this.keys.get(scope);
-    const descriptor = this.descriptors.get(scope);
-    if (!key || !descriptor) throw new Error("請先解鎖對應保險庫。");
-    const context = { vaultId: descriptor.vaultId, collection, recordId, schemaVersion };
-    const envelope = await encryptBytes(key, context, bytes);
     const objectId = scope + ":" + collection + ":" + recordId;
-    const result = await this.cache.put(objectId, collection, envelope, expectedVersion);
-    return { ...result, objectId };
+    const result = await this.cache.put(objectId, collection, { bytes: new Uint8Array(bytes) }, expectedVersion);
+    return { ...result, objectId, encrypted: false };
   }
 
-  async loadBytes(scope, collection, recordId) {
-    const key = this.keys.get(scope);
-    const descriptor = this.descriptors.get(scope);
-    if (!key || !descriptor) throw new Error("請先解鎖對應保險庫。");
+  async saveEncryptedBytes(scope, collection, recordId, schemaVersion, bytes, passphrase, expectedVersion = null) {
+    const context = { collection, recordId, schemaVersion };
+    const envelope = await encryptBytesWithPassword(passphrase, context, bytes);
+    const objectId = scope + ":" + collection + ":" + recordId;
+    const result = await this.cache.put(objectId, collection, envelope, expectedVersion);
+    return { ...result, objectId, encrypted: true };
+  }
+
+  async loadBytes(scope, collection, recordId, passphrase = null) {
     const objectId = scope + ":" + collection + ":" + recordId;
     const stored = await this.cache.get(objectId);
     if (!stored) return null;
-    const context = {
-      vaultId: descriptor.vaultId,
-      collection,
-      recordId,
-      schemaVersion: stored.envelope.schemaVersion
-    };
-    return { bytes: await decryptBytes(key, stored.envelope, context), version: stored.version };
+    if (Object.prototype.hasOwnProperty.call(stored, "value")) {
+      const bytes = stored.value?.bytes;
+      if (!(bytes instanceof Uint8Array)) throw new Error("明文附件格式不正確。");
+      return { bytes, version: stored.version, encrypted: false };
+    }
+    if (stored.envelope?.algorithm === "AES-256-GCM-PBKDF2") {
+      if (!passphrase) throw new Error("此附件已加密，需要輸入該附件的密碼。");
+      const context = { collection, recordId, schemaVersion: stored.envelope.schemaVersion };
+      return { bytes: await decryptBytesWithPassword(passphrase, stored.envelope, context), version: stored.version, encrypted: true };
+    }
+    const key = this.keys.get(scope), descriptor = this.descriptors.get(scope);
+    if (!key || !descriptor) throw new Error("此附件仍是舊版整庫加密資料，無法用新附件密碼方式讀取。");
+    const context = { vaultId: descriptor.vaultId, collection, recordId, schemaVersion: stored.envelope.schemaVersion };
+    return { bytes: await decryptBytes(key, stored.envelope, context), version: stored.version, encrypted: true };
   }
 
   async sealBackupManifest(manifest) {
@@ -111,7 +109,6 @@ export class VaultService {
   }
 
   async delete(scope, collection, recordId, expectedVersion = null) {
-    if (!this.keys.has(scope)) throw new Error("請先解鎖對應保險庫。");
     return this.cache.delete(scope + ":" + collection + ":" + recordId, expectedVersion);
   }
 
