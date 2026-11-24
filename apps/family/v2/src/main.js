@@ -16,7 +16,15 @@ function message(text, error = false) {
   $("saveStatus").style.color = error ? "#ffaaaa" : "#9bd8b2";
 }
 function personById(id) { return persons.find(p => p.id === id); }
-function safeText(value) { return String(value || "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;',"'":"&#39;"}[ch])); }
+function safeText(value) {
+  return String(value || "").replace(/[&<>"']/g, ch => {
+    if (ch === "&") return "&amp;";
+    if (ch === "<") return "&lt;";
+    if (ch === ">") return "&gt;";
+    if (ch === '"') return "&quot;";
+    return "&#39;";
+  });
+}
 
 async function loadAll() {
   persons = [];
@@ -181,18 +189,21 @@ async function setupDropbox() {
     if(params.has("code")||params.has("error")) {
       const result=await dropbox.completeAuthorization(location.search);
       history.replaceState(null,"",location.pathname);
-      $("dropboxStatus").textContent="Dropbox 已連接 · "+(result.accountId||"帳戶已授權");
+      $("dropboxStatus").textContent="Dropbox 已連接 · "+(result.accountId||"帳戶已授權")+"（短效工作階段）";
+      dropboxConnected=true;
+      $("connectDropboxBtn").textContent="重新授權";
+      $("syncFamilyBtn").disabled=false;
+      const medical=await vault.status("medical");
+      $("syncMedicalBtn").hidden=!medical.exists;
+      $("syncMedicalBtn").disabled=!medical.unlocked;
     } else {
-      const result=await dropbox.loadSavedConnection();
-      $("dropboxStatus").textContent="Dropbox 已連接 · "+(result.accountId||"授權有效");
+      $("dropboxStatus").textContent="尚未連接；每次新工作階段需重新授權。";
+      dropboxConnected=false;
+      $("connectDropboxBtn").textContent="連接 Dropbox";
+      $("connectDropboxBtn").disabled=false;
+      $("syncFamilyBtn").disabled=true;
+      $("syncMedicalBtn").disabled=true;
     }
-    dropboxConnected=true;
-    $("connectDropboxBtn").textContent="重新授權";
-    $("connectDropboxBtn").disabled=false;
-    $("syncFamilyBtn").disabled=false;
-    const medical=await vault.status("medical");
-    $("syncMedicalBtn").hidden=!medical.exists;
-    $("syncMedicalBtn").disabled=!medical.unlocked;
   } catch(error) {
     if(location.search.includes("code=")||location.search.includes("error=")) {
       $("dropboxStatus").textContent="Dropbox 授權處理失敗："+error.message;
@@ -234,6 +245,11 @@ async function syncCloud(scope) {
     if(scope==="family")await loadAll();
   } catch(error) {
     $("dropboxStatus").textContent="同步失敗："+error.message;
+    if(error.name==="StorageAuthorizationError"||error.message.includes("短效授權已過期")) {
+      dropbox?.clearSession();dropboxConnected=false;
+      $("connectDropboxBtn").textContent="重新連接 Dropbox";
+      $("syncFamilyBtn").disabled=true;$("syncMedicalBtn").disabled=true;
+    }
     alert("Dropbox 同步失敗："+error.message);
   } finally {
     button.textContent=original;
