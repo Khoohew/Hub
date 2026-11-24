@@ -400,7 +400,7 @@ async function downloadMedia(item) {
 }
 
 async function deleteMedia(item) {
-  if(!confirm("確定刪除此人物的附件？此操作會刪除本機加密附件，雲端備份要等下次重新上傳才會同步。"))return;
+  if(!confirm("確定刪除此人物的附件？此操作會直接刪除 GitHub 私人倉庫中的加密附件。"))return;
   try{
     await vault.delete("family","media",item.id);
     await vault.delete("family","media-blobs",item.id);
