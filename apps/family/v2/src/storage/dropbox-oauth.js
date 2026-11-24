@@ -1,5 +1,5 @@
 const STATE_KEY = "family-vault-dropbox-oauth";
-const TOKEN_ENDPOINT = "https://api.dropboxapi.com/oauth2/token";
+const TOKEN_ENDPOINT = "https://api.dropbox.com/oauth2/token";
 const AUTHORIZE_ENDPOINT = "https://www.dropbox.com/oauth2/authorize";
 const encoder = new TextEncoder();
 
@@ -39,7 +39,6 @@ export class DropboxOAuthClient {
     url.searchParams.set("client_id", this.appKey);
     url.searchParams.set("response_type", "code");
     url.searchParams.set("redirect_uri", this.redirectUri);
-    url.searchParams.set("token_access_type", "offline");
     url.searchParams.set("code_challenge", challenge);
     url.searchParams.set("code_challenge_method", "S256");
     url.searchParams.set("state", state);
@@ -77,33 +76,10 @@ export class DropboxOAuthClient {
     if (!response.ok) throw new Error("Dropbox Token 交換失敗："+(payload.error_description||payload.error||response.status));
     return {
       accessToken: payload.access_token,
-      refreshToken: payload.refresh_token || null,
       expiresAt: Date.now() + Number(payload.expires_in||14400)*1000,
       accountId: payload.account_id || null,
       scope: payload.scope || ""
     };
   }
 
-  async refresh(refreshToken) {
-    if (!refreshToken) throw new Error("缺少 Dropbox Refresh Token，請重新授權。");
-    const body = new URLSearchParams({
-      grant_type:"refresh_token",
-      refresh_token:refreshToken,
-      client_id:this.appKey
-    });
-    const response=await this.fetchImpl(TOKEN_ENDPOINT,{
-      method:"POST",
-      headers:{"Content-Type":"application/x-www-form-urlencoded"},
-      body
-    });
-    const payload=await response.json().catch(()=>({}));
-    if(!response.ok)throw new Error("Dropbox Token 更新失敗："+(payload.error_description||payload.error||response.status));
-    return {
-      accessToken:payload.access_token,
-      refreshToken:payload.refresh_token||refreshToken,
-      expiresAt:Date.now()+Number(payload.expires_in||14400)*1000,
-      accountId:payload.account_id||null,
-      scope:payload.scope||""
-    };
-  }
 }
