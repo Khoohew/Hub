@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>家庭資料庫 V2</title>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<header class="topbar">
+  <div><div class="eyebrow">PERSONAL FAMILY VAULT</div><h1>家庭資料庫</h1><p>加密保存 · 分類管理 · 長期可攜</p></div>
+  <div class="topActions"><span id="cloudState" class="state">雲端尚未連接</span><button id="lockBtn" class="secondary" hidden>鎖定</button></div>
+</header>
+<main>
+<section id="gate" class="panel gate">
+  <div class="gateMark">🔐</div><h2 id="gateTitle">建立家庭資料保險庫</h2>
+  <p id="gateDesc">資料會先在本機加密，再保存到加密快取。請設定至少 12 個字元的高強度密碼。忘記密碼且沒有恢復金鑰，資料將無法解密。</p>
+  <form id="gateForm">
+    <label id="passwordLabel">設定保險庫密碼<input id="vaultPassword" type="password" minlength="12" autocomplete="new-password" required></label>
+    <label id="confirmWrap">再次輸入密碼<input id="vaultConfirm" type="password" minlength="12" autocomplete="new-password" required></label>
+    <p id="gateError" class="error" role="alert"></p>
+    <button id="gateSubmit" class="primary" type="submit">建立加密保險庫</button>
+    <div class="restoreGate"><label>或從完整加密備份還原<input id="restoreInput" type="file" accept=".familyvault,.zip,application/zip"></label><button id="restoreBtn" type="button" class="secondary">檢查並還原備份</button></div>
+  </form>
+</section>
+
+<section id="workspace" hidden>
+  <div class="notice"><strong>目前是加密本機階段。</strong>尚未連接雲端帳戶，資料只在此瀏覽器的加密快取中。請勿把它當成跨裝置同步或唯一備份。</div>
+  <div class="backupBar"><div><strong>加密備份</strong><small>匯出可攜式完整封裝，還原採新增模式，不覆蓋本機既有資料。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載加密備份</button></div>
+  <div class="workspaceGrid">
+    <aside class="panel peoplePanel">
+      <div class="sectionHead"><div><h2>家庭成員</h2><small id="peopleCount">0 位人物</small></div><button id="addPersonBtn" class="primary">＋ 新增</button></div>
+      <input id="search" class="search" placeholder="搜尋姓名、籍貫、職業…">
+      <div id="peopleList" class="peopleList"></div>
+    </aside>
+    <section class="panel detailPanel">
+      <div id="emptyDetail" class="empty"><div>👪</div><h2>建立你的家庭資料</h2><p>先新增人物，再逐步建立親屬關係、家庭事件和照片檔案。</p><button id="emptyAdd" class="primary">新增第一位人物</button></div>
+      <form id="personForm" hidden>
+        <div class="sectionHead"><div><div class="eyebrow">PERSON PROFILE</div><h2 id="formTitle">新增人物</h2></div><button id="cancelEdit" type="button" class="secondary">取消</button></div>
+        <div class="formGrid">
+          <label>姓名<input id="name" required maxlength="120"></label>
+          <label>性別<select id="gender"><option value="unknown">未填</option><option value="male">男</option><option value="female">女</option><option value="other">其他</option></select></label>
+          <label>字輩<input id="generation"></label>
+          <label>同胞排行<input id="siblingOrder" type="number" min="1"></label>
+          <label>出生日期<input id="birthDate" type="date"></label>
+          <label>逝世日期<input id="deathDate" type="date"></label>
+          <label>出生地／籍貫<input id="birthplace"></label>
+          <label>居住地<input id="residence"></label>
+          <label class="wide">職業<input id="occupation"></label>
+          <label class="wide">生平與故事<textarea id="biography" rows="6"></textarea></label>
+        </div>
+        <div class="formActions"><button type="submit" class="primary">保存人物資料</button><span id="saveStatus" class="muted"></span></div>
+      </form>
+      <section id="relationsSection" hidden class="relations">
+        <div class="sectionHead"><div><h3>親屬關係</h3><small>每段關係獨立保存，可追溯與修訂</small></div></div>
+        <div class="relationEditor">
+          <select id="relationType"><option value="parent_of">此人物是對方的父母</option><option value="spouse_of">此人物與對方是配偶</option><option value="adoptive_parent_of">此人物是對方的養父母</option><option value="guardian_of">此人物是對方的監護人</option></select>
+          <select id="relationPerson"><option value="">選擇另一位人物</option></select>
+          <button id="addRelation" class="secondary" type="button">建立關係</button>
+        </div>
+        <div id="relationsList" class="relationsList"></div>
+      </section>
+    </section>
+  </div>
+  <section class="panel healthPanel">
+    <div><div class="eyebrow">SEPARATE ENCRYPTED VAULT</div><h2>醫療資料保險庫</h2><p>病歷、過敏、用藥、手術與檢查紀錄會使用另一把加密金鑰，需獨立解鎖。</p></div>
+    <div class="healthActions"><span id="healthState" class="state">尚未建立</span><button id="healthUnlock" class="secondary">建立／解鎖醫療保險庫</button></div>
+  </section>
+</section>
+<footer>家庭資料庫 V2 · 本機加密核心測試階段</footer>
+</main>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
