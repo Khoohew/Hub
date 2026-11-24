@@ -36,8 +36,8 @@
 <section id="workspace" hidden>
   <div id="storageNotice" class="notice"><strong>尚未連接雲端。</strong>連接 GitHub 私人倉庫後，正式資料將直接加密保存至雲端，不寫入本機資料庫。</div>
   <div class="backupBar"><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載加密備份</button></div>
-  <div class="cloudBar">
-    <div><strong>GitHub 加密雲端備份</strong><small id="githubWorkspaceStatus">尚未連接 GitHub 私人倉庫</small></div>
+  <div class="cloudBar" hidden>
+    <div><strong>GitHub 雲端直存</strong><small id="githubWorkspaceStatus">雲端資料由上方已授權的私人倉庫直接讀寫</small></div>
     <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepoWorkspace" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
     <label class="tokenField">GitHub Fine-grained Token<input id="githubTokenWorkspace" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" /></label>
     <button id="connectGitHubWorkspaceBtn" class="secondary">連接／重新連接</button>
