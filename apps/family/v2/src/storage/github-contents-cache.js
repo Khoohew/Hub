@@ -13,6 +13,20 @@ function decodeBase64(value) {
   const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }
+function serialize(value) {
+  return JSON.stringify(value, (_, item) => item instanceof Uint8Array
+    ? { __familyVaultBinary: encodeBase64(String.fromCharCode(...item)) }
+    : item);
+}
+function deserialize(value) {
+  return JSON.parse(value, (_, item) => {
+    if (item && typeof item === "object" && typeof item.__familyVaultBinary === "string") {
+      const binary = atob(item.__familyVaultBinary);
+      return Uint8Array.from(binary, char => char.charCodeAt(0));
+    }
+    return item;
+  });
+}
 function safePart(value) {
   return encodeURIComponent(String(value)).replace(/%/g, "~");
 }
@@ -29,15 +43,22 @@ export class GitHubContentsCache {
   async read(path) {
     try {
       const result = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/") + "?ref=main");
-      if (result.type !== "file" || !result.content) throw new Error("GitHub 回傳的資料檔格式不正確。");
-      return { value: JSON.parse(decodeBase64(result.content)), sha: result.sha };
+      if (result.type !== "file") throw new Error("GitHub 回傳的資料檔格式不正確。");
+      let raw = result.content;
+      if (!raw && result.download_url) {
+        const response = await this.github.fetchImpl(result.download_url, { headers: this.github.headers({ Accept: "application/vnd.github.raw" }) });
+        if (!response.ok) throw new Error("讀取 GitHub 原始資料失敗（" + response.status + "）。");
+        raw = await response.text();
+        return { value: deserialize(raw), sha: result.sha };
+      }
+      return { value: deserialize(decodeBase64(raw)), sha: result.sha };
     } catch (error) {
       if (error.status === 404) return null;
       throw error;
     }
   }
   async write(path, value, sha = null) {
-    const body = { message: "Update encrypted family vault data", content: encodeBase64(JSON.stringify(value)), branch: "main" };
+    const body = { message: "Update encrypted family vault data", content: encodeBase64(serialize(value)), branch: "main" };
     if (sha) body.sha = sha;
     const result = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/"), {
       method: "PUT",
