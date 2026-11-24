@@ -110,7 +110,7 @@ export class GitHubContentsCache {
         const path = OBJECTS + "/" + safePart(scope) + "/" + safePart(kind);
         let entries;
         try {
-          entries = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/") + "?ref=main");
+          entries = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/") + "?ref=" + encodeURIComponent(this.github.branch || "main") + "");
         } catch (error) {
           if (error.status === 404) continue;
           throw error;
