@@ -30,8 +30,11 @@ h1{font-size:24px;margin:0 0 8px}
   <h1 id="authTitle">正在連接家庭資料</h1>
   <p class="muted" id="authMessage">正在使用 HUB 首頁提供的共用密鑰驗證私有資料庫。</p>
   <p class="status" id="status">正在驗證存取權限…</p>
-  <div class="actions"><a class="btn" href="../../">返回個人工作台</a></div>
-  <div class="notice">目前先完成家庭資料入口及密鑰驗證。族譜原始網頁文件已存放在私人資料庫；讀取、保存、照片管理功能尚未接入，暫時不開放編輯，避免產生另一份空白資料。</div>
+  <div class="actions">
+    <a class="btn" href="../../">返回個人工作台</a>
+    <a class="btn primary" id="enterApp" href="./v2/" hidden>進入家庭資料庫 V2 →</a>
+  </div>
+  <div class="notice">V2 測試版已接入：人物與親屬關係可在本機加密保存，並可匯出／還原加密備份。雲端同步、照片文件管理、族譜樹和醫療紀錄介面仍在開發中。現階段請勿輸入唯一副本或高敏感真實資料。</div>
 </section>
 </main>
 <script>
@@ -65,7 +68,8 @@ async function connect(value){
   $("authTitle").textContent="家庭資料入口已連接";
   $("authMessage").textContent="共用密鑰有效，已成功讀取族譜原始網頁文件。";
   $("status").className="status success";
-  $("status").textContent="密鑰驗證成功 · 原始文件可讀";
+  $("status").textContent="密鑰驗證成功 · 家庭資料庫 V2 已就緒";
+  $("enterApp").hidden=false;
  }catch(error){token="";showError(error);}
 }
 connect(handoffToken);
