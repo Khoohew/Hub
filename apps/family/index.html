@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<title>家庭資料</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#141d30;--line:#293750;--text:#edf3fc;--muted:#9baac0;--accent:#a8c8ff;--danger:#efaaaa;--green:#9bd8b2}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:22px;background:radial-gradient(ellipse at 12% -5%,#263d5d66,transparent 44%),var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif}
+button{font:inherit;cursor:pointer}
+.wrap{width:min(620px,100%)}
+.panel{background:#141d30ed;border:1px solid var(--line);border-radius:16px;padding:clamp(20px,4vw,30px);box-shadow:0 18px 48px #0004}
+h1{font-size:24px;margin:0 0 8px}
+.muted{color:var(--muted);margin:0 0 20px}
+.status{min-height:22px;margin:0 0 14px;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.error{color:var(--danger)}
+.success{color:var(--green)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;border:1px solid #35445d;border-radius:10px;padding:9px 16px;background:#1a263b;color:var(--text);text-decoration:none}
+.btn.primary{background:var(--accent);color:#142033;border-color:var(--accent);font-weight:700}
+.notice{font-size:12px;color:#b9c7db;border:1px solid #35445d;background:#101a2a;padding:13px;border-radius:10px;margin-top:18px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+@media(max-width:520px){body{padding:14px}.panel{padding:20px}.actions .btn{width:100%}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<section class="panel" id="auth">
+  <h1 id="authTitle">正在連接家庭資料</h1>
+  <p class="muted" id="authMessage">正在使用 HUB 首頁提供的共用密鑰驗證私有資料庫。</p>
+  <p class="status" id="status">正在驗證存取權限…</p>
+  <div class="actions"><a class="btn" href="../../">返回個人工作台</a></div>
+  <div class="notice">目前先完成家庭資料入口及密鑰驗證。族譜原始網頁文件已存放在私人資料庫；讀取、保存、照片管理功能尚未接入，暫時不開放編輯，避免產生另一份空白資料。</div>
+</section>
+</main>
+<script>
+"use strict";
+const OWNER="Khoohew",REPO="Personal-Data-Manager",PATH="data/family/index.html";
+let handoffToken="";
+try{const marker="PD_MANAGER_TOKEN:";if(window.name.startsWith(marker)){handoffToken=window.name.slice(marker.length);window.name="";}}catch{}
+let token="";
+const $=id=>document.getElementById(id);
+const api="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+PATH;
+const headers=()=>({"Accept":"application/vnd.github+json","Authorization":"Bearer "+token,"X-GitHub-Api-Version":"2022-11-28"});
+function showError(error){
+ $("authTitle").textContent="家庭資料連接失敗";
+ $("authMessage").textContent="請檢查密鑰權限及網路，然後返回工作台重新進入。";
+ $("status").className="status error";
+ $("status").textContent=error.message||String(error);
+}
+async function connect(value){
+ token=value;
+ if(!token){showError(new Error("請從 HUB 首頁輸入共用密鑰後進入家庭資料。"));return;}
+ try{
+  const response=await fetch(api,{headers:headers(),cache:"no-store"});
+  let result={};try{result=await response.json()}catch{}
+  if(!response.ok){
+   if(response.status===401)throw Error("GitHub 回傳 401：密鑰無效或已過期。");
+   if(response.status===404)throw Error("GitHub 回傳 404：請確認密鑰已授權私人資料庫的 Contents 讀取權限。");
+   if(response.status===403)throw Error("GitHub 回傳 403：密鑰權限不足或 API 暫時受限。");
+   throw Error("GitHub 讀取失敗 HTTP "+response.status+"："+(result.message||"未知錯誤"));
+  }
+  if(!result.content)throw Error("GitHub 沒有返回族譜原始網頁文件。");
+  $("authTitle").textContent="家庭資料入口已連接";
+  $("authMessage").textContent="共用密鑰有效，已成功讀取族譜原始網頁文件。";
+  $("status").className="status success";
+  $("status").textContent="密鑰驗證成功 · 原始文件可讀";
+ }catch(error){token="";showError(error);}
+}
+connect(handoffToken);
+</script>
+</body>
+</html>
