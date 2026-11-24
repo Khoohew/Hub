@@ -21,7 +21,7 @@
     <label id="confirmWrap" hidden>再次輸入密碼<input id="vaultConfirm" type="password" autocomplete="off"></label>
     <p id="gateError" class="error" role="alert"></p>
     <button id="gateSubmit" class="primary" type="submit" disabled>請先連接 GitHub</button>
-    <div class="restoreGate"><label>或從完整加密備份還原<input id="restoreInput" type="file" accept=".familyvault,.zip,application/zip"></label><button id="restoreBtn" type="button" class="secondary">檢查並還原備份</button></div>
+    <div class="restoreGate" hidden><label>或從完整加密備份還原<input id="restoreInput" type="file" accept=".familyvault,.zip,application/zip"></label><button id="restoreBtn" type="button" class="secondary">檢查並還原備份</button></div>
   </form>
   <div class="cloudBar cloudGate">
     <div><strong>GitHub 私人資料倉庫</strong><small id="githubStatus">一般資料以明文 JSON 保存；Token 僅保存在目前頁面記憶體。</small></div>
@@ -35,7 +35,7 @@
 
 <section id="workspace" hidden>
   <div id="storageNotice" class="notice"><strong>尚未連接雲端。</strong>連接 GitHub 私人倉庫後，正式資料將直接保存至雲端，不寫入本機資料庫。</div>
-  <div class="backupBar"><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載備份</button></div>
+  <div class="backupBar" hidden><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載備份</button></div>
   <div class="cloudBar" hidden>
     <div><strong>GitHub 雲端直存</strong><small id="githubWorkspaceStatus">雲端資料由上方已授權的私人倉庫直接讀寫</small></div>
     <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepoWorkspace" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
