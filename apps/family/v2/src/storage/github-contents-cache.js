@@ -108,20 +108,25 @@ export class GitHubContentsCache {
       const collections = collection ? [collection] : ["persons", "relationships", "events", "media", "media-blobs", "health", "sources"];
       for (const kind of collections) {
         const path = OBJECTS + "/" + safePart(scope) + "/" + safePart(kind);
-        let entries;
-        try {
-          entries = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/") + "?ref=" + encodeURIComponent(this.github.branch || "main") + "");
-        } catch (error) {
-          if (error.status === 404) continue;
-          throw error;
-        }
-        if (!Array.isArray(entries)) continue;
-        for (const entry of entries) {
-          if (entry.type !== "file" || !entry.name.endsWith(".json")) continue;
-          const id = decodeURIComponent(entry.name.slice(0, -5).replace(/~/g, "%"));
-          const objectId = scope + ":" + kind + ":" + id;
-          const file = await this.read(path + "/" + entry.name);
-          if (file) output.push({ objectId, collection: kind, version: file.value.version, updatedAt: file.value.updatedAt });
+        let page = 1;
+        while (true) {
+          let entries;
+          try {
+            entries = await this.github.api(this.github.basePath() + "/contents/" + path.split("/").map(encodeURIComponent).join("/") + "?ref=" + encodeURIComponent(this.github.branch || "main") + "&per_page=100&page=" + page);
+          } catch (error) {
+            if (error.status === 404 && page === 1) break;
+            throw error;
+          }
+          if (!Array.isArray(entries) || entries.length === 0) break;
+          for (const entry of entries) {
+            if (entry.type !== "file" || !entry.name.endsWith(".json")) continue;
+            const id = decodeURIComponent(entry.name.slice(0, -5).replace(/~/g, "%"));
+            const objectId = scope + ":" + kind + ":" + id;
+            const file = await this.read(path + "/" + entry.name);
+            if (file) output.push({ objectId, collection: kind, version: file.value.version, updatedAt: file.value.updatedAt });
+          }
+          if (entries.length < 100) break;
+          page++;
         }
       }
     }
