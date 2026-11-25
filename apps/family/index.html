@@ -10,7 +10,7 @@
 <body>
 <header class="topbar">
   <div><div class="eyebrow">PERSONAL FAMILY VAULT</div><h1>家庭資料庫</h1><p>GitHub 私人倉庫直存 · 明文優先 · 附件可選加密</p></div>
-  <div class="topActions"><span id="cloudState" class="state">雲端尚未連接</span><button id="lockBtn" class="secondary" hidden>鎖定</button></div>
+  <div class="topActions"><span id="cloudState" class="state">雲端尚未連接</span><button id="addPersonBtn" class="primary">＋ 新增人物</button><button id="exportBackupBtn" class="secondary">備份</button><button id="lockBtn" class="secondary" hidden>鎖定</button></div>
 </header>
 <main>
 <section id="gate" class="panel gate">
@@ -35,7 +35,7 @@
 
 <section id="workspace" hidden>
   <div id="storageNotice" class="notice"><strong>尚未連接雲端。</strong>連接 GitHub 私人倉庫後，正式資料將直接保存至雲端，不寫入本機資料庫。</div>
-  <div class="backupBar" hidden><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載備份</button></div>
+  <div class="backupBar" hidden><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label></div>
   <div class="cloudBar" hidden>
     <div><strong>GitHub 雲端直存</strong><small id="githubWorkspaceStatus">雲端資料由上方已授權的私人倉庫直接讀寫</small></div>
     <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepoWorkspace" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
@@ -46,7 +46,7 @@
   </div>
     <div class="workspaceGrid">
     <aside class="panel peoplePanel">
-      <div class="sectionHead"><div><h2>家庭成員</h2><small id="peopleCount">0 位人物</small></div><button id="addPersonBtn" class="primary">＋ 新增</button></div>
+      <div class="sectionHead"><div><h2>家庭成員</h2><small id="peopleCount">0 位人物</small></div></div>
       <input id="search" class="search" placeholder="搜尋姓名、籍貫、職業…">
       <div id="peopleList" class="peopleList"></div>
     </aside>
