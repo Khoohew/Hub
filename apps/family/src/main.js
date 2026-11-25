@@ -515,7 +515,7 @@ async function start() {
   $("eventForm").addEventListener("submit",saveEvent);$("eventCancelEdit").addEventListener("click",resetEventForm);
   $("eventDate").addEventListener("change",()=>{if($("eventDate").value&&$("eventDatePrecision").value==="unknown")$("eventDatePrecision").value="day";});
   $("medicalForm").addEventListener("submit",saveMedicalRecord);$("medicalCancelEdit").addEventListener("click",resetMedicalForm);
-  $("medicalRecordType").addEventListener("change",toggleMedicalFields);$("medicalAttachmentEncrypt").addEventListener("change",toggleMedicalAttachmentEncryption);
+  $("medicalRecordType").addEventListener("change",toggleMedicalFields);$("medicalAttachmentEncrypt").addEventListener("change",toggleMedicalAttachmentEncryption);$("medicalFiles").addEventListener("change",toggleMedicalAttachmentEncryption);
   $("treeFit").addEventListener("click",()=>{treeZoom=1;renderTree();});
   const treeViewport=$("treeViewport");let treeDrag=null;
   treeViewport.addEventListener("pointerdown",event=>{
@@ -756,9 +756,10 @@ function toggleMedicalFields() {
 }
 function toggleMedicalAttachmentEncryption() {
   const enabled=$("medicalAttachmentEncrypt").checked;
+  const needsPassword=enabled&&($("medicalFiles").files?.length||0)>0;
   $("medicalAttachmentPasswordFields").hidden=!enabled;
-  $("medicalAttachmentPassword").required=enabled;
-  $("medicalAttachmentPasswordConfirm").required=enabled;
+  $("medicalAttachmentPassword").required=needsPassword;
+  $("medicalAttachmentPasswordConfirm").required=needsPassword;
 }
 function renderMedicalFormAttachments(record) {
   const host=$("medicalFormAttachmentList");
