@@ -744,6 +744,7 @@ function resetMedicalForm() {
   $("medicalMedicationFields").hidden=true;$("medicalAllergyFields").hidden=true;
   $("medicalAttachmentPasswordFields").hidden=true;
   $("medicalAttachmentPassword").value="";$("medicalAttachmentPasswordConfirm").value="";
+  $("medicalAttachmentPassword").required=false;$("medicalAttachmentPasswordConfirm").required=false;
   $("medicalFormAttachmentList").hidden=true;$("medicalFormAttachmentList").textContent="";
   $("medicalSaveBtn").textContent="保存醫療紀錄";$("medicalCancelEdit").hidden=true;
 }
