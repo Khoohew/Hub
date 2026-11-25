@@ -42,15 +42,15 @@ export function buildTreeLayout(persons, relationships, centerId, { maxGeneratio
   }
 
   const maxRow = Math.max(1, ...sortedLevels.map(level => rows.get(level).length));
-  const width = Math.max(700, maxRow * 180 + 80);
+  const width = Math.max(700, maxRow * 220 + 80);
   const height = Math.max(180, sortedLevels.length * 150 + 70);
   const nodes = [];
   const positions = new Map();
   sortedLevels.forEach((level, rowIndex) => {
     const row = rows.get(level);
-    const startX = (width - row.length * 180) / 2 + 15;
+    const startX = (width - row.length * 220) / 2 + 15;
     row.forEach((person, index) => {
-      const node = { id: person.id, person, level, x: startX + index * 180, y: 35 + rowIndex * 150, width: 150, height: 76 };
+      const node = { id: person.id, person, level, x: startX + index * 220, y: 35 + rowIndex * 150, width: 150, height: 76 };
       nodes.push(node);
       positions.set(person.id, node);
     });
@@ -61,7 +61,8 @@ export function buildTreeLayout(persons, relationships, centerId, { maxGeneratio
   for (const rel of relationships) {
     if (!positions.has(rel.fromPersonId) || !positions.has(rel.toPersonId)) continue;
     if (!["parent_of", "adoptive_parent_of", "spouse_of", "sibling_of"].includes(rel.type)) continue;
-    const key = rel.id || [rel.type, rel.fromPersonId, rel.toPersonId].join("|");
+    const ends = rel.type === "spouse_of" || rel.type === "sibling_of" ? [rel.fromPersonId, rel.toPersonId].sort() : [rel.fromPersonId, rel.toPersonId];
+    const key = [rel.type, ...ends].join("|");
     if (seenEdges.has(key)) continue;
     seenEdges.add(key);
     edges.push({ from: rel.fromPersonId, to: rel.toPersonId, type: rel.type });

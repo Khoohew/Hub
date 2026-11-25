@@ -65,6 +65,14 @@ async function loadAll() {
     const loaded = await vault.load("family", "media", id);
     if (loaded) mediaItems.push(loaded.value);
   }
+  // 同一對配偶／同一父母子女關係若在倉庫中有重複記錄，載入時只保留第一筆，避免整份資料驗證失敗而無法保存。
+  const seenRel=new Set();
+  relationships=relationships.filter(r=>{
+    const pair=r.type==="spouse_of"||r.type==="sibling_of"?[r.fromPersonId,r.toPersonId].sort():[r.fromPersonId,r.toPersonId];
+    const key=[r.type,...pair].join("|");
+    if(seenRel.has(key))return false;
+    seenRel.add(key);return true;
+  });
   persons.sort((a,b)=>(a.name||"").localeCompare(b.name||"","zh-Hant"));
   renderPeople();
   if (selectedId && personById(selectedId)) showPerson(selectedId);
@@ -116,7 +124,7 @@ function renderTree() {
     if(edge.type==="spouse_of"){
       const left=a.x<=b.x?a:b,right=a.x<=b.x?b:a;
       const mx=(left.x+left.width+right.x)/2,my=left.y+38;
-      label='<rect class="treeTag" x="'+(mx-13)+'" y="'+(my-7)+'" width="26" height="14" rx="7"/><text class="treeTagText" x="'+mx+'" y="'+my+'">夫妻</text>';
+      label='<rect class="treeTag" x="'+(mx-17)+'" y="'+(my-9)+'" width="34" height="18" rx="9"/><text class="treeTagText" x="'+mx+'" y="'+my+'">夫妻</text>';
     }
     return '<path class="treeEdge '+edge.type+'" d="'+d+'"/>'+label;
   }).join("");
@@ -175,18 +183,19 @@ function fillForm(p) {
   $("generation").value = p.generation || ""; $("siblingOrder").value = p.siblingOrder || "";
   $("birthDate").value = p.birthDate || ""; $("deathDate").value = p.deathDate || "";
   $("hasDeathDate").checked = !!p.deathDate; $("deathDateWrap").hidden = !p.deathDate;
-  $("birthplace").value = p.birthplace || ""; $("residence").value = p.residence || "";
+  $("birthplace").value = p.birthplace || "";
   $("occupation").value = p.occupation || ""; $("biography").value = p.biography || "";
 }
 async function showPerson(id) {
   const p = personById(id); if (!p) return;
   selectedId = id; editing = false;
+  renderPeople(); renderTree();
   const stored = await vault.cache.get("family:persons:" + id);
   selectedVersion = stored?.version ?? null;
   $("emptyDetail").hidden = true; $("personForm").hidden = false; $("relationsSection").hidden = false; $("eventSection").hidden = false; $("mediaSection").hidden = false;
   resetEventForm();resetMedicalForm();
   $("formTitle").textContent = p.name; fillForm(p); $("deletePersonBtn").hidden = false; message("已載入家庭資料");
-  renderPeople(); renderRelations(); renderTree(); renderEvents(); await renderMedia();
+  renderRelations(); renderEvents(); await renderMedia();
   await updateHealthState();
   if((await vault.status("medical")).unlocked)renderMedicalRecords();
 }
@@ -252,6 +261,7 @@ function newPerson() {
   $("formTitle").textContent = "新增人物";
   $("deletePersonBtn").hidden = true;
   $("personForm").reset(); $("gender").value = "unknown"; $("hasDeathDate").checked=false; $("deathDate").value=""; $("deathDateWrap").hidden=true; message("尚未保存");
+  renderPeople(); renderTree();
   $("name").focus();
 }
 async function savePerson(event) {
@@ -295,18 +305,22 @@ function renderRelations() {
   $("relationsList").innerHTML=[...linked].map(([id,label])=>`<div class="relationRow"><span>${safeText(label)}：${safeText(personById(id)?.name||"未知人物")}</span><span>${safeText(id.slice(0,10))}</span></div>`).join("")||'<p class="muted">尚未建立親屬關係。</p>';
   $("relationPerson").innerHTML='<option value="">選擇另一位人物</option>'+persons.filter(p=>p.id!==selectedId).map(p=>`<option value="${safeText(p.id)}">${safeText(p.name)}</option>`).join("");
 }
+let relationBusy=false;
 async function addRelation() {
+  if(relationBusy)return;
   const otherId=$("relationPerson").value,type=$("relationType").value;
   if(!selectedId||!otherId)return;
-  const exists=relationships.some(r=>r.type===type&&r.fromPersonId===selectedId&&r.toPersonId===otherId);
-  if(exists)return;
+  const exists=relationships.some(r=>r.type===type&&((r.fromPersonId===selectedId&&r.toPersonId===otherId)||(type==="spouse_of"&&r.fromPersonId===otherId&&r.toPersonId===selectedId)));
+  if(exists)return message("這段關係已經存在",true);
   const rel={schemaVersion:1,id:createId("R"),fromPersonId:selectedId,toPersonId:otherId,type,status:"reported",validFrom:null,validTo:null,notes:"",sourceIds:[],createdAt:nowIso(),updatedAt:nowIso()};
   const checked=validateFamilyData({persons,relationships:[...relationships,rel],events:[],media:[],sources:[]});
   if(!checked.valid)return message(checked.errors[0],true);
+  relationBusy=true;$("addRelation").disabled=true;
   try {
     await vault.save("family","relationships",rel.id,1,rel,null);
     relationships.push(rel);renderRelations();renderTree();message("親屬關係已保存至 GitHub（明文）");
   } catch(error) { message("關係保存失敗："+error.message,true); }
+  finally { relationBusy=false;$("addRelation").disabled=false; }
 }
 
 const EVENT_LABELS={birth:"出生",death:"逝世",marriage:"婚姻",move:"遷居",education:"就學",career:"工作",military:"服役",reunion:"家族聚會",story:"家庭故事",other:"其他"};
