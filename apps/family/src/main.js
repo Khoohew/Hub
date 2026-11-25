@@ -205,7 +205,7 @@ async function deleteSelectedPerson() {
     "將一併刪除："+linkedRelations.length+" 條親屬關係、"+exclusiveEvents.length+" 筆僅屬於此人物的人生事件。",
     "其他人物共同參與的事件會保留，並移除此人物的關聯。",
     "此操作會直接修改 GitHub 私人資料庫，無法一鍵復原。"
-  ].join("\\n");
+  ].join("\n");
   if(!confirm(summary))return;
   const personId=person.id;
   try{
@@ -237,7 +237,8 @@ function newPerson() {
   selectedId = null; selectedVersion = null; editing = true;
   $("emptyDetail").hidden = true; $("personForm").hidden = false; $("relationsSection").hidden = true; $("eventSection").hidden = true; $("mediaSection").hidden = true; $("medicalSection").hidden = true;
   resetEventForm();resetMedicalForm();clearMediaUrls();
-  $("formTitle").textContent = "新增人物";\n  $("deletePersonBtn").hidden = true;
+  $("formTitle").textContent = "新增人物";
+  $("deletePersonBtn").hidden = true;
   $("personForm").reset(); $("gender").value = "unknown"; message("尚未保存");
   $("name").focus();
 }
