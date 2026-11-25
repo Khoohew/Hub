@@ -211,3 +211,16 @@ body:not(.ready) .gate .error{white-space:pre-wrap}
   body:not(.ready) .gate{padding:20px;margin:4vh auto 0}
 }
 .zhBtn{min-width:40px;font-weight:600}
+
+/* 逝世日期：與出生日期同一行；未勾選為小膠囊，勾選後變日期框 */
+.deathField{position:relative;display:flex;flex-direction:column;gap:5px;min-width:0}
+.srOnly{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.deathHead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;color:var(--muted);font-size:12.5px;line-height:1.55}
+.deathUndo{display:none!important;color:var(--accent);font-size:12px;cursor:pointer}
+.deathUndo:hover{text-decoration:underline}
+#hasDeathDate:checked ~ .deathHead .deathUndo{display:inline!important}
+.deathChip{display:flex!important;align-items:center;gap:8px;min-height:40px;padding:0 12px;border:1px dashed var(--line2);border-radius:9px;background:#fff;color:var(--muted);font-size:13.5px;cursor:pointer;transition:border-color .15s,color .15s}
+.deathChip:hover{border-color:var(--accent);color:var(--text)}
+.deathChip i{width:16px;height:16px;flex:0 0 16px;border:1.5px solid var(--line2);border-radius:4px;background:#fff}
+#hasDeathDate:checked ~ .deathChip{display:none!important}
+#hasDeathDate:focus-visible ~ .deathChip{box-shadow:0 0 0 3px #a8632c22;border-color:var(--accent)}

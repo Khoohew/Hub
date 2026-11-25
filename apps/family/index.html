@@ -5,7 +5,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#fdf9f3">
 <title>家庭資料庫</title>
-<link rel="stylesheet" href="./app.css?v=20261125t">
+<link rel="stylesheet" href="./app.css?v=20261125u">
 </head>
 <body>
 <header class="topbar">
@@ -79,8 +79,12 @@
             <label>姓名<input id="name" required maxlength="120"></label>
             <label>性別<select id="gender"><option value="unknown">未填</option><option value="male">男</option><option value="female">女</option><option value="other">其他</option></select></label>
             <label>出生日期<input id="birthDate" type="date"></label>
-            <label><span><input id="hasDeathDate" type="checkbox"> 已逝世</span></label>
-            <label id="deathDateWrap" hidden>逝世日期<input id="deathDate" type="date"></label>
+            <div class="deathField">
+              <input id="hasDeathDate" type="checkbox" class="srOnly">
+              <div class="deathHead"><span>逝世日期</span><label class="deathUndo" for="hasDeathDate">取消已逝世</label></div>
+              <label class="deathChip" for="hasDeathDate"><i></i>已逝世</label>
+              <div id="deathDateWrap" hidden><input id="deathDate" type="date"></div>
+            </div>
             <label class="wide">出生地 / 籍貫<input id="birthplace"></label>
           </div>
         </div>
