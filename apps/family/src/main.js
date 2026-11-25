@@ -174,6 +174,7 @@ function fillForm(p) {
   $("name").value = p.name || ""; $("gender").value = p.gender || "unknown";
   $("generation").value = p.generation || ""; $("siblingOrder").value = p.siblingOrder || "";
   $("birthDate").value = p.birthDate || ""; $("deathDate").value = p.deathDate || "";
+  $("hasDeathDate").checked = !!p.deathDate; $("deathDateWrap").hidden = !p.deathDate;
   $("birthplace").value = p.birthplace || ""; $("residence").value = p.residence || "";
   $("occupation").value = p.occupation || ""; $("biography").value = p.biography || "";
 }
@@ -250,7 +251,7 @@ function newPerson() {
   resetEventForm();resetMedicalForm();clearMediaUrls();
   $("formTitle").textContent = "新增人物";
   $("deletePersonBtn").hidden = true;
-  $("personForm").reset(); $("gender").value = "unknown"; message("尚未保存");
+  $("personForm").reset(); $("gender").value = "unknown"; $("hasDeathDate").checked=false; $("deathDate").value=""; $("deathDateWrap").hidden=true; message("尚未保存");
   $("name").focus();
 }
 async function savePerson(event) {
@@ -263,8 +264,8 @@ async function savePerson(event) {
     schemaVersion:1,id:old?.id || createId("P"),name,
     gender:$("gender").value || "unknown",generation:$("generation").value.trim(),
     siblingOrder:$("siblingOrder").value ? Number($("siblingOrder").value) : null,
-    birthDate:$("birthDate").value || null,deathDate:$("deathDate").value || null,
-    birthplace:$("birthplace").value.trim(),residence:$("residence").value.trim(),
+    birthDate:$("birthDate").value || null,deathDate:$("hasDeathDate").checked?($("deathDate").value || null):null,
+    birthplace:$("birthplace").value.trim(),residence:old?.residence||"",
     occupation:$("occupation").value.trim(),biography:$("biography").value.trim(),
     alternateNames:old?.alternateNames||[],notes:old?.notes||"",
     createdAt:old?.createdAt||stamp,updatedAt:stamp
@@ -579,6 +580,7 @@ async function start() {
   $("addPersonBtn").addEventListener("click",newPerson);$("emptyAdd").addEventListener("click",newPerson);
   $("cancelEdit").addEventListener("click",()=>selectedId?showPerson(selectedId):clearDetail());
   $("personForm").addEventListener("submit",savePerson);
+  $("hasDeathDate").addEventListener("change",()=>{ $("deathDateWrap").hidden=!$("hasDeathDate").checked; if(!$("hasDeathDate").checked)$("deathDate").value=""; });
   $("deletePersonBtn").addEventListener("click",deleteSelectedPerson);$("search").addEventListener("input",renderPeople);
   $("addRelation").addEventListener("click",addRelation);$("mediaForm").addEventListener("submit",addMedia);
   $("eventForm").addEventListener("submit",saveEvent);$("eventCancelEdit").addEventListener("click",resetEventForm);
