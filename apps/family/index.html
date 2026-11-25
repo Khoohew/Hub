@@ -5,7 +5,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#101827">
 <title>家庭資料庫</title>
-<link rel="stylesheet" href="./app.css?v=20261125g">
+<link rel="stylesheet" href="./app.css?v=20261125h">
 </head>
 <body>
 <header class="topbar">
@@ -55,7 +55,7 @@
       <div id="peopleList" class="peopleList"></div>
     </aside>
     <section class="panel detailPanel">
-      <div id="emptyDetail" class="empty"><div>👪</div><h2>建立你的家庭資料</h2><p>先新增人物，再逐步建立親屬關係、家庭事件和照片檔案。</p><button id="emptyAdd" class="primary">新增第一位人物</button></div>
+      <div id="emptyDetail" class="empty"><div>👪</div><h2>選擇家庭成員以編輯個人資料</h2><p>在左側點選人物，右側就會顯示姓名、出生日期、籍貫、生平等個人資料。也可以直接新增人物。</p><button id="emptyAdd" class="primary">＋ 新增人物</button></div>
       <form id="personForm" hidden>
         <div class="sectionHead"><div><div class="eyebrow">PERSON PROFILE</div><h2 id="formTitle">新增人物</h2></div><button id="cancelEdit" type="button" class="secondary">取消</button></div>
         <div class="formGrid">
@@ -138,6 +138,17 @@
       </div>
       <label class="medicalWide">詳細內容<textarea id="medicalDetails" rows="3" maxlength="4000"></textarea></label>
       <label class="medicalWide">備註<textarea id="medicalNotes" rows="2" maxlength="2000"></textarea></label>
+      <div class="medicalOriginalBlock">
+        <label>病歷原件照片／文件<input id="medicalFiles" type="file" accept="image/*,application/pdf" multiple></label>
+        <small class="muted">可一次選擇多張照片或 PDF。每個原件不超過 25 MB；上傳後會保留原始檔案，不會壓縮或改寫。</small>
+        <label class="medicalEncryptLabel"><input id="medicalAttachmentEncrypt" type="checkbox">加密保存本次上傳的原件</label>
+        <div id="medicalAttachmentPasswordFields" class="medicalEncryptionFields" hidden>
+          <label>原件加密密碼（至少 12 個字元）<input id="medicalAttachmentPassword" type="password" autocomplete="new-password" minlength="12"></label>
+          <label>再次輸入加密密碼<input id="medicalAttachmentPasswordConfirm" type="password" autocomplete="new-password" minlength="12"></label>
+          <p class="medicalEncryptionNote">只有本次選取的照片／PDF 檔案內容會加密；醫療摘要、日期及其他文字仍是明文。加密密碼不會上傳或保存，遺失後無法還原。</p>
+        </div>
+        <div id="medicalFormAttachmentList" class="medicalFormAttachmentList" hidden></div>
+      </div>
       <label class="medicalVerified"><input id="medicalVerified" type="checkbox">已由使用者核對原始資料</label>
       <div class="medicalActions"><button id="medicalSaveBtn" type="submit" class="secondary">保存醫療紀錄</button><button id="medicalCancelEdit" type="button" class="secondary" hidden>取消編輯</button></div>
     </form>
@@ -146,6 +157,6 @@
 </section>
 <footer>家庭資料庫 · GitHub 私人倉庫直存 · 明文優先／附件可選加密</footer>
 </main>
-<script type="module" src="./src/main.js?v=20261125g"></script>
+<script type="module" src="./src/main.js?v=20261125h"></script>
 </body>
 </html>
