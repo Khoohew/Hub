@@ -74,12 +74,26 @@ async function loadAll() {
 function renderTree() {
   const center=selectedId||persons[0]?.id;
   const host=$("treeSvg");
+  const viewport=$("treeViewport");
   const info=$("treeInfo");
+  const viewportWidth=Math.max(1,viewport.clientWidth||700);
+  const viewportHeight=Math.max(1,viewport.clientHeight||520);
+  const padX=viewportWidth;
+  const padY=viewportHeight;
+
   if(!center){
-    host.setAttribute("width","700");host.setAttribute("height","180");host.setAttribute("viewBox","0 0 700 180");
-    host.innerHTML='<text x="350" y="90" text-anchor="middle" class="treeEmpty">新增人物並建立關係後，族譜會顯示在這裡</text>';
-    info.textContent="目前沒有可顯示的人物";return;
+    const stageWidth=Math.ceil(viewportWidth*3);
+    const stageHeight=Math.ceil(viewportHeight*3);
+    host.setAttribute("width",String(stageWidth));
+    host.setAttribute("height",String(stageHeight));
+    host.setAttribute("viewBox","0 0 "+stageWidth+" "+stageHeight);
+    host.innerHTML='<text x="'+(stageWidth/2)+'" y="'+(stageHeight/2)+'" text-anchor="middle" class="treeEmpty">新增人物並建立關係後，族譜會顯示在這裡</text>';
+    viewport.scrollLeft=viewportWidth;
+    viewport.scrollTop=viewportHeight;
+    info.textContent="目前沒有可顯示的人物";
+    return;
   }
+
   const layout=buildTreeLayout(persons,relationships,center);
   if(!layout.nodes.length)return;
   const nodeById=new Map(layout.nodes.map(node=>[node.id,node]));
@@ -103,14 +117,25 @@ function renderTree() {
     const selected=node.id===selectedId?" selected":"";
     return '<g class="treeNode'+selected+'" data-id="'+safeText(node.id)+'" transform="translate('+node.x+','+node.y+')"><rect width="'+node.width+'" height="'+node.height+'" rx="10"/><text class="treeName" x="12" y="29">'+safeText(person.name||"未命名")+'</text><text class="treeDetail" x="12" y="52">'+safeText(detail||"日期未記錄")+'</text></g>';
   }).join("");
-  host.setAttribute("width",String(Math.ceil(layout.width*treeZoom)));
-  host.setAttribute("height",String(Math.ceil(layout.height*treeZoom)));
-  host.setAttribute("viewBox","0 0 "+layout.width+" "+layout.height);
-  host.innerHTML='<g transform="scale('+treeZoom+')">'+edgeMarkup+nodeMarkup+'</g>';
-  info.textContent="以 "+(personById(center)?.name||"所選人物")+" 為中心 · 顯示上下三代"+(layout.truncated?" · 人物較多，已限制顯示範圍":"");
-  host.querySelectorAll(".treeNode").forEach(node=>node.addEventListener("click",()=>showPerson(node.dataset.id)));
-}
 
+  const scaledWidth=layout.width*treeZoom;
+  const scaledHeight=layout.height*treeZoom;
+  const centeredX=Math.max(0,(viewportWidth-scaledWidth)/2);
+  const centeredY=Math.max(0,(viewportHeight-scaledHeight)/2);
+  const contentX=padX+centeredX;
+  const contentY=padY+centeredY;
+  const stageWidth=Math.ceil(Math.max(viewportWidth,scaledWidth)+padX*2);
+  const stageHeight=Math.ceil(Math.max(viewportHeight,scaledHeight)+padY*2);
+  host.setAttribute("width",String(stageWidth));
+  host.setAttribute("height",String(stageHeight));
+  host.setAttribute("viewBox","0 0 "+stageWidth+" "+stageHeight);
+  host.innerHTML='<g transform="translate('+contentX+','+contentY+') scale('+treeZoom+')">'+edgeMarkup+nodeMarkup+'</g>';
+  info.textContent="以 "+(personById(center)?.name||"所選人物")+" 為中心 · 顯示上下三代"+(layout.truncated?" · 人物較多，已限制顯示範圍":"");
+
+  // Keep the complete tree centered initially, while leaving free space on all four sides for panning.
+  viewport.scrollLeft=padX+Math.max(0,(scaledWidth-viewportWidth)/2);
+  viewport.scrollTop=padY+Math.max(0,(scaledHeight-viewportHeight)/2);
+}
 function renderPeople() {
   $("peopleCount").textContent = persons.length + " 位人物";
   const q = $("search").value.trim().toLocaleLowerCase();
@@ -481,12 +506,58 @@ async function start() {
   $("eventDate").addEventListener("change",()=>{if($("eventDate").value&&$("eventDatePrecision").value==="unknown")$("eventDatePrecision").value="day";});
   $("medicalForm").addEventListener("submit",saveMedicalRecord);$("medicalCancelEdit").addEventListener("click",resetMedicalForm);
   $("medicalRecordType").addEventListener("change",toggleMedicalFields);
-  $("treeFit").addEventListener("click",()=>{treeZoom=1;renderTree();$("treeViewport").scrollTo({left:0,top:0,behavior:"smooth"});});
+  $("treeFit").addEventListener("click",()=>{treeZoom=1;renderTree();});
   const treeViewport=$("treeViewport");let treeDrag=null;
-  treeViewport.addEventListener("pointerdown",event=>{if(event.target.closest(".treeNode"))return;treeDrag={x:event.clientX,y:event.clientY,left:treeViewport.scrollLeft,top:treeViewport.scrollTop};treeViewport.setPointerCapture(event.pointerId);});
-  treeViewport.addEventListener("pointermove",event=>{if(!treeDrag)return;treeViewport.scrollLeft=treeDrag.left-(event.clientX-treeDrag.x);treeViewport.scrollTop=treeDrag.top-(event.clientY-treeDrag.y);});
-  const stopTreeDrag=()=>{treeDrag=null;};treeViewport.addEventListener("pointerup",stopTreeDrag);treeViewport.addEventListener("pointercancel",stopTreeDrag);
-  treeViewport.addEventListener("wheel",event=>{event.preventDefault();const before=treeZoom;treeZoom=Math.max(0.55,Math.min(1.8,treeZoom*(event.deltaY<0?1.08:0.92)));const ratio=treeZoom/before,left=treeViewport.scrollLeft,top=treeViewport.scrollTop;renderTree();treeViewport.scrollLeft=left*ratio;treeViewport.scrollTop=top*ratio;},{passive:false});
+  treeViewport.addEventListener("pointerdown",event=>{
+    if(event.button!==0)return;
+    const node=event.target.closest(".treeNode");
+    treeDrag={pointerId:event.pointerId,x:event.clientX,y:event.clientY,left:treeViewport.scrollLeft,top:treeViewport.scrollTop,nodeId:node?.dataset.id||null,moved:false};
+    try{treeViewport.setPointerCapture(event.pointerId);}catch{}
+    event.preventDefault();
+  });
+  treeViewport.addEventListener("pointermove",event=>{
+    if(!treeDrag||event.pointerId!==treeDrag.pointerId)return;
+    const dx=event.clientX-treeDrag.x,dy=event.clientY-treeDrag.y;
+    if(!treeDrag.moved&&Math.hypot(dx,dy)>4){
+      treeDrag.moved=true;
+      treeViewport.classList.add("dragging");
+    }
+    if(treeDrag.moved){
+      treeViewport.scrollLeft=treeDrag.left-dx;
+      treeViewport.scrollTop=treeDrag.top-dy;
+    }
+  });
+  const stopTreeDrag=event=>{
+    if(!treeDrag||event.pointerId!==treeDrag.pointerId)return;
+    const finished=treeDrag;
+    treeDrag=null;
+    treeViewport.classList.remove("dragging");
+    if(!finished.moved&&finished.nodeId)showPerson(finished.nodeId);
+    try{if(treeViewport.hasPointerCapture(event.pointerId))treeViewport.releasePointerCapture(event.pointerId);}catch{}
+  };
+  treeViewport.addEventListener("pointerup",stopTreeDrag);
+  treeViewport.addEventListener("pointercancel",event=>{treeDrag=null;treeViewport.classList.remove("dragging");});
+  treeViewport.addEventListener("wheel",event=>{
+    event.preventDefault();
+    if(!persons.length)return;
+    const center=selectedId||persons[0]?.id;
+    const layout=buildTreeLayout(persons,relationships,center);
+    const rect=treeViewport.getBoundingClientRect();
+    const focusX=event.clientX-rect.left,focusY=event.clientY-rect.top;
+    const before=treeZoom;
+    const next=Math.max(0.55,Math.min(1.8,treeZoom*(event.deltaY<0?1.08:0.92)));
+    if(next===before)return;
+    const oldOffsetX=treeViewport.clientWidth+Math.max(0,(treeViewport.clientWidth-layout.width*before)/2);
+    const oldOffsetY=treeViewport.clientHeight+Math.max(0,(treeViewport.clientHeight-layout.height*before)/2);
+    const anchorX=(treeViewport.scrollLeft+focusX-oldOffsetX)/before;
+    const anchorY=(treeViewport.scrollTop+focusY-oldOffsetY)/before;
+    treeZoom=next;
+    renderTree();
+    const newOffsetX=treeViewport.clientWidth+Math.max(0,(treeViewport.clientWidth-layout.width*treeZoom)/2);
+    const newOffsetY=treeViewport.clientHeight+Math.max(0,(treeViewport.clientHeight-layout.height*treeZoom)/2);
+    treeViewport.scrollLeft=newOffsetX+anchorX*treeZoom-focusX;
+    treeViewport.scrollTop=newOffsetY+anchorY*treeZoom-focusY;
+  },{passive:false});
   $("healthUnlock").addEventListener("click",unlockHealth);
   $("connectGitHubBtn").addEventListener("click",connectGitHub);$("connectGitHubWorkspaceBtn").addEventListener("click",connectGitHub);
   $("downloadCloudBtn").addEventListener("click",downloadCloudBackup);$("githubUploadBtn").addEventListener("click",uploadCloudBackup);
