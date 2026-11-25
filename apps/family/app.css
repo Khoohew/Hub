@@ -118,3 +118,103 @@ body:not(.ready) footer{display:none!important}
 .medicalOriginalActions{display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0}
 .medicalOriginalActions button{padding:5px 9px;font-size:11px}
 @media(max-width:700px){.medicalEncryptionFields{grid-template-columns:1fr}.medicalEncryptionNote{grid-column:auto}.medicalOriginalRow{align-items:flex-start;flex-direction:column}.medicalOriginalActions{width:100%}.medicalOriginalActions button{flex:1}}
+
+
+/* V11-style desktop family workspace: member list | tree canvas | profile editor. */
+:root{
+  color-scheme:light;
+  --bg:#f7f2e9;
+  --panel:#fffdf9;
+  --panel2:#f5eee3;
+  --line:#e5dccd;
+  --text:#3f382f;
+  --muted:#8c8173;
+  --accent:#a86b36;
+  --green:#66876b;
+  --red:#a95f58;
+}
+body{background:#f7f2e9;color:var(--text);font-size:13px;line-height:1.45;overflow:hidden}
+.topbar{height:58px;min-height:58px;padding:7px 14px;background:#fffaf2;border-bottom:1px solid #e4dbcd;gap:12px}
+.topbar .eyebrow{display:none}
+.topbar h1{font-size:18px;line-height:1.25;margin:0;color:#4b4034}
+.topbar p{font-size:10px;color:#8f8477;margin-top:2px}
+.topActions{gap:6px}
+.topActions .state{font-size:10px;border-color:#e5dccd;color:#8c8173}
+main{width:100%;max-width:none;height:calc(100vh - 58px);margin:0;padding:0;overflow:hidden}
+body.ready .storageNotice{display:none}
+body.ready .backupBar,body.ready .cloudBar{display:none!important}
+.workspaceGrid{height:100%;width:100%;display:grid;grid-template-columns:178px minmax(0,1fr) 330px;gap:0;align-items:stretch}
+.panel{background:#fffdf9;border:0;border-right:1px solid #e5dccd;border-radius:0;padding:10px;box-shadow:none;min-width:0}
+.peoplePanel{height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:10px 6px}
+.peoplePanel .sectionHead{margin:0 0 8px;padding:0 4px}
+.peoplePanel .sectionHead h2{font-size:14px}
+.peoplePanel .sectionHead small{font-size:10px}
+.peoplePanel .sectionHead button{display:none}
+.peoplePanel .search{height:34px;margin:0 0 8px;padding:7px 9px;font-size:12px}
+.peopleList{max-height:none;min-height:0;overflow-y:auto;gap:3px}
+.personItem{min-height:42px;padding:5px 7px;background:transparent;border:0;border-radius:8px;color:#443b31}
+.personItem.active{background:#eee5d7;border:0}
+.avatar{width:29px;height:29px;flex-basis:29px;background:#e8dfd1;color:#74634e;font-size:12px}
+.personItem strong{font-size:12px}
+.personItem small{font-size:10px;color:#968b7d}
+.treePanel{height:100%;min-height:0;display:flex;flex-direction:column;padding:0;border:0;border-right:1px solid #e5dccd;background:#f7f2e9}
+.treePanel .sectionHead{height:40px;min-height:40px;margin:0;padding:0 12px;background:#fffdf9;border-bottom:1px solid #e5dccd}
+.treePanel .sectionHead h2{font-size:13px}
+.treePanel .sectionHead small{display:inline;margin-left:8px;font-size:10px}
+.treePanel .sectionHead button{padding:5px 9px;font-size:10px}
+.treeViewport{height:auto;min-height:0;flex:1;border:0;border-radius:0;background:#f7f2e9;cursor:grab}
+.treeEdge{stroke:#b8afa2;stroke-width:1.5;opacity:1}
+.treeEdge.spouse_of{stroke:#b89a73;stroke-width:1.7}
+.treeEdge.sibling_of{stroke:#b8afa2}
+.treeNode rect{fill:#fffdf9;stroke:#e4dbcd;stroke-width:1.2}
+.treeNode.selected rect{fill:#fffdf9;stroke:#a77b50;stroke-width:2}
+.treeNode:hover rect{stroke:#b58b60}
+.treeName{fill:#493f34;font-size:14px}
+.treeDetail{fill:#958878;font-size:10px}
+.detailPanel{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px 10px;border:0;background:#fffdf9}
+.detailPanel .sectionHead{margin-bottom:10px}
+.detailPanel .sectionHead h2{font-size:15px}
+.detailPanel .sectionHead h3{font-size:13px}
+.detailPanel .sectionHead small{font-size:10px}
+.detailPanel label{color:#796e60;font-size:11px;gap:4px}
+.detailPanel input,.detailPanel select,.detailPanel textarea{background:#fff;color:#493f34;border:1px solid #e1d8ca;border-radius:7px;padding:7px 8px;font-size:12px}
+.detailPanel input:focus,.detailPanel select:focus,.detailPanel textarea:focus{border-color:#b58a60;box-shadow:0 0 0 2px #b58a6020}
+.detailPanel button,.detailPanel .buttonLike{background:#fffdf9;color:#514538;border:1px solid #e1d8ca;border-radius:7px;padding:7px 9px;font-size:11px}
+.detailPanel button.primary{background:#a86b36;color:white;border-color:#a86b36}
+.detailPanel .formGrid{gap:8px}
+.detailPanel .formActions{margin-top:10px}
+.detailPanel .relations,.detailPanel .eventSection,.detailPanel .mediaSection{border-color:#eee5d9;margin-top:14px;padding-top:12px}
+.detailPanel .relationEditor{grid-template-columns:1fr 1fr;gap:6px}
+.detailPanel #addRelation{grid-column:1/-1}
+.detailPanel .relationRow,.detailPanel .eventCard,.detailPanel .mediaCard,.detailPanel .medicalCard{background:#f8f3eb;border-color:#e9dfd2;color:#514538}
+.detailPanel .empty{padding:35px 12px}
+.detailPanel .empty h2{font-size:16px;color:#514538}
+.detailPanel .empty p{font-size:11px}
+.healthPanel{margin:14px 0 0;padding:10px;border:1px solid #e9dfd2;border-radius:9px;background:#faf6ef}
+.healthPanel h2{font-size:13px}
+.healthPanel p{font-size:10px;color:#8c8173}
+.healthActions{gap:5px}
+.healthActions .state{font-size:10px}
+.healthActions button{font-size:10px}
+button{transition:background .12s,border-color .12s}
+button:hover{filter:brightness(.98)}
+footer{display:none}
+@media(max-width:900px){
+ body{overflow:auto}
+ main{height:auto;overflow:visible}
+ .workspaceGrid{height:auto;grid-template-columns:1fr}
+ .peoplePanel{height:auto;max-height:260px}
+ .treePanel{height:65vh;min-height:440px}
+ .detailPanel{height:auto;max-height:none;overflow:visible}
+ .treeViewport{min-height:0}
+}
+@media(max-width:560px){
+ .topbar{height:auto;min-height:58px;flex-wrap:wrap}
+ .topbar p{display:none}
+ .workspaceGrid{display:flex;flex-direction:column}
+ .peoplePanel{max-height:220px}
+ .treePanel{height:55vh;min-height:360px}
+ .detailPanel{padding:12px}
+ .detailPanel .formGrid{grid-template-columns:1fr}
+ .detailPanel .wide{grid-column:auto}
+}
