@@ -19,7 +19,7 @@ let githubStorage = null;
 
 function message(text, error = false) {
   $("saveStatus").textContent = text;
-  $("saveStatus").style.color = error ? "#ffaaaa" : "#9bd8b2";
+  $("saveStatus").style.color = error ? "#a8332b" : "#4d7a47";
 }
 function personById(id) { return persons.find(p => p.id === id); }
 function safeText(value) {
@@ -91,6 +91,7 @@ function renderTree() {
     viewport.scrollLeft=viewportWidth;
     viewport.scrollTop=viewportHeight;
     info.textContent="目前沒有可顯示的人物";
+    $("treeCenter").textContent="—";$("treeZoomLabel").textContent=Math.round(treeZoom*100)+"%";
     return;
   }
 
@@ -108,14 +109,22 @@ function renderTree() {
       const parent=edge.type==="parent_of"||edge.type==="adoptive_parent_of"?a:a;
       const child=edge.type==="parent_of"||edge.type==="adoptive_parent_of"?b:b;
       const x1=parent.x+parent.width/2,y1=parent.y+parent.height,x2=child.x+child.width/2,y2=child.y;
-      d="M "+x1+" "+y1+" C "+x1+" "+(y1+38)+", "+x2+" "+(y2-38)+", "+x2+" "+y2;
+      const ym=y1+(y2-y1)/2;
+      d="M "+x1+" "+y1+" V "+ym+" H "+x2+" V "+y2;
     }
-    return '<path class="treeEdge '+edge.type+'" d="'+d+'"/>';
+    let label="";
+    if(edge.type==="spouse_of"){
+      const left=a.x<=b.x?a:b,right=a.x<=b.x?b:a;
+      const mx=(left.x+left.width+right.x)/2,my=left.y+38;
+      label='<rect class="treeTag" x="'+(mx-13)+'" y="'+(my-7)+'" width="26" height="14" rx="7"/><text class="treeTagText" x="'+mx+'" y="'+my+'">夫妻</text>';
+    }
+    return '<path class="treeEdge '+edge.type+'" d="'+d+'"/>'+label;
   }).join("");
   const nodeMarkup=layout.nodes.map(node=>{
     const person=node.person,detail=[person.birthDate,person.deathDate?"卒 "+person.deathDate:""].filter(Boolean).join(" · ");
     const selected=node.id===selectedId?" selected":"";
-    return '<g class="treeNode'+selected+'" data-id="'+safeText(node.id)+'" transform="translate('+node.x+','+node.y+')"><rect width="'+node.width+'" height="'+node.height+'" rx="10"/><text class="treeName" x="12" y="29">'+safeText(person.name||"未命名")+'</text><text class="treeDetail" x="12" y="52">'+safeText(detail||"日期未記錄")+'</text></g>';
+    const initial=safeText((person.name||"?").slice(0,1));
+    return '<g class="treeNode'+selected+'" data-id="'+safeText(node.id)+'" transform="translate('+node.x+','+node.y+')"><rect class="nodeBox" width="'+node.width+'" height="'+node.height+'" rx="10"/><circle class="treeAvatar" cx="27" cy="27" r="13"/><text class="treeAvatarText" x="27" y="27">'+initial+'</text><text class="treeName" x="48" y="32">'+safeText(person.name||"未命名")+'</text><text class="treeDetail" x="14" y="60">'+safeText(detail||"日期未記錄")+'</text></g>';
   }).join("");
 
   const scaledWidth=layout.width*treeZoom;
@@ -130,14 +139,16 @@ function renderTree() {
   host.setAttribute("height",String(stageHeight));
   host.setAttribute("viewBox","0 0 "+stageWidth+" "+stageHeight);
   host.innerHTML='<g transform="translate('+contentX+','+contentY+') scale('+treeZoom+')">'+edgeMarkup+nodeMarkup+'</g>';
-  info.textContent="以 "+(personById(center)?.name||"所選人物")+" 為中心 · 顯示上下三代"+(layout.truncated?" · 人物較多，已限制顯示範圍":"");
+  info.textContent="單擊選取 · 空白拖動畫布 · 滾輪縮放 · 顯示上下三代"+(layout.truncated?" · 人物較多，已限制顯示範圍":"");
+  $("treeCenter").textContent="「"+(personById(center)?.name||"所選人物")+"」";
+  $("treeZoomLabel").textContent=Math.round(treeZoom*100)+"%";
 
   // Keep the complete tree centered initially, while leaving free space on all four sides for panning.
   viewport.scrollLeft=padX+Math.max(0,(scaledWidth-viewportWidth)/2);
   viewport.scrollTop=padY+Math.max(0,(scaledHeight-viewportHeight)/2);
 }
 function renderPeople() {
-  $("peopleCount").textContent = persons.length + " 位人物";
+  $("peopleCount").textContent = "共 " + persons.length + " 人";
   const q = $("search").value.trim().toLocaleLowerCase();
   const list = persons.filter(p => [p.name,p.birthplace,p.occupation,p.biography].join(" ").toLocaleLowerCase().includes(q));
   $("peopleList").innerHTML = list.map(p => `<button class="personItem ${p.id===selectedId?"active":""}" data-id="${safeText(p.id)}"><span class="avatar">${safeText((p.name||"?").slice(0,1))}</span><span><strong>${safeText(p.name)}</strong><small>${safeText(p.birthDate||p.birthplace||"")}</small></span></button>`).join("");

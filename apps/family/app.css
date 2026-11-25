@@ -1,122 +1,208 @@
-:root{color-scheme:dark;--bg:#0b1020;--panel:#141e30;--panel2:#19263b;--line:#2c3c56;--text:#edf3fc;--muted:#9eacc1;--accent:#a8c8ff;--green:#9bd8b2;--red:#ffaaaa}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% -5%,#263e5e66,transparent 40%),var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif}
-button,input,select,textarea{font:inherit}button{cursor:pointer}.topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:26px max(22px,calc((100% - 1400px)/2));border-bottom:1px solid var(--line);background:#101a2b}
-h1{font-size:27px;margin:2px 0 0}.topbar p{margin:3px 0 0;color:var(--muted);font-size:13px}.eyebrow{font-size:10px;letter-spacing:.16em;color:#9fb8dc;font-weight:700}.topActions,.healthActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-main{max-width:1400px;margin:0 auto;padding:26px 22px 50px}.panel{background:linear-gradient(145deg,#17243a,#121b2b);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 12px 30px #0002}
-.gate{max-width:520px;margin:9vh auto;padding:clamp(24px,5vw,38px)}.gateMark{font-size:36px}.gate h2{font-size:23px;margin:8px 0}.gate p{color:var(--muted)}.gate form{display:grid;gap:14px;margin-top:22px}
-label{display:grid;gap:6px;color:#d9e3f1;font-size:13px}input,select,textarea{width:100%;min-width:0;border:1px solid #40516c;border-radius:9px;background:#0d1626;color:var(--text);padding:10px 12px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #9fc2ff20}textarea{resize:vertical}
-button,.buttonLike{border:1px solid #40516c;border-radius:9px;background:#1b2a42;color:var(--text);padding:9px 14px}.primary{background:var(--accent);color:#142033;border-color:var(--accent);font-weight:700}.secondary{background:#1b2a42}.state{border:1px solid #40516c;border-radius:999px;padding:5px 10px;font-size:12px;color:var(--muted)}.error{color:var(--red);min-height:0;font-size:13px;margin:0}
-.notice{margin:0 0 18px;padding:13px 16px;border:1px solid #7d6b38;border-radius:10px;background:#392f1838;color:#d7c99e;font-size:13px}
-.workspaceGrid{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:18px;align-items:start}.peoplePanel{min-height:450px}.sectionHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.sectionHead h2,.sectionHead h3{margin:0;font-size:19px}.sectionHead small{display:block;color:var(--muted);font-size:12px}.search{margin-bottom:12px}.peopleList{display:grid;gap:6px;max-height:65vh;overflow:auto}.personItem{display:flex;gap:10px;align-items:center;text-align:left;width:100%;background:#111b2b;border:1px solid transparent}.personItem.active{border-color:#7898c8;background:#1d304b}.avatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center;background:#2b4263;color:#dce9ff;font-weight:700}.personItem strong{display:block;font-size:14px}.personItem small{display:block;color:var(--muted);font-size:11px}
-.detailPanel{min-height:450px}.empty{text-align:center;padding:55px 20px;color:var(--muted)}.empty>div{font-size:40px}.empty h2{color:var(--text);font-size:21px;margin:12px 0 4px}.empty p{max-width:430px;margin:0 auto 18px}
-.formGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.wide{grid-column:1/-1}.formActions{display:flex;align-items:center;gap:12px;margin-top:18px}.muted{color:var(--muted);font-size:12px}
-.relations{border-top:1px solid var(--line);margin-top:24px;padding-top:20px}.relationEditor{display:grid;grid-template-columns:minmax(180px,1fr) minmax(160px,1fr) auto;gap:8px}.relationsList{display:grid;gap:7px;margin-top:12px}.relationRow{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;background:#101a2a;border-radius:9px;font-size:13px}.healthPanel{margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:20px}.healthPanel h2{margin:3px 0;font-size:18px}.healthPanel p{margin:0;color:var(--muted);font-size:13px}.healthActions{justify-content:flex-end}
-footer{text-align:center;color:#74849b;font-size:11px;padding:30px 0 0}
-@media(max-width:850px){.workspaceGrid{grid-template-columns:1fr}.detailPanel{position:static;max-height:none;overflow:visible}.peopleList{max-height:280px}.healthPanel{align-items:flex-start;flex-direction:column}.healthActions{justify-content:flex-start}}
-@media(max-width:560px){main{padding:15px 12px 35px}.topbar{padding:18px 14px;align-items:flex-start}.topActions{justify-content:flex-end}.panel{padding:16px}.formGrid{grid-template-columns:1fr}.wide{grid-column:auto}.relationEditor{grid-template-columns:1fr}.gate{margin:4vh auto}.state{font-size:11px}}
+/* 家庭資料庫 — 暖色（奶油米色＋棕色）三欄佈局：左名單 / 中族譜 / 右資料 */
+:root{
+  color-scheme:light;
+  --bg:#f6f1e8;--bg2:#efe8dc;--paper:#fffdf9;--topbar:#fdf9f3;
+  --line:#e7ddcf;--line2:#d9cbb8;
+  --text:#3a2e25;--muted:#8b7b6c;--muted2:#a89a8b;
+  --accent:#a8632c;--accent-d:#8f5322;--accent-soft:#f1e3d3;
+  --chip:#ece0cf;--avatar:#e8dccb;--avatar-text:#6b4e38;--sel:#ede4d8;
+  --red:#a8332b;--red-bg:#fdf3f1;--red-line:#ecc4bd;--green:#4d7a47;
+  --shadow:0 1px 2px #5b3f2a14,0 4px 12px #5b3f2a10;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.55 system-ui,-apple-system,"Segoe UI","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
 [hidden]{display:none!important}
-.backupBar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 18px;padding:13px 16px;border:1px solid var(--line);border-radius:12px;background:#121c2c}
-.backupBar>div{flex:1 1 220px}.backupBar strong{display:block}.backupBar small{display:block;color:var(--muted);font-size:12px}
-.includeHealth{display:flex;align-items:center;gap:7px;white-space:nowrap}.includeHealth input{width:auto}
-.restoreGate{border-top:1px solid var(--line);padding-top:14px;margin-top:8px;display:grid;gap:10px}.restoreGate input{margin-top:4px}
-@media(max-width:560px){.backupBar>*{width:100%}.includeHealth{justify-content:flex-start}}
 
-.cloudBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 18px;padding:13px 16px;border:1px solid var(--line);border-radius:12px;background:#121c2c}
-.cloudBar>div{flex:1 1 230px}.cloudBar strong{display:block}.cloudBar small{display:block;color:var(--muted);font-size:12px}
+/* ---------- 頂欄 ---------- */
+.topbar{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 22px;background:var(--topbar);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brandMark{width:48px;height:48px;flex:0 0 48px;border-radius:50%;display:grid;place-items:center;background:var(--avatar);color:var(--avatar-text);font-size:19px;font-weight:700}
+.brandText{min-width:0}
+h1{font-size:25px;line-height:1.15;margin:0;font-weight:700;letter-spacing:.02em}
+.topbar p{margin:3px 0 0;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.eyebrow{font-size:10px;letter-spacing:.16em;color:var(--muted2);font-weight:700}
+
+/* ---------- 按鈕／表單 ---------- */
+button,.buttonLike{border:1px solid var(--line2);border-radius:9px;background:var(--paper);color:var(--text);padding:8px 14px;transition:background .15s,border-color .15s,box-shadow .15s}
+button:hover{background:#faf4ea;border-color:#cdb99f}
 button:disabled{opacity:.45;cursor:not-allowed}
-@media(max-width:560px){.cloudBar>*{width:100%}}
+.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.primary:hover{background:var(--accent-d);border-color:var(--accent-d)}
+.secondary{background:var(--paper)}
+.small{padding:5px 11px;font-size:12.5px;border-radius:8px}
+.danger{background:var(--red-bg)!important;color:var(--red)!important;border:1px solid var(--red-line)!important}
+.danger:hover{background:#f9e6e2!important}
+.state{border:1px solid var(--line2);background:var(--paper);border-radius:999px;padding:4px 11px;font-size:12px;color:var(--muted);white-space:nowrap}
+.error{color:var(--red);min-height:0;font-size:13px;margin:0}
+.muted{color:var(--muted);font-size:12px}
+label{display:grid;gap:5px;color:var(--muted);font-size:12.5px}
+input,select,textarea{width:100%;min-width:0;border:1px solid var(--line2);border-radius:9px;background:#fff;color:var(--text);padding:9px 12px;outline:none}
+input::placeholder,textarea::placeholder{color:var(--muted2)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #a8632c22}
+textarea{resize:vertical}
+input[type=checkbox]{width:auto;accent-color:var(--accent)}
 
-.tokenField{flex:1 1 260px;min-width:220px}.tokenWarning{flex:1 1 100%;line-height:1.5}.cloudGate{margin-top:16px}.cloudGate .tokenField{flex:1 1 100%}.cloudGate button{width:100%}
+main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;padding:0}
+#workspace{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+footer{text-align:center;color:var(--muted2);font-size:11px;padding:14px 0}
+body.ready footer{display:none}
 
-.mediaSection{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}
-.mediaForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
-.mediaEncryptOption{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:12px}
-.mediaEncryptOption input{width:auto;min-width:18px;min-height:18px}
-.mediaForm>button{align-self:stretch}
-.mediaGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-top:14px}
-.mediaCard{min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;background:#101a2a;display:flex;flex-direction:column;gap:5px}
-.mediaCard strong{font-size:13px;overflow-wrap:anywhere}.mediaCard small{color:var(--muted);font-size:11px}
-.mediaPreview{width:100%;height:135px;object-fit:cover;border-radius:7px;background:#0b1020}
-.mediaFileMark{height:135px;display:grid;place-items:center;background:#0b1020;border-radius:7px;font-size:38px;color:var(--muted)}
-.mediaActions{display:flex;gap:6px;margin-top:auto;padding-top:7px}.mediaActions button{flex:1;padding:6px 8px;font-size:12px}
-@media(max-width:700px){.mediaForm{grid-template-columns:1fr}.mediaGrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
+.notice{flex:0 0 auto;margin:0;padding:9px 22px;border-bottom:1px solid #e8d9a8;background:#fbf3d9;color:#7a6320;font-size:12.5px}
+.backupBar,.cloudBar{flex:0 0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0;padding:10px 22px;border-bottom:1px solid var(--line);background:var(--topbar)}
+.backupBar>div,.cloudBar>div{flex:1 1 230px}.backupBar strong,.cloudBar strong{display:block}.backupBar small,.cloudBar small{display:block;color:var(--muted);font-size:12px}
+.includeHealth{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tokenField{flex:1 1 260px;min-width:220px}.tokenWarning{flex:1 1 100%;line-height:1.5}
+.restoreGate{border-top:1px solid var(--line);padding-top:14px;margin-top:8px;display:grid;gap:10px}
 
-.treePanel{margin-bottom:18px}.treeViewport{height:clamp(520px,68vh,820px);min-height:520px;width:100%;overflow:auto;border:1px solid var(--line);border-radius:10px;background:radial-gradient(circle at 1px 1px,#29374d 1px,transparent 0);background-size:22px 22px;cursor:grab;touch-action:none;overscroll-behavior:contain;user-select:none}
-.treeViewport:active,.treeViewport.dragging{cursor:grabbing}.treeViewport svg{display:block;max-width:none;user-select:none}
-/* Keep the family canvas pannable without showing browser scrollbars. */
-.treeViewport{scrollbar-width:none;-ms-overflow-style:none}
+/* ---------- 三欄主體 ---------- */
+.workspaceGrid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:250px minmax(0,1fr) clamp(380px,25vw,470px);align-items:stretch}
+
+/* 左：成員 */
+.peoplePanel{display:flex;flex-direction:column;min-height:0;background:var(--paper);border-right:1px solid var(--line)}
+.searchWrap{padding:14px 14px 12px}
+.search{border-radius:12px;padding:11px 14px;font-size:14px;background:#fff}
+.peopleMeta{padding:6px 14px 8px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.peopleList{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:2px;padding:0 0 12px}
+.personItem{display:flex;gap:12px;align-items:center;text-align:left;width:100%;background:transparent;border:0;border-radius:12px;padding:9px 14px;margin:0}
+.personItem:hover{background:#f7f0e5}
+.personItem.active{background:var(--sel)}
+.avatar{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;background:var(--avatar);color:var(--avatar-text);font-weight:700;font-size:16px}
+.personItem strong{display:block;font-size:16px;font-weight:650;line-height:1.25}
+.personItem small{display:block;color:var(--muted);font-size:11px;line-height:1.2}
+.personItem small:empty{display:none}
+
+/* 中：族譜畫布 */
+.treePanel{display:flex;flex-direction:column;min-width:0;min-height:0;background:linear-gradient(135deg,#fbf8f2 0%,#f4eee4 55%,#eee6da 100%)}
+.treeHead{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;background:var(--topbar);border-bottom:1px solid var(--line)}
+.treeTitle{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-width:0}
+.treeTitle h2{margin:0;font-size:17px;font-weight:700;white-space:nowrap}
+.treeTitle small{color:var(--muted);font-size:12px}
+.treeTools{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.zoomLabel{color:var(--muted);font-size:12.5px;min-width:38px;text-align:right}
+.treeViewport{flex:1 1 auto;min-height:0;width:100%;height:auto;overflow:auto;cursor:grab;touch-action:none;overscroll-behavior:contain;user-select:none;scrollbar-width:none;-ms-overflow-style:none}
 .treeViewport::-webkit-scrollbar{display:none;width:0;height:0}
+.treeViewport:active,.treeViewport.dragging{cursor:grabbing}
+.treeViewport svg{display:block;max-width:none;user-select:none}
 
-.treeEdge{fill:none;stroke:#64748b;stroke-width:2.2;opacity:.85}.treeEdge.spouse_of{stroke:#c49b54;stroke-width:2.5}.treeEdge.sibling_of{stroke:#7c9bb8;stroke-dasharray:4 4}
-.treeNode{cursor:pointer}.treeNode rect{fill:#1a2940;stroke:#526782;stroke-width:1.5}.treeNode.selected rect{fill:#263d5e;stroke:#9dc6ff;stroke-width:2.5}.treeNode:hover rect{stroke:#d3e4fa}
-.treeName{fill:#f3f6fb;font-size:15px;font-weight:650}.treeDetail{fill:#aab8ca;font-size:11px}.treeEmpty{fill:#9aa9bd;font-size:14px}
+.treeEdge{fill:none;stroke:#9a7d62;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round}
+.treeEdge.spouse_of{stroke:#b8743a;stroke-width:1.8}
+.treeEdge.sibling_of{stroke:#b9a48d;stroke-dasharray:4 4}
+.treeNode{cursor:pointer}
+.treeNode rect.nodeBox{fill:#fffdf9;stroke:#e5d9c8;stroke-width:1;filter:drop-shadow(0 2px 4px #5b3f2a1f)}
+.treeNode:hover rect.nodeBox{stroke:#c9ae8c}
+.treeNode.selected rect.nodeBox{stroke:#b8743a;stroke-width:1.8}
+.treeAvatar{fill:var(--avatar)}
+.treeAvatarText{fill:var(--avatar-text);font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+.treeName{fill:#3a2e25;font-size:14px;font-weight:700}
+.treeDetail{fill:#8b7b6c;font-size:10.5px}
+.treeTag{fill:#f3e8d9;stroke:#e2d0b8;stroke-width:.8}
+.treeTagText{fill:#8a6a4c;font-size:9.5px;text-anchor:middle;dominant-baseline:central}
+.treeEmpty{fill:#a89a8b;font-size:14px}
 
-.eventSection{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}
+/* 右：資料 */
+.detailPanel{min-height:0;overflow:auto;background:var(--paper);border-left:1px solid var(--line);padding:18px 16px 28px;scrollbar-gutter:stable;display:flex;flex-direction:column;gap:14px}
+.detailPanel>*{flex:0 0 auto}
+.sectionHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.sectionHead h2,.sectionHead h3{margin:0;font-size:16px;font-weight:700}
+.sectionHead small,.hint{color:var(--muted);font-size:11.5px}
+.empty{text-align:center;padding:60px 16px;color:var(--muted)}
+.empty>div{font-size:40px}.empty h2{color:var(--text);font-size:18px;margin:12px 0 6px}.empty p{max-width:340px;margin:0 auto 18px;font-size:13px}
+
+.card{background:#fffcf7;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 2px #5b3f2a0a}
+.cardTitle{margin:0 0 10px;font-size:13px;font-weight:700;color:var(--text)}
+.formGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.wide{grid-column:1/-1}
+.formActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.formActions .primary{flex:1 1 auto}
+
+.relations,.eventSection,.mediaSection{border-top:1px solid var(--line);padding-top:16px}
+.relationEditor{display:grid;grid-template-columns:1fr;gap:8px}
+.relationsList{display:grid;gap:7px;margin-top:12px}
+.relationRow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;background:#f4ede2;border-radius:10px;font-size:14px}
+.relationRow span:last-child{color:var(--muted2);font-size:11px}
+
+/* 事件 */
 .eventForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
-.eventForm label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
-.eventForm input,.eventForm select,.eventForm textarea{width:100%;min-width:0}
 .eventDescription{grid-column:1/-1}.eventFormActions{display:flex;gap:8px;grid-column:1/-1}
 .eventList{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-.eventCard{padding:12px;border:1px solid var(--line);border-radius:10px;background:#101a2a;display:flex;flex-direction:column;gap:7px}
+.eventCard,.medicalCard,.mediaCard{padding:12px;border:1px solid var(--line);border-radius:11px;background:#fffcf7;display:flex;flex-direction:column;gap:7px}
 .eventHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.eventHead strong{overflow-wrap:anywhere}
-.eventType{font-size:11px;color:#c5d8f1;background:#24364e;border-radius:999px;padding:3px 8px;white-space:nowrap}
-.eventCard small{color:var(--muted);font-size:11px}.eventCard p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font-size:13px}
-.eventActions{display:flex;gap:8px}.eventActions button{padding:6px 10px;font-size:12px}
-@media(max-width:700px){.eventForm{grid-template-columns:1fr}.eventDescription,.eventFormActions{grid-column:auto}}
+.eventType{font-size:11px;color:#7d5a3a;background:var(--chip);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.eventCard small,.medicalCard small,.mediaCard small{color:var(--muted);font-size:11px}
+.eventCard p,.medicalCard p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font-size:13px}
+.eventActions{display:flex;gap:8px}.eventActions button{padding:5px 10px;font-size:12px}
 
-.medicalSection{margin-top:16px;border-color:#7c8ea8}.medicalForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
-.medicalForm label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
-.medicalForm input,.medicalForm select,.medicalForm textarea{width:100%;min-width:0}
-.medicalSubform{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#101a2a}
-.medicalSubform[hidden]{display:none}.medicalSubform strong{grid-column:1/-1;color:#c8d8ec}
-.medicalWide,.medicalActions{grid-column:1/-1}.medicalVerified{flex-direction:row!important;align-items:center}.medicalVerified input{width:auto}
-.medicalActions{display:flex;gap:8px}.medicalList{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-.medicalCard{padding:12px;border:1px solid var(--line);border-radius:10px;background:#101a2a;display:flex;flex-direction:column;gap:7px}
-.medicalCard p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font-size:13px}.medicalCard small{font-size:11px;color:var(--muted)}
-@media(max-width:700px){.medicalForm{grid-template-columns:1fr}.medicalSubform{grid-template-columns:1fr}.medicalWide,.medicalActions{grid-column:auto}}
+/* 附件 */
+.mediaForm{display:grid;grid-template-columns:1fr;gap:10px}
+.mediaEncryptOption{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:12px;background:#fffcf7}
+.mediaEncryptOption input{min-width:18px;min-height:18px}
+.mediaGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:14px}
+.mediaCard{min-width:0;padding:10px;gap:5px}
+.mediaCard strong{font-size:13px;overflow-wrap:anywhere}
+.mediaPreview{width:100%;height:120px;object-fit:cover;border-radius:7px;background:var(--bg2)}
+.mediaFileMark{height:120px;display:grid;place-items:center;background:var(--bg2);border-radius:7px;font-size:36px;color:var(--muted)}
+.mediaActions{display:flex;gap:6px;margin-top:auto;padding-top:7px}.mediaActions button{flex:1;padding:6px 8px;font-size:12px}
 
+/* 醫療 */
+.healthPanel{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.healthPanel h3{margin:3px 0;font-size:16px}.healthPanel p{margin:0;color:var(--muted);font-size:12.5px}
+.healthActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.medicalSection{border:1px solid var(--line2);border-radius:14px;padding:14px;background:#fffcf7}
+.medicalForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
+.medicalSubform{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#f7f0e5}
+.medicalSubform strong{grid-column:1/-1;color:var(--text)}
+.medicalWide,.medicalActions{grid-column:1/-1}
+.medicalVerified{display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;grid-column:1/-1}
+.medicalActions{display:flex;gap:8px}
+.medicalList{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.medicalOriginalBlock{grid-column:1/-1;display:grid;gap:9px;padding:12px;border:1px solid var(--line);border-radius:11px;background:#f7f0e5}
+.medicalOriginalBlock>label:first-child{display:grid;gap:6px}
+.medicalEncryptLabel{display:flex!important;flex-direction:row!important;align-items:center;gap:9px!important;color:var(--text)!important}
+.medicalEncryptLabel input{min-width:18px;min-height:18px}
+.medicalEncryptionFields{display:grid;grid-template-columns:1fr;gap:10px;padding:12px;border:1px solid var(--line2);border-radius:9px;background:#fffcf7}
+.medicalEncryptionNote{grid-column:1/-1;margin:0;color:#8a6a2a;font-size:12px}
+.medicalFormAttachmentList{padding:8px 10px;border-radius:8px;background:#fffcf7;color:var(--muted);font-size:12px}
+.medicalOriginalList{display:grid;gap:7px;margin-top:4px}
+.medicalOriginalRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;background:#f4ede2;border-radius:8px}
+.medicalOriginalName{min-width:0;overflow-wrap:anywhere;font-size:12px}
+.medicalOriginalMeta{display:block;color:var(--muted);font-size:11px}
+.medicalOriginalActions{display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0}.medicalOriginalActions button{padding:5px 9px;font-size:11px}
 
-/* Match Gold / Devices authentication shell */
-body:not(.ready){min-height:100vh;background:var(--bg)!important}
-body:not(.ready) .topbar{max-width:1180px;margin:0 auto;padding:22px clamp(14px,3vw,34px);border:0;background:transparent;justify-content:space-between}
+/* ---------- 登入／連接畫面 ---------- */
+.gate{max-width:520px;margin:9vh auto;padding:clamp(24px,5vw,36px);background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:auto}
+.gateMark{font-size:36px}.gate h2{font-size:22px;margin:8px 0}.gate p{color:var(--muted)}.gate form{display:grid;gap:14px;margin-top:20px}
+body:not(.ready){overflow:auto;height:auto;min-height:100vh}
+body:not(.ready) .topbar{background:transparent;border-bottom:0}
 body:not(.ready) .topActions{display:none!important}
-body:not(.ready) main{min-height:calc(100vh - 90px);display:flex;flex-direction:column;justify-content:flex-start;padding:0 clamp(14px,3vw,34px) 24px}
-body:not(.ready) .gate{width:min(620px,100%);max-width:620px;margin:8vh auto 0;padding:26px;background:#141d30;border:1px solid #293750;border-radius:16px;box-shadow:none}
-body:not(.ready) .gateMark{display:none}
-body:not(.ready) .gate h2{margin:0 0 14px;font-size:21px}
+body:not(.ready) main{display:block;padding:0 clamp(14px,3vw,34px) 24px}
+body:not(.ready) .gate{width:min(620px,100%);max-width:620px;margin:6vh auto 0}
+body:not(.ready) .gate h2{margin:0 0 14px}
 body:not(.ready) .gate>p{margin:0 0 12px}
 body:not(.ready) .gate form{margin-top:0}
 body:not(.ready) .gate .error{white-space:pre-wrap}
-body:not(.ready) footer{display:none!important}
-@media(max-width:600px){
-  body:not(.ready) .topbar{padding:16px}
-  body:not(.ready) main{padding:0 16px 20px}
-  body:not(.ready) .gate{padding:20px;margin:8vh auto 0}
+.cloudGate{margin-top:16px;border:1px solid var(--line);border-radius:12px}.cloudGate .tokenField{flex:1 1 100%}.cloudGate button{width:100%}
+
+/* ---------- 窄螢幕：改為上下堆疊 ---------- */
+@media(max-width:1100px){.workspaceGrid{grid-template-columns:220px minmax(0,1fr) 340px}}
+@media(max-width:850px){
+  body,body.ready{height:auto;min-height:100vh;overflow:auto}
+  main,#workspace{display:block;overflow:visible}
+  .workspaceGrid{display:flex;flex-direction:column}
+  .peoplePanel{border-right:0;border-bottom:1px solid var(--line)}
+  .peopleList{max-height:260px}
+  .treePanel{height:62vh;min-height:420px}
+  .detailPanel{border-left:0;border-top:1px solid var(--line);overflow:visible}
+  .topbar p{white-space:normal}
 }
-
-/* Family tree is the primary workspace; keep auxiliary panels below it. */
-.treePanel{width:100%}.treeViewport svg{max-width:none}
-@media(max-width:700px){.treeViewport{height:62vh;min-height:440px;max-height:680px}}
-
-/* Desktop: keep the family canvas and member menu beside the editor. */
-@media(min-width:851px){.treeViewport{height:clamp(560px,68vh,820px)}.detailPanel{scrollbar-gutter:stable}}
-
-/* Medical source originals: keep the source file separate from plaintext medical notes. */
-.medicalOriginalBlock{grid-column:1/-1;display:grid;gap:9px;padding:14px;border:1px solid var(--line);border-radius:11px;background:#101a2a}
-.medicalOriginalBlock>label:first-child{display:grid;gap:6px}
-.medicalEncryptLabel{display:flex!important;flex-direction:row!important;align-items:center;gap:9px!important;color:#e1eaf7!important}
-.medicalEncryptLabel input{width:auto!important;min-width:18px;min-height:18px}
-.medicalEncryptionFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;border:1px solid #7c8ea8;border-radius:9px;background:#17243a}
-.medicalEncryptionFields[hidden]{display:none}
-.medicalEncryptionNote{grid-column:1/-1;margin:0;color:#d6cba8;font-size:12px}
-.medicalFormAttachmentList{padding:8px 10px;border-radius:8px;background:#17243a;color:var(--muted);font-size:12px}
-.medicalFormAttachmentList[hidden]{display:none}
-.medicalOriginalList{display:grid;gap:7px;margin-top:4px}
-.medicalOriginalRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;background:#17243a;border-radius:8px}
-.medicalOriginalName{min-width:0;overflow-wrap:anywhere;font-size:12px}
-.medicalOriginalMeta{display:block;color:var(--muted);font-size:11px}
-.medicalOriginalActions{display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0}
-.medicalOriginalActions button{padding:5px 9px;font-size:11px}
-@media(max-width:700px){.medicalEncryptionFields{grid-template-columns:1fr}.medicalEncryptionNote{grid-column:auto}.medicalOriginalRow{align-items:flex-start;flex-direction:column}.medicalOriginalActions{width:100%}.medicalOriginalActions button{flex:1}}
-
-.danger{background:#fff7f5!important;color:#a34f47!important;border:1px solid #d9aaa3!important}.danger:hover{background:#f9e8e5!important}
+@media(max-width:560px){
+  .topbar{padding:12px 14px;align-items:flex-start}
+  .brandMark{width:40px;height:40px;flex-basis:40px;font-size:16px}h1{font-size:21px}
+  .treeHead{padding:10px 12px}.treeTitle small{display:none}
+  .formGrid,.eventForm,.medicalForm,.medicalSubform{grid-template-columns:1fr}
+  .eventDescription,.eventFormActions{grid-column:auto}
+  .backupBar>*,.cloudBar>*{width:100%}
+  body:not(.ready) .gate{padding:20px;margin:4vh auto 0}
+}
