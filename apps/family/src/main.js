@@ -533,6 +533,7 @@ async function enterWorkspace() {
   try {
     $("gate").hidden=true;
     $("workspace").hidden=false;
+    document.body.classList.add("ready");
     $("lockBtn").hidden=false;
     await loadAll();
     try { await loadMedicalRecords(); }

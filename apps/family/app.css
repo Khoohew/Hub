@@ -58,13 +58,16 @@ body.ready footer{display:none}
 .restoreGate{border-top:1px solid var(--line);padding-top:14px;margin-top:8px;display:grid;gap:10px}
 
 /* ---------- 三欄主體 ---------- */
-.workspaceGrid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:250px minmax(0,1fr) clamp(380px,25vw,470px);align-items:stretch}
+.workspaceGrid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:var(--wl,250px) 6px minmax(0,1fr) 6px var(--wr,clamp(380px,25vw,470px));align-items:stretch}
+.resizer{cursor:col-resize;position:relative;z-index:3;touch-action:none;background:var(--line);transition:background .15s}
+.resizer::after{content:"";position:absolute;inset:0 -4px}
+.resizer:hover,.resizer.dragging{background:var(--accent)}
 
 /* 左：成員 */
-.peoplePanel{display:flex;flex-direction:column;min-height:0;background:var(--paper);border-right:1px solid var(--line)}
+.peoplePanel{display:flex;flex-direction:column;min-height:0;min-width:0;background:var(--paper)}
 .searchWrap{padding:14px 14px 12px}
 .search{border-radius:12px;padding:11px 14px;font-size:14px;background:#fff}
-.peopleMeta{padding:6px 14px 8px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.peopleMeta{display:flex;align-items:center;justify-content:space-between;padding:6px 14px 8px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
 .peopleList{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:2px;padding:0 0 12px}
 .personItem{display:flex;gap:12px;align-items:center;text-align:left;width:100%;background:transparent;border:0;border-radius:12px;padding:9px 14px;margin:0}
 .personItem:hover{background:#f7f0e5}
@@ -77,9 +80,9 @@ body.ready footer{display:none}
 /* 中：族譜畫布 */
 .treePanel{display:flex;flex-direction:column;min-width:0;min-height:0;background:linear-gradient(135deg,#fbf8f2 0%,#f4eee4 55%,#eee6da 100%)}
 .treeHead{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;background:var(--topbar);border-bottom:1px solid var(--line)}
-.treeTitle{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-width:0}
+.treeTitle{display:flex;align-items:baseline;gap:14px;flex:1 1 auto;min-width:0}
 .treeTitle h2{margin:0;font-size:17px;font-weight:700;white-space:nowrap}
-.treeTitle small{color:var(--muted);font-size:12px}
+.treeTitle small{color:var(--muted);font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .treeTools{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .zoomLabel{color:var(--muted);font-size:12.5px;min-width:38px;text-align:right}
 .treeViewport{flex:1 1 auto;min-height:0;width:100%;height:auto;overflow:auto;cursor:grab;touch-action:none;overscroll-behavior:contain;user-select:none;scrollbar-width:none;-ms-overflow-style:none}
@@ -103,7 +106,7 @@ body.ready footer{display:none}
 .treeEmpty{fill:#a89a8b;font-size:14px}
 
 /* 右：資料 */
-.detailPanel{min-height:0;overflow:auto;background:var(--paper);border-left:1px solid var(--line);padding:18px 16px 28px;scrollbar-gutter:stable;display:flex;flex-direction:column;gap:14px}
+.detailPanel{min-height:0;min-width:0;overflow:auto;background:var(--paper);padding:18px 16px 28px;scrollbar-gutter:stable;display:flex;flex-direction:column;gap:14px}
 .detailPanel>*{flex:0 0 auto}
 .sectionHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .sectionHead h2,.sectionHead h3{margin:0;font-size:16px;font-weight:700}
@@ -186,15 +189,16 @@ body:not(.ready) .gate .error{white-space:pre-wrap}
 .cloudGate{margin-top:16px;border:1px solid var(--line);border-radius:12px}.cloudGate .tokenField{flex:1 1 100%}.cloudGate button{width:100%}
 
 /* ---------- 窄螢幕：改為上下堆疊 ---------- */
-@media(max-width:1100px){.workspaceGrid{grid-template-columns:220px minmax(0,1fr) 340px}}
+@media(max-width:1100px){.workspaceGrid{--wl:220px;--wr:340px}}
 @media(max-width:850px){
   body,body.ready{height:auto;min-height:100vh;overflow:auto}
   main,#workspace{display:block;overflow:visible}
   .workspaceGrid{display:flex;flex-direction:column}
-  .peoplePanel{border-right:0;border-bottom:1px solid var(--line)}
+  .resizer{display:none}
+  .peoplePanel{border-bottom:1px solid var(--line)}
   .peopleList{max-height:260px}
   .treePanel{height:62vh;min-height:420px}
-  .detailPanel{border-left:0;border-top:1px solid var(--line);overflow:visible}
+  .detailPanel{border-top:1px solid var(--line);overflow:visible}
   .topbar p{white-space:normal}
 }
 @media(max-width:560px){
@@ -206,3 +210,4 @@ body:not(.ready) .gate .error{white-space:pre-wrap}
   .backupBar>*,.cloudBar>*{width:100%}
   body:not(.ready) .gate{padding:20px;margin:4vh auto 0}
 }
+.zhBtn{min-width:40px;font-weight:600}

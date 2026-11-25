@@ -5,7 +5,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#fdf9f3">
 <title>家庭資料庫</title>
-<link rel="stylesheet" href="./app.css?v=20261125r">
+<link rel="stylesheet" href="./app.css?v=20261125s">
 </head>
 <body>
 <header class="topbar">
@@ -13,7 +13,7 @@
     <div class="brandMark" aria-hidden="true">族</div>
     <div class="brandText"><h1>家庭資料庫</h1><p>GitHub 私人倉庫直存 · 明文優先 · 附件可選加密</p></div>
   </div>
-  <div class="topActions"><span id="cloudState" class="state">雲端尚未連接</span><button id="addPersonBtn" class="primary">＋ 新增人物</button><button id="lockBtn" class="secondary" hidden>鎖定</button></div>
+  <div class="topActions"><span id="cloudState" class="state">雲端尚未連接</span><button id="zhToggle" class="secondary zhBtn" type="button" title="轉為簡體">簡</button><button id="lockBtn" class="secondary" hidden>鎖定</button></div>
 </header>
 <main>
 <section id="gate" class="panel gate">
@@ -52,9 +52,11 @@
     <!-- 左：家庭成員 -->
     <aside class="peoplePanel">
       <div class="searchWrap"><input id="search" class="search" placeholder="搜尋姓名、籍貫、職業"></div>
-      <div class="peopleMeta"><span id="peopleCount">共 0 人</span></div>
+      <div class="peopleMeta"><span id="peopleCount">共 0 人</span><button id="addPersonBtn" class="small" type="button">＋ 新增</button></div>
       <div id="peopleList" class="peopleList"></div>
     </aside>
+
+    <div id="resizeL" class="resizer" title="拖動調整寬度（雙擊還原）"></div>
 
     <!-- 中：族譜樹 -->
     <section class="treePanel">
@@ -64,6 +66,8 @@
       </div>
       <div id="treeViewport" class="treeViewport"><svg id="treeSvg" xmlns="http://www.w3.org/2000/svg" width="700" height="180" viewBox="0 0 700 180"></svg></div>
     </section>
+
+    <div id="resizeR" class="resizer" title="拖動調整寬度（雙擊還原）"></div>
 
     <!-- 右：個人資料 -->
     <section class="detailPanel">
@@ -182,6 +186,7 @@
 </section>
 <footer>家庭資料庫 · GitHub 私人倉庫直存 · 明文優先／附件可選加密</footer>
 </main>
-<script type="module" src="./src/main.js?v=20261125r"></script>
+<script type="module" src="./src/main.js?v=20261125s"></script>
+<script type="module" src="./src/ui-extras.js?v=20261125s"></script>
 </body>
 </html>
