@@ -67,7 +67,6 @@ async function loadAll() {
   }
   persons.sort((a,b)=>(a.name||"").localeCompare(b.name||"","zh-Hant"));
   renderPeople();
-  renderTree();
   if (selectedId && personById(selectedId)) showPerson(selectedId);
   else clearDetail();
 }
@@ -477,7 +476,6 @@ async function enterWorkspace() {
     }
     await updateHealthState();
     document.body.classList.add("ready");
-    requestAnimationFrame(()=>renderTree());
   } catch(error) {
     document.body.classList.remove("ready");
     $("gateError").textContent=error.message||"資料載入失敗";
