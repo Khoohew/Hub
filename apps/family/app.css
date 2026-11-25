@@ -43,6 +43,10 @@ button:disabled{opacity:.45;cursor:not-allowed}
 
 .treePanel{margin-bottom:18px}.treeViewport{height:clamp(520px,68vh,820px);min-height:520px;width:100%;overflow:auto;border:1px solid var(--line);border-radius:10px;background:radial-gradient(circle at 1px 1px,#29374d 1px,transparent 0);background-size:22px 22px;cursor:grab;touch-action:none;overscroll-behavior:contain;user-select:none}
 .treeViewport:active,.treeViewport.dragging{cursor:grabbing}.treeViewport svg{display:block;max-width:none;user-select:none}
+/* Keep the family canvas pannable without showing browser scrollbars. */
+.treeViewport{scrollbar-width:none;-ms-overflow-style:none}
+.treeViewport::-webkit-scrollbar{display:none;width:0;height:0}
+
 .treeEdge{fill:none;stroke:#64748b;stroke-width:2.2;opacity:.85}.treeEdge.spouse_of{stroke:#c49b54;stroke-width:2.5}.treeEdge.sibling_of{stroke:#7c9bb8;stroke-dasharray:4 4}
 .treeNode{cursor:pointer}.treeNode rect{fill:#1a2940;stroke:#526782;stroke-width:1.5}.treeNode.selected rect{fill:#263d5e;stroke:#9dc6ff;stroke-width:2.5}.treeNode:hover rect{stroke:#d3e4fa}
 .treeName{fill:#f3f6fb;font-size:15px;font-weight:650}.treeDetail{fill:#aab8ca;font-size:11px}.treeEmpty{fill:#9aa9bd;font-size:14px}
