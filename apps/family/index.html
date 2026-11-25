@@ -105,58 +105,59 @@
         </form>
         <div id="mediaList" class="mediaGrid"></div>
       </section>
+      <section class="panel healthPanel">
+        <div><div class="eyebrow">MEDICAL RECORDS</div><h2>醫療紀錄</h2><p>醫療摘要及文字紀錄預設以明文保存於私人倉庫，方便整理與查詢；敏感病歷原件可選擇另外加密保存。</p></div>
+        <div class="healthActions"><span id="healthState" class="state">尚未建立</span><button id="healthUnlock" class="secondary">重新載入醫療紀錄</button></div>
+      </section>
+      <section id="medicalSection" class="panel medicalSection" hidden>
+        <div class="sectionHead"><div><h2>醫療紀錄</h2><small>醫療紀錄獨立分類保存，與族譜人物資料分開管理</small></div></div>
+        <form id="medicalForm" class="medicalForm">
+          <label>紀錄類型<select id="medicalRecordType"><option value="allergy">過敏</option><option value="condition">疾病／健康狀況</option><option value="medication">用藥</option><option value="surgery">手術</option><option value="vaccination">疫苗</option><option value="test">檢查／檢驗</option><option value="visit">門診</option><option value="hospitalization">住院</option><option value="other">其他</option></select></label>
+          <label>紀錄摘要<input id="medicalSummary" maxlength="240" required placeholder="例如：青黴素過敏、膝關節手術"></label>
+          <label>紀錄日期<input id="medicalRecordDate" type="date"></label>
+          <label>結束日期<input id="medicalEndDate" type="date"></label>
+          <label>醫療提供者<input id="medicalProvider" maxlength="160"></label>
+          <label>醫院／機構<input id="medicalFacility" maxlength="160"></label>
+          <div id="medicalMedicationFields" class="medicalSubform" hidden>
+            <strong>用藥資訊</strong>
+            <label>藥物名稱<input id="medicalMedicationName" maxlength="160"></label>
+            <label>劑量<input id="medicalMedicationDose" maxlength="100"></label>
+            <label>給藥途徑<input id="medicalMedicationRoute" maxlength="100"></label>
+            <label>頻率<input id="medicalMedicationFrequency" maxlength="100"></label>
+            <label>開始日期<input id="medicalMedicationStart" type="date"></label>
+            <label>結束日期<input id="medicalMedicationEnd" type="date"></label>
+            <label>狀態<select id="medicalMedicationStatus"><option value="active">使用中</option><option value="stopped">已停用</option><option value="unknown">不詳</option></select></label>
+          </div>
+          <div id="medicalAllergyFields" class="medicalSubform" hidden>
+            <strong>過敏資訊</strong>
+            <label>過敏物質<input id="medicalAllergySubstance" maxlength="160"></label>
+            <label>反應<input id="medicalAllergyReaction" maxlength="240"></label>
+            <label>嚴重程度<select id="medicalAllergySeverity"><option value="unknown">不詳</option><option value="mild">輕微</option><option value="moderate">中等</option><option value="severe">嚴重</option></select></label>
+          </div>
+          <label class="medicalWide">詳細內容<textarea id="medicalDetails" rows="3" maxlength="4000"></textarea></label>
+          <label class="medicalWide">備註<textarea id="medicalNotes" rows="2" maxlength="2000"></textarea></label>
+          <div class="medicalOriginalBlock">
+            <label>病歷原件照片／文件<input id="medicalFiles" type="file" accept="image/*,application/pdf" multiple></label>
+            <small class="muted">可一次選擇多張照片或 PDF。每個原件不超過 25 MB；上傳後會保留原始檔案，不會壓縮或改寫。</small>
+            <label class="medicalEncryptLabel"><input id="medicalAttachmentEncrypt" type="checkbox">加密保存本次上傳的原件</label>
+            <div id="medicalAttachmentPasswordFields" class="medicalEncryptionFields" hidden>
+              <label>原件加密密碼（至少 12 個字元）<input id="medicalAttachmentPassword" type="password" autocomplete="new-password" minlength="12"></label>
+              <label>再次輸入加密密碼<input id="medicalAttachmentPasswordConfirm" type="password" autocomplete="new-password" minlength="12"></label>
+              <p class="medicalEncryptionNote">只有本次選取的照片／PDF 檔案內容會加密；醫療摘要、日期及其他文字仍是明文。加密密碼不會上傳或保存，遺失後無法還原。</p>
+            </div>
+            <div id="medicalFormAttachmentList" class="medicalFormAttachmentList" hidden></div>
+          </div>
+          <label class="medicalVerified"><input id="medicalVerified" type="checkbox">已由使用者核對原始資料</label>
+          <div class="medicalActions"><button id="medicalSaveBtn" type="submit" class="secondary">保存醫療紀錄</button><button id="medicalCancelEdit" type="button" class="secondary" hidden>取消編輯</button></div>
+        </form>
+        <div id="medicalList" class="medicalList"></div>
+      </section>
+    </section>
     </section>
   </div>
-  <section class="panel healthPanel">
-    <div><div class="eyebrow">MEDICAL RECORDS</div><h2>醫療紀錄</h2><p>醫療摘要及文字紀錄預設以明文保存於私人倉庫，方便整理與查詢；敏感病歷原件可選擇另外加密保存。</p></div>
-    <div class="healthActions"><span id="healthState" class="state">尚未建立</span><button id="healthUnlock" class="secondary">重新載入醫療紀錄</button></div>
-  </section>
-  <section id="medicalSection" class="panel medicalSection" hidden>
-    <div class="sectionHead"><div><h2>醫療紀錄</h2><small>醫療紀錄獨立分類保存，與族譜人物資料分開管理</small></div></div>
-    <form id="medicalForm" class="medicalForm">
-      <label>紀錄類型<select id="medicalRecordType"><option value="allergy">過敏</option><option value="condition">疾病／健康狀況</option><option value="medication">用藥</option><option value="surgery">手術</option><option value="vaccination">疫苗</option><option value="test">檢查／檢驗</option><option value="visit">門診</option><option value="hospitalization">住院</option><option value="other">其他</option></select></label>
-      <label>紀錄摘要<input id="medicalSummary" maxlength="240" required placeholder="例如：青黴素過敏、膝關節手術"></label>
-      <label>紀錄日期<input id="medicalRecordDate" type="date"></label>
-      <label>結束日期<input id="medicalEndDate" type="date"></label>
-      <label>醫療提供者<input id="medicalProvider" maxlength="160"></label>
-      <label>醫院／機構<input id="medicalFacility" maxlength="160"></label>
-      <div id="medicalMedicationFields" class="medicalSubform" hidden>
-        <strong>用藥資訊</strong>
-        <label>藥物名稱<input id="medicalMedicationName" maxlength="160"></label>
-        <label>劑量<input id="medicalMedicationDose" maxlength="100"></label>
-        <label>給藥途徑<input id="medicalMedicationRoute" maxlength="100"></label>
-        <label>頻率<input id="medicalMedicationFrequency" maxlength="100"></label>
-        <label>開始日期<input id="medicalMedicationStart" type="date"></label>
-        <label>結束日期<input id="medicalMedicationEnd" type="date"></label>
-        <label>狀態<select id="medicalMedicationStatus"><option value="active">使用中</option><option value="stopped">已停用</option><option value="unknown">不詳</option></select></label>
-      </div>
-      <div id="medicalAllergyFields" class="medicalSubform" hidden>
-        <strong>過敏資訊</strong>
-        <label>過敏物質<input id="medicalAllergySubstance" maxlength="160"></label>
-        <label>反應<input id="medicalAllergyReaction" maxlength="240"></label>
-        <label>嚴重程度<select id="medicalAllergySeverity"><option value="unknown">不詳</option><option value="mild">輕微</option><option value="moderate">中等</option><option value="severe">嚴重</option></select></label>
-      </div>
-      <label class="medicalWide">詳細內容<textarea id="medicalDetails" rows="3" maxlength="4000"></textarea></label>
-      <label class="medicalWide">備註<textarea id="medicalNotes" rows="2" maxlength="2000"></textarea></label>
-      <div class="medicalOriginalBlock">
-        <label>病歷原件照片／文件<input id="medicalFiles" type="file" accept="image/*,application/pdf" multiple></label>
-        <small class="muted">可一次選擇多張照片或 PDF。每個原件不超過 25 MB；上傳後會保留原始檔案，不會壓縮或改寫。</small>
-        <label class="medicalEncryptLabel"><input id="medicalAttachmentEncrypt" type="checkbox">加密保存本次上傳的原件</label>
-        <div id="medicalAttachmentPasswordFields" class="medicalEncryptionFields" hidden>
-          <label>原件加密密碼（至少 12 個字元）<input id="medicalAttachmentPassword" type="password" autocomplete="new-password" minlength="12"></label>
-          <label>再次輸入加密密碼<input id="medicalAttachmentPasswordConfirm" type="password" autocomplete="new-password" minlength="12"></label>
-          <p class="medicalEncryptionNote">只有本次選取的照片／PDF 檔案內容會加密；醫療摘要、日期及其他文字仍是明文。加密密碼不會上傳或保存，遺失後無法還原。</p>
-        </div>
-        <div id="medicalFormAttachmentList" class="medicalFormAttachmentList" hidden></div>
-      </div>
-      <label class="medicalVerified"><input id="medicalVerified" type="checkbox">已由使用者核對原始資料</label>
-      <div class="medicalActions"><button id="medicalSaveBtn" type="submit" class="secondary">保存醫療紀錄</button><button id="medicalCancelEdit" type="button" class="secondary" hidden>取消編輯</button></div>
-    </form>
-    <div id="medicalList" class="medicalList"></div>
-  </section>
-</section>
+
 <footer>家庭資料庫 · GitHub 私人倉庫直存 · 明文優先／附件可選加密</footer>
 </main>
-<script type="module" src="./src/main.js?v=20261125j"></script>
+<script type="module" src="./src/main.js?v=20261125l"></script>
 </body>
 </html>
