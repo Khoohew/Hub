@@ -96,3 +96,21 @@ body:not(.ready) footer{display:none!important}
 
 /* Desktop: keep the family canvas and member menu beside the editor. */
 @media(min-width:851px){.treeViewport{height:clamp(560px,68vh,820px)}.detailPanel{scrollbar-gutter:stable}}
+
+/* Medical source originals: keep the source file separate from plaintext medical notes. */
+.medicalOriginalBlock{grid-column:1/-1;display:grid;gap:9px;padding:14px;border:1px solid var(--line);border-radius:11px;background:#101a2a}
+.medicalOriginalBlock>label:first-child{display:grid;gap:6px}
+.medicalEncryptLabel{display:flex!important;flex-direction:row!important;align-items:center;gap:9px!important;color:#e1eaf7!important}
+.medicalEncryptLabel input{width:auto!important;min-width:18px;min-height:18px}
+.medicalEncryptionFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;border:1px solid #7c8ea8;border-radius:9px;background:#17243a}
+.medicalEncryptionFields[hidden]{display:none}
+.medicalEncryptionNote{grid-column:1/-1;margin:0;color:#d6cba8;font-size:12px}
+.medicalFormAttachmentList{padding:8px 10px;border-radius:8px;background:#17243a;color:var(--muted);font-size:12px}
+.medicalFormAttachmentList[hidden]{display:none}
+.medicalOriginalList{display:grid;gap:7px;margin-top:4px}
+.medicalOriginalRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;background:#17243a;border-radius:8px}
+.medicalOriginalName{min-width:0;overflow-wrap:anywhere;font-size:12px}
+.medicalOriginalMeta{display:block;color:var(--muted);font-size:11px}
+.medicalOriginalActions{display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0}
+.medicalOriginalActions button{padding:5px 9px;font-size:11px}
+@media(max-width:700px){.medicalEncryptionFields{grid-template-columns:1fr}.medicalEncryptionNote{grid-column:auto}.medicalOriginalRow{align-items:flex-start;flex-direction:column}.medicalOriginalActions{width:100%}.medicalOriginalActions button{flex:1}}
