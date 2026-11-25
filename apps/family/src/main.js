@@ -173,16 +173,71 @@ async function showPerson(id) {
   selectedVersion = stored?.version ?? null;
   $("emptyDetail").hidden = true; $("personForm").hidden = false; $("relationsSection").hidden = false; $("eventSection").hidden = false; $("mediaSection").hidden = false;
   resetEventForm();resetMedicalForm();
-  $("formTitle").textContent = p.name; fillForm(p); message("已載入家庭資料");
+  $("formTitle").textContent = p.name; fillForm(p); $("deletePersonBtn").hidden = false; message("已載入家庭資料");
   renderPeople(); renderRelations(); renderTree(); renderEvents(); await renderMedia();
   await updateHealthState();
   if((await vault.status("medical")).unlocked)renderMedicalRecords();
 }
+async function deleteSelectedPerson() {
+  const person=personById(selectedId);
+  if(!person)return;
+  const linkedMedia=mediaItems.filter(item=>(item.personIds||[]).includes(person.id));
+  const linkedMedical=medicalRecords.filter(item=>item.personRef===person.id);
+  if(linkedMedia.length){
+    alert("此人物仍有 "+linkedMedia.length+" 件照片／文件附件。為避免誤刪原件，請先下載並刪除附件，或先將附件轉交其他人物，再刪除此人物。");
+    return;
+  }
+  if(linkedMedical.length){
+    alert("此人物仍有 "+linkedMedical.length+" 筆醫療紀錄。為避免誤刪醫療資料，請先處理這些紀錄，再刪除此人物。");
+    return;
+  }
+  const linkedEvents=events.filter(item=>(item.personIds||[]).includes(person.id));
+  const exclusiveEvents=linkedEvents.filter(item=>(item.personIds||[]).filter(id=>id!==person.id).length===0);
+  const referencedEvents=exclusiveEvents.filter(item=>mediaItems.some(media=>(media.eventIds||[]).includes(item.id)));
+  if(referencedEvents.length){
+    alert("此人物有事件仍被附件引用，請先解除附件與事件的關聯，再刪除人物。");
+    return;
+  }
+  const linkedRelations=relationships.filter(item=>item.fromPersonId===person.id||item.toPersonId===person.id);
+  const summary=[
+    "確定永久刪除人物「"+person.name+"」？",
+    "",
+    "將一併刪除："+linkedRelations.length+" 條親屬關係、"+exclusiveEvents.length+" 筆僅屬於此人物的人生事件。",
+    "其他人物共同參與的事件會保留，並移除此人物的關聯。",
+    "此操作會直接修改 GitHub 私人資料庫，無法一鍵復原。"
+  ].join("\\n");
+  if(!confirm(summary))return;
+  const personId=person.id;
+  try{
+    for(const relation of linkedRelations)await vault.delete("family","relationships",relation.id);
+    for(const event of linkedEvents){
+      const remaining=(event.personIds||[]).filter(id=>id!==personId);
+      if(!remaining.length)await vault.delete("family","events",event.id);
+      else{
+        const next={...event,personIds:remaining,updatedAt:nowIso()};
+        await vault.save("family","events",event.id,1,next,null);
+        events=events.map(value=>value.id===event.id?next:value);
+      }
+    }
+    await vault.delete("family","persons",personId,selectedVersion);
+    persons=persons.filter(value=>value.id!==personId);
+    relationships=relationships.filter(value=>value.fromPersonId!==personId&&value.toPersonId!==personId);
+    events=events.filter(value=>(value.personIds||[]).length>0);
+    selectedId=null;selectedVersion=null;editing=false;
+    clearDetail();
+    renderTree();renderPeople();
+    message("人物及其關係已刪除");
+  }catch(error){
+    alert("刪除人物時發生錯誤："+error.message+"。資料可能只完成部分更新，請重新載入頁面核對。");
+    try{await loadAll();}catch(reloadError){console.error(reloadError);}
+  }
+}
+
 function newPerson() {
   selectedId = null; selectedVersion = null; editing = true;
   $("emptyDetail").hidden = true; $("personForm").hidden = false; $("relationsSection").hidden = true; $("eventSection").hidden = true; $("mediaSection").hidden = true; $("medicalSection").hidden = true;
   resetEventForm();resetMedicalForm();clearMediaUrls();
-  $("formTitle").textContent = "新增人物";
+  $("formTitle").textContent = "新增人物";\n  $("deletePersonBtn").hidden = true;
   $("personForm").reset(); $("gender").value = "unknown"; message("尚未保存");
   $("name").focus();
 }
@@ -209,7 +264,7 @@ async function savePerson(event) {
     const result=await vault.save("family","persons",p.id,1,p,old?selectedVersion:null);
     if(old) persons=persons.map(x=>x.id===p.id?p:x); else persons.push(p);
     selectedId=p.id;selectedVersion=result.version;editing=false;
-    $("formTitle").textContent=p.name;$("relationsSection").hidden=false;$("eventSection").hidden=false;$("mediaSection").hidden=false;
+    $("formTitle").textContent=p.name;$("deletePersonBtn").hidden=false;$("relationsSection").hidden=false;$("eventSection").hidden=false;$("mediaSection").hidden=false;
     message("已保存至 GitHub 私人倉庫（明文）");renderPeople();renderRelations();renderTree();renderEvents();await renderMedia();
     await updateHealthState();if((await vault.status("medical")).unlocked)renderMedicalRecords();
   } catch(error) {
@@ -510,7 +565,8 @@ async function start() {
   });
   $("addPersonBtn").addEventListener("click",newPerson);$("emptyAdd").addEventListener("click",newPerson);
   $("cancelEdit").addEventListener("click",()=>selectedId?showPerson(selectedId):clearDetail());
-  $("personForm").addEventListener("submit",savePerson);$("search").addEventListener("input",renderPeople);
+  $("personForm").addEventListener("submit",savePerson);
+  $("deletePersonBtn").addEventListener("click",deleteSelectedPerson);$("search").addEventListener("input",renderPeople);
   $("addRelation").addEventListener("click",addRelation);$("mediaForm").addEventListener("submit",addMedia);
   $("eventForm").addEventListener("submit",saveEvent);$("eventCancelEdit").addEventListener("click",resetEventForm);
   $("eventDate").addEventListener("change",()=>{if($("eventDate").value&&$("eventDatePrecision").value==="unknown")$("eventDatePrecision").value="day";});
