@@ -12,7 +12,7 @@ const $ = id => document.getElementById(id);
 const vault = new VaultService();
 let persons = [], relationships = [], events = [], mediaItems = [], selectedId = null, selectedVersion = null, editing = false;
 let selectedEventId = null, selectedEventVersion = null;
-let medicalRecords = [], selectedMedicalId = null, selectedMedicalVersion = null;
+let medicalRecords = [], medicalMediaItems = [], selectedMedicalId = null, selectedMedicalVersion = null;
 let mediaObjectUrls = new Map();
 let treeZoom = 1.15;
 let githubStorage = null;
@@ -146,6 +146,16 @@ function renderPeople() {
 function clearDetail() {
   selectedId = null; selectedVersion = null; editing = false;
   $("emptyDetail").hidden = false; $("personForm").hidden = true; $("relationsSection").hidden = true; $("eventSection").hidden = true; $("mediaSection").hidden = true; $("medicalSection").hidden = true;
+  const emptyTitle=$("emptyDetail").querySelector("h2"),emptyText=$("emptyDetail").querySelector("p"),emptyButton=$("emptyAdd");
+  if(persons.length){
+    emptyTitle.textContent="選擇家庭成員以編輯個人資料";
+    emptyText.textContent="在左側家庭成員清單點選人物，個人資料表單就會顯示在右側；也可以新增人物。";
+    emptyButton.textContent="＋ 新增人物";
+  }else{
+    emptyTitle.textContent="建立你的家庭資料";
+    emptyText.textContent="先新增第一位人物，再逐步建立個人資料、親屬關係、家庭事件和照片檔案。";
+    emptyButton.textContent="新增第一位人物";
+  }
   resetEventForm();resetMedicalForm();clearMediaUrls();
   renderPeople();
 }
@@ -490,7 +500,7 @@ async function start() {
     catch(error) { $("gateError").textContent=error.message||"資料載入失敗"; }
   });
   $("lockBtn").addEventListener("click",()=>{
-    githubStorage?.clearToken();githubStorage=null;clearMediaUrls();persons=[];relationships=[];events=[];mediaItems=[];medicalRecords=[];selectedId=null;selectedEventId=null;selectedEventVersion=null;selectedMedicalId=null;selectedMedicalVersion=null;selectedVersion=null;editing=false;
+    githubStorage?.clearToken();githubStorage=null;clearMediaUrls();persons=[];relationships=[];events=[];mediaItems=[];medicalRecords=[];medicalMediaItems=[];selectedId=null;selectedEventId=null;selectedEventVersion=null;selectedMedicalId=null;selectedMedicalVersion=null;selectedVersion=null;editing=false;
     $("personForm").reset();$("peopleList").replaceChildren();$("relationsList").replaceChildren();$("eventList").replaceChildren();$("mediaList").replaceChildren();$("eventForm").reset();$("medicalForm").reset();$("medicalList").replaceChildren();$("medicalSection").hidden=true;$("search").value="";$("mediaFile").value="";
     vault.lock();$("workspace").hidden=true;$("gate").hidden=false;$("lockBtn").hidden=true;
     $("gateTitle").textContent="家庭資料已鎖定";$("gateDesc").textContent="為保護私人資料，請返回 Hub 首頁重新輸入共用密鑰並進入家庭資料。";
@@ -505,7 +515,7 @@ async function start() {
   $("eventForm").addEventListener("submit",saveEvent);$("eventCancelEdit").addEventListener("click",resetEventForm);
   $("eventDate").addEventListener("change",()=>{if($("eventDate").value&&$("eventDatePrecision").value==="unknown")$("eventDatePrecision").value="day";});
   $("medicalForm").addEventListener("submit",saveMedicalRecord);$("medicalCancelEdit").addEventListener("click",resetMedicalForm);
-  $("medicalRecordType").addEventListener("change",toggleMedicalFields);
+  $("medicalRecordType").addEventListener("change",toggleMedicalFields);$("medicalAttachmentEncrypt").addEventListener("change",toggleMedicalAttachmentEncryption);
   $("treeFit").addEventListener("click",()=>{treeZoom=1;renderTree();});
   const treeViewport=$("treeViewport");let treeDrag=null;
   treeViewport.addEventListener("pointerdown",event=>{
@@ -710,12 +720,20 @@ const MEDICAL_LABELS={allergy:"過敏",condition:"疾病／健康狀況",medicat
 
 async function loadMedicalRecords() {
   medicalRecords=[];
+  medicalMediaItems=[];
   const items=await vault.cache.list("health");
   for(const item of items){
     if(!item.objectId.startsWith("medical:health:"))continue;
     const id=item.objectId.slice("medical:health:".length);
     const loaded=await vault.load("medical","health",id);
     if(loaded)medicalRecords.push({id,version:loaded.version,...loaded.value});
+  }
+  const attachmentItems=await vault.cache.list("health-media");
+  for(const item of attachmentItems){
+    if(!item.objectId.startsWith("medical:health-media:"))continue;
+    const id=item.objectId.slice("medical:health-media:".length);
+    const loaded=await vault.load("medical","health-media",id);
+    if(loaded)medicalMediaItems.push({id,version:loaded.version,...loaded.value});
   }
 }
 
@@ -724,6 +742,9 @@ function resetMedicalForm() {
   const form=$("medicalForm");if(!form)return;
   form.reset();$("medicalRecordType").value="condition";
   $("medicalMedicationFields").hidden=true;$("medicalAllergyFields").hidden=true;
+  $("medicalAttachmentPasswordFields").hidden=true;
+  $("medicalAttachmentPassword").value="";$("medicalAttachmentPasswordConfirm").value="";
+  $("medicalFormAttachmentList").hidden=true;$("medicalFormAttachmentList").textContent="";
   $("medicalSaveBtn").textContent="保存醫療紀錄";$("medicalCancelEdit").hidden=true;
 }
 
@@ -732,8 +753,63 @@ function toggleMedicalFields() {
   $("medicalMedicationFields").hidden=type!=="medication";
   $("medicalAllergyFields").hidden=type!=="allergy";
 }
+function toggleMedicalAttachmentEncryption() {
+  const enabled=$("medicalAttachmentEncrypt").checked;
+  $("medicalAttachmentPasswordFields").hidden=!enabled;
+  $("medicalAttachmentPassword").required=enabled;
+  $("medicalAttachmentPasswordConfirm").required=enabled;
+}
+function renderMedicalFormAttachments(record) {
+  const host=$("medicalFormAttachmentList");
+  const attachments=medicalMediaItems.filter(file=>(record.sourceMediaIds||[]).includes(file.id));
+  host.hidden=!attachments.length;
+  host.textContent=attachments.length
+    ? "此筆紀錄已保存 "+attachments.length+" 件原件；新上傳的檔案會附加在原件清單，不會覆蓋舊檔。"
+    : "";
+}
 
 function medicalDateLabel(value) { return value||"日期未記錄"; }
+function medicalFileName(file,index) {
+  const extension=String(file.name||"").match(/\.[a-zA-Z0-9]{1,8}$/)?.[0]||"";
+  return "加密原件-"+index+extension;
+}
+function safeDownloadName(value) {
+  return String(value||"medical-original").replace(/[\\/]/g,"_").replace(/[\x00-\x1f]/g,"_");
+}
+
+async function downloadMedicalAttachment(item) {
+  let password=null;
+  try{
+    if(item.encrypted){
+      password=prompt("此醫療原件已加密，請輸入上傳時設定的原件密碼：");
+      if(!password)return;
+    }
+    const loaded=await vault.loadBytes("medical","health-blobs",item.id,password);
+    password="";
+    if(loaded.bytes.length!==item.sizeBytes)throw new Error("原件大小與索引不一致。");
+    const blob=new Blob([loaded.bytes],{type:item.mimeType||"application/octet-stream"});
+    const url=URL.createObjectURL(blob),anchor=document.createElement("a");
+    anchor.href=url;anchor.download=safeDownloadName(item.originalName||"medical-original");
+    anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }catch(error){
+    password="";
+    alert("醫療原件讀取／下載失敗："+error.message);
+  }
+}
+
+async function deleteMedicalAttachment(item,record) {
+  if(!confirm("確定刪除此件醫療原件？此操作會從 GitHub 私人倉庫刪除檔案。"))return;
+  try{
+    const nextPayload={...record,sourceMediaIds:(record.sourceMediaIds||[]).filter(id=>id!==item.id)};
+    const result=await vault.save("medical","health",record.id,1,nextPayload,record.version);
+    medicalRecords=medicalRecords.map(value=>value.id===record.id?{...nextPayload,id:record.id,version:result.version}:value);
+    await vault.delete("medical","health-media",item.id);
+    await vault.delete("medical","health-blobs",item.id);
+    medicalMediaItems=medicalMediaItems.filter(value=>value.id!==item.id);
+    renderMedicalRecords();
+    if(selectedMedicalId===record.id)renderMedicalFormAttachments(nextPayload);
+  }catch(error){alert("刪除醫療原件失敗："+error.message);}
+}
 
 function renderMedicalRecords() {
   const host=$("medicalList");host.replaceChildren();
@@ -759,6 +835,23 @@ function renderMedicalRecords() {
     }
     if(item.provider||item.facility){const source=document.createElement("small");source.textContent=[item.provider,item.facility].filter(Boolean).join(" · ");card.append(source);}
     const verified=document.createElement("small");verified.textContent=item.verifiedByUser?"已由使用者核實":"尚未核實";card.append(verified);
+    const attachments=medicalMediaItems.filter(file=>(item.sourceMediaIds||[]).includes(file.id));
+    if(attachments.length){
+      const attachmentList=document.createElement("div");attachmentList.className="medicalOriginalList";
+      for(const file of attachments){
+        const row=document.createElement("div");row.className="medicalOriginalRow";
+        const name=document.createElement("div");name.className="medicalOriginalName";
+        name.textContent=file.originalName||"醫療原件";
+        const meta=document.createElement("small");meta.className="medicalOriginalMeta";
+        meta.textContent=(file.mimeType||"檔案")+" · "+Math.max(1,Math.round((file.sizeBytes||0)/1024))+" KB · "+(file.encrypted?"已加密":"明文");
+        name.append(meta);
+        const buttons=document.createElement("div");buttons.className="medicalOriginalActions";
+        const download=document.createElement("button");download.type="button";download.className="secondary";download.textContent="下載原件";download.addEventListener("click",()=>downloadMedicalAttachment(file));
+        const remove=document.createElement("button");remove.type="button";remove.className="secondary";remove.textContent="刪除原件";remove.addEventListener("click",()=>deleteMedicalAttachment(file,item));
+        buttons.append(download,remove);row.append(name,buttons);attachmentList.append(row);
+      }
+      card.append(attachmentList);
+    }
     const actions=document.createElement("div");actions.className="eventActions";
     const edit=document.createElement("button");edit.type="button";edit.className="secondary";edit.textContent="編輯";edit.addEventListener("click",()=>editMedicalRecord(item.id));
     const remove=document.createElement("button");remove.type="button";remove.className="secondary";remove.textContent="刪除";remove.addEventListener("click",()=>deleteMedicalRecord(item));
@@ -784,6 +877,9 @@ function editMedicalRecord(id) {
   $("medicalAllergySubstance").value=item.allergy?.substance||"";
   $("medicalAllergyReaction").value=item.allergy?.reaction||"";
   $("medicalAllergySeverity").value=item.allergy?.severity||"unknown";
+  $("medicalAttachmentEncrypt").checked=false;
+  toggleMedicalAttachmentEncryption();
+  renderMedicalFormAttachments(item);
   toggleMedicalFields();$("medicalSaveBtn").textContent="保存修改";$("medicalCancelEdit").hidden=false;
 }
 
@@ -791,11 +887,23 @@ async function saveMedicalRecord(event) {
   event.preventDefault();
   if(!selectedId){alert("請先選擇一位已保存的人物。");return;}
   const type=$("medicalRecordType").value;
+  const files=Array.from($("medicalFiles").files||[]);
+  if(files.some(file=>file.size===0||file.size>25*1024*1024)){
+    alert("每個醫療原件需大於 0 且不超過 25 MB。");return;
+  }
+  const encrypted=$("medicalAttachmentEncrypt").checked&&files.length>0;
+  const attachmentPassword=encrypted?$("medicalAttachmentPassword").value:"";
+  const confirmPassword=encrypted?$("medicalAttachmentPasswordConfirm").value:"";
+  if(encrypted&&(attachmentPassword.length<12||attachmentPassword!==confirmPassword)){
+    alert("原件加密密碼至少 12 個字元，而且兩次輸入必須一致。");return;
+  }
+  const old=selectedMedicalId?medicalRecords.find(item=>item.id===selectedMedicalId):null;
+  const id=old?.id||createId("H");
   const payload={
     personRef:selectedId,recordType:type,recordDate:$("medicalRecordDate").value||null,
     endDate:$("medicalEndDate").value||null,summary:$("medicalSummary").value.trim(),
     details:$("medicalDetails").value.trim(),provider:$("medicalProvider").value.trim(),
-    facility:$("medicalFacility").value.trim(),sourceMediaIds:[],
+    facility:$("medicalFacility").value.trim(),sourceMediaIds:[...(old?.sourceMediaIds||[])],
     verifiedByUser:$("medicalVerified").checked,notes:$("medicalNotes").value.trim()
   };
   if(type==="medication")payload.medication={
@@ -810,28 +918,60 @@ async function saveMedicalRecord(event) {
   };
   const checked=validateMedicalRecord(payload,new Set(persons.map(person=>person.id)));
   if(!checked.valid){alert(checked.errors[0]);return;}
-  const old=selectedMedicalId?medicalRecords.find(item=>item.id===selectedMedicalId):null;
-  const id=old?.id||createId("H");
+  const createdIds=[];
   try{
+    for(let index=0;index<files.length;index++){
+      const file=files[index],attachmentId=createId("HA");
+      const bytes=new Uint8Array(await file.arrayBuffer());
+      if(encrypted)await vault.saveEncryptedBytes("medical","health-blobs",attachmentId,1,bytes,attachmentPassword,null);
+      else await vault.saveBytes("medical","health-blobs",attachmentId,1,bytes,null);
+      createdIds.push(attachmentId);
+      const metadata={
+        schemaVersion:1,id:attachmentId,healthRecordId:id,personRef:selectedId,
+        originalName:encrypted?medicalFileName(file,index+1):file.name.slice(0,240),
+        mimeType:file.type||"application/octet-stream",sizeBytes:file.size,
+        encrypted,createdAt:nowIso()
+      };
+      await vault.save("medical","health-media",attachmentId,1,metadata,null);
+      payload.sourceMediaIds.push(attachmentId);
+      medicalMediaItems.push({...metadata,version:1});
+    }
     const result=await vault.save("medical","health",id,1,payload,old?selectedMedicalVersion:null);
     medicalRecords=medicalRecords.filter(item=>item.id!==id);
     medicalRecords.push({id,version:result.version,...payload});
-    resetMedicalForm();renderMedicalRecords();alert("醫療紀錄已以明文保存至 GitHub 私人倉庫。");
-  }catch(error){alert("醫療紀錄保存失敗："+error.message);}
+    resetMedicalForm();renderMedicalRecords();
+    alert("醫療紀錄已保存。文字資料為明文；本次原件："+(files.length?(encrypted?"已加密":"明文"):"未新增附件")+"。");
+  }catch(error){
+    for(const attachmentId of createdIds){
+      await vault.delete("medical","health-media",attachmentId).catch(()=>{});
+      await vault.delete("medical","health-blobs",attachmentId).catch(()=>{});
+      medicalMediaItems=medicalMediaItems.filter(file=>file.id!==attachmentId);
+    }
+    alert("醫療紀錄／原件保存失敗："+error.message);
+  }finally{
+    $("medicalAttachmentPassword").value="";
+    $("medicalAttachmentPasswordConfirm").value="";
+  }
 }
 
 async function deleteMedicalRecord(item) {
-  if(!confirm("確定刪除此筆醫療紀錄？"))return;
+  if(!confirm("確定刪除此筆醫療紀錄及其關聯的所有原件？此操作會直接刪除 GitHub 私人倉庫中的資料。"))return;
   try{
     await vault.delete("medical","health",item.id,item.version);
+    const attachments=medicalMediaItems.filter(file=>(item.sourceMediaIds||[]).includes(file.id));
+    for(const file of attachments){
+      await vault.delete("medical","health-media",file.id);
+      await vault.delete("medical","health-blobs",file.id);
+    }
     medicalRecords=medicalRecords.filter(record=>record.id!==item.id);
+    medicalMediaItems=medicalMediaItems.filter(file=>!(item.sourceMediaIds||[]).includes(file.id));
     if(selectedMedicalId===item.id)resetMedicalForm();
     renderMedicalRecords();
   }catch(error){alert("醫療紀錄刪除失敗："+error.message);}
 }
 
 async function updateHealthState() {
-  $("healthState").textContent="明文保存";
+  $("healthState").textContent="文字明文／原件可選加密";
   $("healthUnlock").textContent="重新載入醫療紀錄";
   $("healthState").dataset.scope="medical";
   $("medicalSection").hidden=!selectedId;
@@ -845,6 +985,5 @@ async function unlockHealth() {
     alert("醫療資料讀取失敗："+error.message+"。若這是舊版加密紀錄，需要先完成舊資料解鎖與遷移。");
   }
 }
-
 
 start().catch(error=>{$("gateError").textContent="啟動失敗："+error.message;});
