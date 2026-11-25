@@ -218,3 +218,52 @@ footer{display:none}
  .detailPanel .formGrid{grid-template-columns:1fr}
  .detailPanel .wide{grid-column:auto}
 }
+
+/* V11.2 desktop layout and palette override */
+:root{--bg:#f7f2e9;--panel:#fffdf9;--panel2:#f5eee3;--line:#e5dccd;--text:#443b31;--muted:#8c8173;--accent:#a86b36;--green:#66876b;--red:#a95f58}
+html,body{width:100%;height:100%;margin:0}
+body{background:#f7f2e9!important;color:#443b31!important;overflow:hidden!important;font-family:Arial,"Noto Sans TC",sans-serif}
+.topbar{height:58px;min-height:58px;box-sizing:border-box;padding:7px 14px!important;background:#fffaf2!important;border-bottom:1px solid #e5dccd!important;color:#443b31!important}
+.topbar h1{font-size:18px!important;color:#443b31!important;margin:0}.topbar p{font-size:10px!important;color:#8c8173!important;margin:2px 0 0}.topbar .eyebrow{display:none}
+.topActions{display:flex;align-items:center;gap:6px}.topActions .state{background:#fffdf9;color:#817565;border:1px solid #e5dccd}
+.topActions button,.topActions .secondary{background:#fffdf9!important;color:#55483a!important;border:1px solid #dfd5c7!important;border-radius:8px!important;padding:7px 11px!important;font-size:12px!important;box-shadow:none!important}
+.topActions #addPersonBtn,.topActions .primary{background:#a86b36!important;color:#fff!important;border-color:#a86b36!important}
+.topActions #lockBtn{background:#fffdf9!important;color:#55483a!important}
+main{height:calc(100vh - 58px)!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box}
+#workspace{height:100%;width:100%;min-height:0;display:flex;flex-direction:column}#workspace[hidden]{display:none!important}
+#workspace>.notice,#workspace>.backupBar,#workspace>.cloudBar{display:none!important}
+.workspaceGrid{flex:1 1 auto!important;height:100%!important;min-height:0!important;width:100%!important;display:grid!important;grid-template-columns:178px minmax(0,1fr) 330px!important;gap:0!important;align-items:stretch!important;overflow:hidden!important}
+.workspaceGrid>.peoplePanel,.workspaceGrid>.treePanel,.workspaceGrid>.detailPanel{display:flex;box-sizing:border-box;height:100%!important;min-height:0!important;min-width:0!important;margin:0!important;border-radius:0!important;box-shadow:none!important}
+.workspaceGrid>.peoplePanel{grid-column:1;grid-row:1;flex-direction:column;overflow:hidden;background:#fffdf9!important;border:0!important;border-right:1px solid #e5dccd!important;padding:10px 6px!important}
+.workspaceGrid>.treePanel{grid-column:2;grid-row:1;position:relative;width:auto!important;min-width:0!important;flex-direction:column;overflow:hidden;background:#f7f2e9!important;border:0!important;border-right:1px solid #e5dccd!important;padding:0!important}
+.workspaceGrid>.detailPanel{grid-column:3;grid-row:1;display:block!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;background:#fffdf9!important;border:0!important;padding:12px 10px!important}
+.peoplePanel .sectionHead{padding:0 4px!important;margin:0 0 8px!important}.peoplePanel .sectionHead h2{font-size:14px!important;color:#514638}.peoplePanel .sectionHead small{font-size:10px!important;color:#928777}
+.peoplePanel .search{display:block!important;width:calc(100% - 8px)!important;box-sizing:border-box!important;height:34px!important;margin:0 4px 8px!important;padding:7px 9px!important;background:#fff!important;color:#493f34!important;border:1px solid #e1d8ca!important;border-radius:7px!important;font-size:12px!important}
+.peopleList{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:3px!important;max-height:none!important;min-height:0!important;overflow-y:auto!important;padding:0 1px 6px!important}
+.personItem{display:flex!important;flex:0 0 auto!important;min-height:42px!important;align-items:center!important;padding:5px 7px!important;background:transparent!important;color:#443b31!important;border:0!important;border-radius:8px!important;text-align:left!important}
+.personItem.active{background:#eee5d7!important}.personItem:hover{background:#f5eee3!important}.avatar{background:#e8dfd1!important;color:#74634e!important}
+.treePanel .sectionHead{height:40px!important;min-height:40px!important;flex:0 0 40px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;margin:0!important;padding:0 12px!important;background:#fffdf9!important;border:0!important;border-bottom:1px solid #e5dccd!important}
+.treePanel .sectionHead h2{font-size:13px!important;color:#514638}.treePanel .sectionHead small{display:inline!important;margin-left:8px!important;font-size:10px!important;color:#928777}
+.treePanel .sectionHead button{background:#fffdf9!important;color:#55483a!important;border:1px solid #e1d8ca!important;border-radius:7px!important;padding:5px 9px!important;font-size:10px!important}
+.treeViewport{display:block!important;position:relative!important;flex:1 1 auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:auto!important;border:0!important;border-radius:0!important;background:#f7f2e9!important;background-image:none!important}
+.treeViewport svg{display:block!important;max-width:none!important}
+.treeEdge{fill:none!important;stroke:#b8afa2!important;stroke-width:1.5!important;opacity:1!important}.treeEdge.spouse_of{stroke:#b89a73!important;stroke-width:1.7!important}.treeEdge.sibling_of{stroke:#b8afa2!important;stroke-dasharray:none!important}
+.treeNode rect{fill:#fffdf9!important;stroke:#e4dbcd!important;stroke-width:1.2!important}.treeNode.selected rect{fill:#fffdf9!important;stroke:#a77b50!important;stroke-width:2!important}.treeNode:hover rect{stroke:#b58b60!important}
+.treeName{fill:#493f34!important;font-size:14px!important;font-weight:650!important}.treeDetail{fill:#958878!important;font-size:10px!important}.treeEmpty{fill:#958878!important;font-size:14px!important}
+.detailPanel .sectionHead{margin:0 0 10px!important}.detailPanel .sectionHead h2{font-size:15px!important;color:#514638}.detailPanel .sectionHead h3{font-size:13px!important;color:#514638}.detailPanel .sectionHead small{font-size:10px!important;color:#928777}
+.detailPanel label{color:#796e60!important;font-size:11px!important}.detailPanel input,.detailPanel select,.detailPanel textarea{box-sizing:border-box!important;background:#fff!important;color:#493f34!important;border:1px solid #e1d8ca!important;border-radius:7px!important;padding:7px 8px!important;font-size:12px!important}
+.detailPanel input:focus,.detailPanel select:focus,.detailPanel textarea:focus{border-color:#b58a60!important;box-shadow:0 0 0 2px #b58a6020!important}
+.detailPanel button,.detailPanel .buttonLike{background:#fffdf9!important;color:#514538!important;border:1px solid #e1d8ca!important;border-radius:7px!important;padding:7px 9px!important;font-size:11px!important}
+.detailPanel button.primary{background:#a86b36!important;color:#fff!important;border-color:#a86b36!important}.detailPanel .secondary{background:#fffdf9!important;color:#514538!important}
+.detailPanel .empty{padding:36px 12px!important;color:#8c8173!important}.detailPanel .empty h2{font-size:16px!important;color:#514638!important}.detailPanel .empty p{font-size:11px!important;color:#8c8173!important}
+.detailPanel .relations,.detailPanel .eventSection,.detailPanel .mediaSection{border-color:#eee5d9!important}
+.detailPanel .relationRow,.detailPanel .eventCard,.detailPanel .mediaCard,.detailPanel .medicalCard{background:#f8f3eb!important;border-color:#e9dfd2!important;color:#514538!important}
+.detailPanel .medicalSection{background:#fffdf9!important;border:1px solid #e9dfd2!important;border-radius:9px!important}
+.detailPanel .healthPanel{display:block!important;margin:14px 0 0!important;padding:10px!important;border:1px solid #e9dfd2!important;border-radius:9px!important;background:#faf6ef!important}
+.detailPanel .healthPanel h2{font-size:13px!important;color:#514638}.detailPanel .healthPanel p{font-size:10px!important;color:#8c8173!important}
+.detailPanel .healthActions{display:flex!important;gap:5px!important;align-items:center!important;flex-wrap:wrap!important}.detailPanel .healthActions button{font-size:10px!important}
+button{box-shadow:none!important}button:hover{filter:none!important;background-color:#f5eee3!important}
+button.primary:hover,.topActions #addPersonBtn:hover{background:#965c2d!important}
+button:focus-visible{outline:2px solid #b58a60!important;outline-offset:2px}footer{display:none!important}
+@media(max-width:900px){body{overflow:auto!important}main{height:auto!important;overflow:visible!important}#workspace{height:auto;min-height:0}.workspaceGrid{height:auto!important;display:flex!important;flex-direction:column!important;overflow:visible!important}.workspaceGrid>.peoplePanel{height:auto!important;max-height:260px!important}.workspaceGrid>.treePanel{height:65vh!important;min-height:440px!important}.workspaceGrid>.detailPanel{height:auto!important;overflow:visible!important}.topbar{height:auto;min-height:58px;flex-wrap:wrap}}
+@media(max-width:560px){.topbar p{display:none}.workspaceGrid>.peoplePanel{max-height:220px!important}.workspaceGrid>.treePanel{height:55vh!important;min-height:360px!important}.detailPanel .formGrid{grid-template-columns:1fr}}
