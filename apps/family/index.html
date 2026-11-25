@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#f8f3eb">
+<meta name="theme-color" content="#101827">
 <title>家庭資料庫</title>
-<link rel="stylesheet" href="./app.css?v=20261125o">
+<link rel="stylesheet" href="./app.css?v=20261125p">
 </head>
 <body>
 <header class="topbar">
   <div><div class="eyebrow">PERSONAL FAMILY VAULT</div><h1>家庭資料庫</h1><p>GitHub 私人倉庫直存 · 明文優先 · 附件可選加密</p></div>
-  <div class="topActions"><span id="cloudState" class="state">雲端尚未連接</span><button id="addPersonBtn" class="primary">＋ 新增人物</button><button id="exportBackupBtn" class="secondary">備份</button><button id="lockBtn" class="secondary" hidden>鎖定</button></div>
+  <div class="topActions"><span id="cloudState" class="state">雲端尚未連接</span><button id="lockBtn" class="secondary" hidden>鎖定</button></div>
 </header>
 <main>
 <section id="gate" class="panel gate">
@@ -35,7 +35,7 @@
 
 <section id="workspace" hidden>
   <div id="storageNotice" class="notice"><strong>尚未連接雲端。</strong>連接 GitHub 私人倉庫後，正式資料將直接保存至雲端，不寫入本機資料庫。</div>
-  <div class="backupBar" hidden><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label></div>
+  <div class="backupBar" hidden><div><strong>離線備份檔</strong><small>可選擇下載一份完整加密封裝，供日後遷移或恢復；日常資料仍以 GitHub 雲端為準。</small></div><label class="includeHealth"><input id="includeMedical" type="checkbox">包含醫療保險庫</label><button id="exportBackupBtn" class="secondary">下載備份</button></div>
   <div class="cloudBar" hidden>
     <div><strong>GitHub 雲端直存</strong><small id="githubWorkspaceStatus">雲端資料由上方已授權的私人倉庫直接讀寫</small></div>
     <label class="tokenField">私人 GitHub 倉庫路徑<input id="githubRepoWorkspace" type="text" autocomplete="off" spellcheck="false" placeholder="owner/repository" /></label>
@@ -44,16 +44,16 @@
     <button id="githubUploadBtn" class="primary" disabled>上傳備份</button>
     <button id="githubDownloadWorkspaceBtn" class="secondary" disabled>下載備份</button>
   </div>
-    <div class="workspaceGrid">
-    <aside class="panel peoplePanel">
-      <div class="sectionHead"><div><h2>家庭成員</h2><small id="peopleCount">0 位人物</small></div></div>
-      <input id="search" class="search" placeholder="搜尋姓名、籍貫、職業…">
-      <div id="peopleList" class="peopleList"></div>
-    </aside>
-  <section class="panel treePanel">
+    <section class="panel treePanel">
     <div class="sectionHead"><div><h2>族譜視圖</h2><small id="treeInfo">選擇人物查看其上下三代關係</small></div><button id="treeFit" type="button" class="secondary">重置視圖</button></div>
     <div id="treeViewport" class="treeViewport"><svg id="treeSvg" xmlns="http://www.w3.org/2000/svg" width="700" height="180" viewBox="0 0 700 180"></svg></div>
   </section>
+  <div class="workspaceGrid">
+    <aside class="panel peoplePanel">
+      <div class="sectionHead"><div><h2>家庭成員</h2><small id="peopleCount">0 位人物</small></div><button id="addPersonBtn" class="primary">＋ 新增</button></div>
+      <input id="search" class="search" placeholder="搜尋姓名、籍貫、職業…">
+      <div id="peopleList" class="peopleList"></div>
+    </aside>
     <section class="panel detailPanel">
       <div id="emptyDetail" class="empty"><div>👪</div><h2>選擇家庭成員以編輯個人資料</h2><p>在左側點選人物，右側就會顯示姓名、出生日期、籍貫、生平等個人資料。也可以直接新增人物。</p><button id="emptyAdd" class="primary">＋ 新增人物</button></div>
       <form id="personForm" hidden>
@@ -105,58 +105,58 @@
         </form>
         <div id="mediaList" class="mediaGrid"></div>
       </section>
-      <section class="panel healthPanel">
-        <div><div class="eyebrow">MEDICAL RECORDS</div><h2>醫療紀錄</h2><p>醫療摘要及文字紀錄預設以明文保存於私人倉庫，方便整理與查詢；敏感病歷原件可選擇另外加密保存。</p></div>
-        <div class="healthActions"><span id="healthState" class="state">尚未建立</span><button id="healthUnlock" class="secondary">重新載入醫療紀錄</button></div>
-      </section>
-      <section id="medicalSection" class="panel medicalSection" hidden>
-        <div class="sectionHead"><div><h2>醫療紀錄</h2><small>醫療紀錄獨立分類保存，與族譜人物資料分開管理</small></div></div>
-        <form id="medicalForm" class="medicalForm">
-          <label>紀錄類型<select id="medicalRecordType"><option value="allergy">過敏</option><option value="condition">疾病／健康狀況</option><option value="medication">用藥</option><option value="surgery">手術</option><option value="vaccination">疫苗</option><option value="test">檢查／檢驗</option><option value="visit">門診</option><option value="hospitalization">住院</option><option value="other">其他</option></select></label>
-          <label>紀錄摘要<input id="medicalSummary" maxlength="240" required placeholder="例如：青黴素過敏、膝關節手術"></label>
-          <label>紀錄日期<input id="medicalRecordDate" type="date"></label>
-          <label>結束日期<input id="medicalEndDate" type="date"></label>
-          <label>醫療提供者<input id="medicalProvider" maxlength="160"></label>
-          <label>醫院／機構<input id="medicalFacility" maxlength="160"></label>
-          <div id="medicalMedicationFields" class="medicalSubform" hidden>
-            <strong>用藥資訊</strong>
-            <label>藥物名稱<input id="medicalMedicationName" maxlength="160"></label>
-            <label>劑量<input id="medicalMedicationDose" maxlength="100"></label>
-            <label>給藥途徑<input id="medicalMedicationRoute" maxlength="100"></label>
-            <label>頻率<input id="medicalMedicationFrequency" maxlength="100"></label>
-            <label>開始日期<input id="medicalMedicationStart" type="date"></label>
-            <label>結束日期<input id="medicalMedicationEnd" type="date"></label>
-            <label>狀態<select id="medicalMedicationStatus"><option value="active">使用中</option><option value="stopped">已停用</option><option value="unknown">不詳</option></select></label>
-          </div>
-          <div id="medicalAllergyFields" class="medicalSubform" hidden>
-            <strong>過敏資訊</strong>
-            <label>過敏物質<input id="medicalAllergySubstance" maxlength="160"></label>
-            <label>反應<input id="medicalAllergyReaction" maxlength="240"></label>
-            <label>嚴重程度<select id="medicalAllergySeverity"><option value="unknown">不詳</option><option value="mild">輕微</option><option value="moderate">中等</option><option value="severe">嚴重</option></select></label>
-          </div>
-          <label class="medicalWide">詳細內容<textarea id="medicalDetails" rows="3" maxlength="4000"></textarea></label>
-          <label class="medicalWide">備註<textarea id="medicalNotes" rows="2" maxlength="2000"></textarea></label>
-          <div class="medicalOriginalBlock">
-            <label>病歷原件照片／文件<input id="medicalFiles" type="file" accept="image/*,application/pdf" multiple></label>
-            <small class="muted">可一次選擇多張照片或 PDF。每個原件不超過 25 MB；上傳後會保留原始檔案，不會壓縮或改寫。</small>
-            <label class="medicalEncryptLabel"><input id="medicalAttachmentEncrypt" type="checkbox">加密保存本次上傳的原件</label>
-            <div id="medicalAttachmentPasswordFields" class="medicalEncryptionFields" hidden>
-              <label>原件加密密碼（至少 12 個字元）<input id="medicalAttachmentPassword" type="password" autocomplete="new-password" minlength="12"></label>
-              <label>再次輸入加密密碼<input id="medicalAttachmentPasswordConfirm" type="password" autocomplete="new-password" minlength="12"></label>
-              <p class="medicalEncryptionNote">只有本次選取的照片／PDF 檔案內容會加密；醫療摘要、日期及其他文字仍是明文。加密密碼不會上傳或保存，遺失後無法還原。</p>
-            </div>
-            <div id="medicalFormAttachmentList" class="medicalFormAttachmentList" hidden></div>
-          </div>
-          <label class="medicalVerified"><input id="medicalVerified" type="checkbox">已由使用者核對原始資料</label>
-          <div class="medicalActions"><button id="medicalSaveBtn" type="submit" class="secondary">保存醫療紀錄</button><button id="medicalCancelEdit" type="button" class="secondary" hidden>取消編輯</button></div>
-        </form>
-        <div id="medicalList" class="medicalList"></div>
-      </section>
     </section>
   </div>
-
+  <section class="panel healthPanel">
+    <div><div class="eyebrow">MEDICAL RECORDS</div><h2>醫療紀錄</h2><p>醫療摘要及文字紀錄預設以明文保存於私人倉庫，方便整理與查詢；敏感病歷原件可選擇另外加密保存。</p></div>
+    <div class="healthActions"><span id="healthState" class="state">尚未建立</span><button id="healthUnlock" class="secondary">重新載入醫療紀錄</button></div>
+  </section>
+  <section id="medicalSection" class="panel medicalSection" hidden>
+    <div class="sectionHead"><div><h2>醫療紀錄</h2><small>醫療紀錄獨立分類保存，與族譜人物資料分開管理</small></div></div>
+    <form id="medicalForm" class="medicalForm">
+      <label>紀錄類型<select id="medicalRecordType"><option value="allergy">過敏</option><option value="condition">疾病／健康狀況</option><option value="medication">用藥</option><option value="surgery">手術</option><option value="vaccination">疫苗</option><option value="test">檢查／檢驗</option><option value="visit">門診</option><option value="hospitalization">住院</option><option value="other">其他</option></select></label>
+      <label>紀錄摘要<input id="medicalSummary" maxlength="240" required placeholder="例如：青黴素過敏、膝關節手術"></label>
+      <label>紀錄日期<input id="medicalRecordDate" type="date"></label>
+      <label>結束日期<input id="medicalEndDate" type="date"></label>
+      <label>醫療提供者<input id="medicalProvider" maxlength="160"></label>
+      <label>醫院／機構<input id="medicalFacility" maxlength="160"></label>
+      <div id="medicalMedicationFields" class="medicalSubform" hidden>
+        <strong>用藥資訊</strong>
+        <label>藥物名稱<input id="medicalMedicationName" maxlength="160"></label>
+        <label>劑量<input id="medicalMedicationDose" maxlength="100"></label>
+        <label>給藥途徑<input id="medicalMedicationRoute" maxlength="100"></label>
+        <label>頻率<input id="medicalMedicationFrequency" maxlength="100"></label>
+        <label>開始日期<input id="medicalMedicationStart" type="date"></label>
+        <label>結束日期<input id="medicalMedicationEnd" type="date"></label>
+        <label>狀態<select id="medicalMedicationStatus"><option value="active">使用中</option><option value="stopped">已停用</option><option value="unknown">不詳</option></select></label>
+      </div>
+      <div id="medicalAllergyFields" class="medicalSubform" hidden>
+        <strong>過敏資訊</strong>
+        <label>過敏物質<input id="medicalAllergySubstance" maxlength="160"></label>
+        <label>反應<input id="medicalAllergyReaction" maxlength="240"></label>
+        <label>嚴重程度<select id="medicalAllergySeverity"><option value="unknown">不詳</option><option value="mild">輕微</option><option value="moderate">中等</option><option value="severe">嚴重</option></select></label>
+      </div>
+      <label class="medicalWide">詳細內容<textarea id="medicalDetails" rows="3" maxlength="4000"></textarea></label>
+      <label class="medicalWide">備註<textarea id="medicalNotes" rows="2" maxlength="2000"></textarea></label>
+      <div class="medicalOriginalBlock">
+        <label>病歷原件照片／文件<input id="medicalFiles" type="file" accept="image/*,application/pdf" multiple></label>
+        <small class="muted">可一次選擇多張照片或 PDF。每個原件不超過 25 MB；上傳後會保留原始檔案，不會壓縮或改寫。</small>
+        <label class="medicalEncryptLabel"><input id="medicalAttachmentEncrypt" type="checkbox">加密保存本次上傳的原件</label>
+        <div id="medicalAttachmentPasswordFields" class="medicalEncryptionFields" hidden>
+          <label>原件加密密碼（至少 12 個字元）<input id="medicalAttachmentPassword" type="password" autocomplete="new-password" minlength="12"></label>
+          <label>再次輸入加密密碼<input id="medicalAttachmentPasswordConfirm" type="password" autocomplete="new-password" minlength="12"></label>
+          <p class="medicalEncryptionNote">只有本次選取的照片／PDF 檔案內容會加密；醫療摘要、日期及其他文字仍是明文。加密密碼不會上傳或保存，遺失後無法還原。</p>
+        </div>
+        <div id="medicalFormAttachmentList" class="medicalFormAttachmentList" hidden></div>
+      </div>
+      <label class="medicalVerified"><input id="medicalVerified" type="checkbox">已由使用者核對原始資料</label>
+      <div class="medicalActions"><button id="medicalSaveBtn" type="submit" class="secondary">保存醫療紀錄</button><button id="medicalCancelEdit" type="button" class="secondary" hidden>取消編輯</button></div>
+    </form>
+    <div id="medicalList" class="medicalList"></div>
+  </section>
+</section>
 <footer>家庭資料庫 · GitHub 私人倉庫直存 · 明文優先／附件可選加密</footer>
 </main>
-<script type="module" src="./src/main.js?v=20261125o"></script>
+<script type="module" src="./src/main.js?v=20261125p"></script>
 </body>
 </html>
