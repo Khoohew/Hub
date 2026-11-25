@@ -44,16 +44,18 @@
     <button id="githubUploadBtn" class="primary" disabled>上傳備份</button>
     <button id="githubDownloadWorkspaceBtn" class="secondary" disabled>下載備份</button>
   </div>
+  <div class="workspaceGrid">
+    <div class="familyLeftColumn">
   <section class="panel treePanel">
     <div class="sectionHead"><div><h2>族譜視圖</h2><small id="treeInfo">選擇人物查看其上下三代關係</small></div><button id="treeFit" type="button" class="secondary">重置視圖</button></div>
     <div id="treeViewport" class="treeViewport"><svg id="treeSvg" xmlns="http://www.w3.org/2000/svg" width="700" height="180" viewBox="0 0 700 180"></svg></div>
   </section>
-  <div class="workspaceGrid">
     <aside class="panel peoplePanel">
       <div class="sectionHead"><div><h2>家庭成員</h2><small id="peopleCount">0 位人物</small></div><button id="addPersonBtn" class="primary">＋ 新增</button></div>
       <input id="search" class="search" placeholder="搜尋姓名、籍貫、職業…">
       <div id="peopleList" class="peopleList"></div>
     </aside>
+    </div>
     <section class="panel detailPanel">
       <div id="emptyDetail" class="empty"><div>👪</div><h2>建立你的家庭資料</h2><p>先新增人物，再逐步建立親屬關係、家庭事件和照片檔案。</p><button id="emptyAdd" class="primary">新增第一位人物</button></div>
       <form id="personForm" hidden>
