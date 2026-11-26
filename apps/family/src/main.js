@@ -255,18 +255,20 @@ function newPerson() {
   resetEventForm();resetMedicalForm();clearMediaUrls();
   $("formTitle").textContent = "新增人物";
   $("deletePersonBtn").hidden = true;
-  $("personForm").reset(); $("gender").value = "unknown"; $("hasDeathDate").checked=false; $("deathDate").value=""; $("deathDateWrap").hidden=true; message("尚未保存");
+  draftId=null;$("personForm").reset(); $("gender").value = "unknown"; $("hasDeathDate").checked=false; $("deathDate").value=""; $("deathDateWrap").hidden=true; message("尚未保存");
   renderPeople(); renderTree();
   $("name").focus();
 }
+let personBusy=false,draftId=null;
 async function savePerson(event) {
   event.preventDefault();
+  if(personBusy)return;
   const name = $("name").value.trim();
   if (!name) return message("請填寫姓名", true);
   const old = selectedId ? personById(selectedId) : null;
   const stamp = nowIso();
   const p = {
-    schemaVersion:1,id:old?.id || createId("P"),name,
+    schemaVersion:1,id:old?.id || (draftId=draftId||createId("P")),name,
     gender:$("gender").value || "unknown",generation:$("generation").value.trim(),
     siblingOrder:$("siblingOrder").value ? Number($("siblingOrder").value) : null,
     birthDate:$("birthDate").value || null,deathDate:$("hasDeathDate").checked?($("deathDate").value || null):null,
@@ -278,8 +280,9 @@ async function savePerson(event) {
   const nextData={persons:[...persons.filter(x=>x.id!==p.id),p],relationships,events:[],media:[],sources:[]};
   const checked=validateFamilyData(nextData);
   if(!checked.valid) return message(checked.errors[0],true);
+  personBusy=true;const sb=$("personForm").querySelector('button[type=submit]');if(sb)sb.disabled=true;
   try {
-    const result=await vault.save("family","persons",p.id,1,p,old?selectedVersion:null);
+    const result=await vault.save("family","persons",p.id,1,p,old?selectedVersion:null);draftId=null;
     if(old) persons=persons.map(x=>x.id===p.id?p:x); else persons.push(p);
     selectedId=p.id;selectedVersion=result.version;editing=false;
     $("formTitle").textContent=p.name;$("deletePersonBtn").hidden=false;$("relationsSection").hidden=false;$("eventSection").hidden=false;$("mediaSection").hidden=false;
@@ -287,7 +290,7 @@ async function savePerson(event) {
     await updateHealthState();if((await vault.status("medical")).unlocked)renderMedicalRecords();
   } catch(error) {
     message(error.message==="REMOTE_VERSION_CONFLICT"?"資料版本已改變，請重新載入後再保存。":"保存失敗："+error.message,true);
-  }
+  } finally { personBusy=false;if(sb)sb.disabled=false; }
 }
 function relKey(r){
   const ends=(r.type==="spouse_of"||r.type==="sibling_of")?[r.fromPersonId,r.toPersonId].sort():[r.fromPersonId,r.toPersonId];

@@ -3,7 +3,7 @@ const GEN_NUM = ["一", "二", "三", "四", "五", "六", "七", "八", "九", 
 // 兩種版式的尺寸：modern＝現代橫向卡片；classic＝古式豎排（姓名直書、自上而下按「世」排列）
 const METRICS = {
   modern: { w: 156, h: 88, coupleGap: 64, unitGap: 44, rowGap: 84, padX: 50, padY: 40, leftMargin: 0, chip: "夫妻" },
-  classic: { w: 58, h: 152, coupleGap: 36, unitGap: 30, rowGap: 96, padX: 50, padY: 40, leftMargin: 70, chip: "配" }
+  classic: { w: 58, h: 152, coupleGap: 64, unitGap: 34, rowGap: 96, padX: 50, padY: 40, leftMargin: 70, chip: "配" }
 };
 
 const genderRank = p => (p.gender === "male" ? 0 : p.gender === "female" ? 1 : 2);

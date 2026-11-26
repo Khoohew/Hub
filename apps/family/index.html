@@ -5,7 +5,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#fdf9f3">
 <title>家庭資料庫</title>
-<link rel="stylesheet" href="./app.css?v=20261126a">
+<link rel="stylesheet" href="./app.css?v=20261126b">
 </head>
 <body>
 <header class="topbar">
@@ -109,7 +109,7 @@
         <div class="relationEditor">
           <select id="relationType"><option value="parent_of">對方是此人物的子女</option><option value="has_parent">對方是此人物的父母</option><option value="spouse_of">對方是此人物的配偶</option><option value="adoptive_parent_of">對方是此人物的養子女</option><option value="guardian_of">對方是此人物的被監護人</option></select>
           <div id="relationPerson" class="pickList" role="group" aria-label="勾選對方（可多選）"></div>
-          <label id="relSpouseWrap" class="relOpt"><input id="relWithSpouse" type="checkbox" checked><span>連同配偶一併建立（對方或本人只有一位配偶時）</span></label>
+          <label id="relSpouseWrap" class="relOpt"><input id="relWithSpouse" type="checkbox"><span>同時把對方的配偶也一併連上（預設不勾，避免誤連）</span></label>
           <button id="addRelation" class="secondary" type="button">建立關係</button>
         </div>
         <div id="relationsList" class="relationsList"></div>
@@ -191,7 +191,7 @@
 </section>
 <footer>家庭資料庫 · GitHub 私人倉庫直存 · 明文優先／附件可選加密</footer>
 </main>
-<script type="module" src="./src/main.js?v=20261126a"></script>
-<script type="module" src="./src/ui-extras.js?v=20261126a"></script>
+<script type="module" src="./src/main.js?v=20261126b"></script>
+<script type="module" src="./src/ui-extras.js?v=20261126b"></script>
 </body>
 </html>
