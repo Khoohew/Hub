@@ -203,14 +203,16 @@ export function buildTreeLayout(persons, relationships, centerId, { maxGeneratio
 
   // ---- 5. 線條：夫妻橫線＋「夫妻中點 → 子女」的匯流線 ----
   const lines = [], chips = [];
+  const endedPairs = new Set(relationships.filter(r => r.type === "spouse_of" && r.status === "divorced").map(r => [r.fromPersonId, r.toPersonId].sort().join("|")));
   for (const level of sortedLevels) {
     for (const u of rowUnits.get(level)) {
       for (let i = 0; i + 1 < u.members.length; i++) {
         const a = pos.get(u.members[i]), b = pos.get(u.members[i + 1]);
         if (!spouseAdj.get(a.id)?.has(b.id)) continue;
         const y = a.y + M.h / 2;
-        lines.push({ kind: "spouse", d: "M " + (a.x + M.w) + " " + y + " H " + b.x });
-        chips.push({ x: (a.x + M.w + b.x) / 2, y, text: M.chip });
+        const ex = endedPairs.has([a.id, b.id].sort().join("|"));
+        lines.push({ kind: ex ? "spouse divorced" : "spouse", d: "M " + (a.x + M.w) + " " + y + " H " + b.x });
+        chips.push({ x: (a.x + M.w + b.x) / 2, y, text: ex ? "離異" : M.chip });
       }
     }
   }

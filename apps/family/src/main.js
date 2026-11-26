@@ -5,8 +5,8 @@ import { validateFamilyData } from "./core/validate.js";
 import { exportEncryptedBackup, inspectEncryptedBackup, verifyEncryptedBackup, applyEncryptedBackup } from "./core/backup.js";
 import { GitHubReleaseStorage } from "./storage/github-release-storage.js?v=20261125d";
 import { GitHubPlainContentsCache } from "./storage/github-plain-contents-cache.js";
-import { buildTreeLayout } from "./core/tree-layout.js?v=20261126d";
-import { kinshipLabels, relationRoleLabel } from "./core/kinship.js?v=20261126d";
+import { buildTreeLayout } from "./core/tree-layout.js?v=20261126e";
+import { kinshipLabels, relationRoleLabel } from "./core/kinship.js?v=20261126e";
 import { validateMedicalRecord } from "./core/medical-validation.js";
 
 const $ = id => document.getElementById(id);
@@ -329,7 +329,7 @@ function renderRelations() {
     .map(r=>{const otherId=r.fromPersonId===selectedId?r.toPersonId:r.fromPersonId,other=personById(otherId);return {r,other,role:relationRoleLabel(r,selectedId,other)};})
     .filter(x=>x.other)
     .sort((x,y)=>(RELATION_ORDER[x.r.type]??9)-(RELATION_ORDER[y.r.type]??9)||x.role.localeCompare(y.role,"zh-Hant"));
-  $("relationsList").innerHTML=rows.map(({r,other,role})=>`<div class="relationRow"><span class="relName"><b>${safeText(role)}</b><a class="relLink" data-pid="${safeText(other.id)}">${safeText(other.name||"未命名")}</a></span><button type="button" class="relDel" data-rid="${safeText(r.id)}" title="刪除這條關係">刪除</button></div>`).join("")||'<p class="muted">尚未建立親屬關係。</p>';
+  $("relationsList").innerHTML=rows.map(({r,other,role})=>`<div class="relationRow"><span class="relName"><b>${safeText(role)}</b><a class="relLink" data-pid="${safeText(other.id)}">${safeText(other.name||"未命名")}</a></span>${r.type==="spouse_of"?`<select class="relStatus" data-rid="${safeText(r.id)}" title="婚姻狀態"><option value="reported"${r.status==="divorced"?"":" selected"}>在婚</option><option value="divorced"${r.status==="divorced"?" selected":""}>離異</option></select>`:""}<button type="button" class="relDel" data-rid="${safeText(r.id)}" title="刪除這條關係">刪除</button></div>`).join("")||'<p class="muted">尚未建立親屬關係。</p>';
   $("relationPerson").innerHTML=persons.filter(p=>p.id!==selectedId).map(p=>`<label class="pickItem"><input type="checkbox" value="${safeText(p.id)}"><span>${safeText(p.name||"未命名")}</span></label>`).join("")||'<p class="muted">請先新增其他人物。</p>';
   updateRelationOptions();
 }
@@ -371,6 +371,19 @@ async function addRelation() {
     message("已建立 "+saved+" 條親屬關係並保存至 GitHub");
   } catch(error) { message("關係保存失敗（已成功 "+saved+" 條）："+error.message,true); }
   finally { relationBusy=false;$("addRelation").disabled=false;renderRelations();renderTree(); }
+}
+async function setRelationStatus(id,status){
+  const rel=relationships.find(r=>r.id===id);
+  if(!rel||relationBusy)return;
+  const next={...rel,status,validTo:status==="divorced"?(rel.validTo||null):null,updatedAt:nowIso()};
+  relationBusy=true;
+  try {
+    const stored=await vault.cache.get("family:relationships:"+id);
+    await vault.save("family","relationships",id,1,next,stored?.version??null);
+    relationships=relationships.map(r=>r.id===id?next:r);
+    message(status==="divorced"?"已標記為離異（子女關係不變）":"已標記為在婚");
+  } catch(error) { message("婚姻狀態保存失敗："+error.message,true); }
+  finally { relationBusy=false;renderRelations();renderTree(); }
 }
 async function deleteRelation(id) {
   const rel=relationships.find(r=>r.id===id);
@@ -658,6 +671,7 @@ async function start() {
   $("addPersonBtn").addEventListener("click",newPerson);$("emptyAdd").addEventListener("click",newPerson);
   $("cancelEdit").addEventListener("click",()=>selectedId?showPerson(selectedId):clearDetail());
   $("editPersonBtn").addEventListener("click",()=>{const p=personById(selectedId);if(!p)return;editing=true;fillForm(p);setViewing(false);message("");document.querySelector(".detailPanel").scrollTop=0;});
+  $("relationsList").addEventListener("change",e=>{const s=e.target.closest(".relStatus");if(s)setRelationStatus(s.dataset.rid,s.value);});
   $("relationsList").addEventListener("click",e=>{const a=e.target.closest(".relLink");if(a&&document.querySelector(".detailPanel").classList.contains("viewing"))showPerson(a.dataset.pid);});
   $("personForm").addEventListener("submit",savePerson);
   $("hasDeathDate").addEventListener("change",()=>{ $("deathDateWrap").hidden=!$("hasDeathDate").checked; if(!$("hasDeathDate").checked)$("deathDate").value=""; });

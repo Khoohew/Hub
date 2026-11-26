@@ -28,12 +28,15 @@ export function kinshipLabels(persons, relationships, centerId) {
     return o ? o + pick(p, "子", "女", "子女") : pick(p, "兒子", "女兒", "子女");
   };
 
+  const ended = new Set(relationships.filter(r => r.type === "spouse_of" && r.status === "divorced").map(r => [r.fromPersonId, r.toPersonId].sort().join("|")));
+  const isEx = (a, b) => ended.has([a, b].sort().join("|"));
   const C = byId.get(centerId);
   out.set(centerId, "本人" + (C.siblingOrder && ORD[C.siblingOrder] ? " " + ORD[C.siblingOrder] + pick(C, "子", "女", "") : ""));
 
   // 配偶、子女、子女的配偶、孫輩
-  for (const s of spousesOf(centerId)) set(s, pick(byId.get(s), "丈夫", "妻子", "配偶"));
+  for (const s of spousesOf(centerId)) set(s, isEx(centerId, s) ? pick(byId.get(s), "前夫", "前妻", "前配偶") : pick(byId.get(s), "丈夫", "妻子", "配偶"));
   for (const s of spousesOf(centerId)) {
+    if (isEx(centerId, s)) continue;
     const sp = byId.get(s);
     for (const p of parentsOf(s)) set(p, female(sp) ? pick(byId.get(p), "岳父", "岳母", "岳父母") : male(sp) ? pick(byId.get(p), "公公", "婆婆", "公婆") : male(C) ? pick(byId.get(p), "岳父", "岳母", "岳父母") : female(C) ? pick(byId.get(p), "公公", "婆婆", "公婆") : pick(byId.get(p), "配偶之父", "配偶之母", "配偶父母"));
   }
@@ -118,7 +121,7 @@ export function relationRoleLabel(rel, selfId, other) {
   const pickg = (m, f, u) => (g === "male" ? m : g === "female" ? f : u);
   if (rel.type === "parent_of") return rel.fromPersonId === selfId ? pickg("兒子", "女兒", "子女") : pickg("父親", "母親", "父母");
   if (rel.type === "adoptive_parent_of") return rel.fromPersonId === selfId ? pickg("養子", "養女", "養子女") : pickg("養父", "養母", "養父母");
-  if (rel.type === "spouse_of") return pickg("丈夫", "妻子", "配偶");
+  if (rel.type === "spouse_of") return rel.status === "divorced" ? pickg("前夫", "前妻", "前配偶") : pickg("丈夫", "妻子", "配偶");
   if (rel.type === "guardian_of") return rel.fromPersonId === selfId ? "被監護人" : "監護人";
   if (rel.type === "sibling_of") return pickg("兄弟", "姐妹", "兄弟姐妹");
   return "親屬";

@@ -273,3 +273,8 @@ body:not(.ready) .gate .error{white-space:pre-wrap}
 .detailPanel.viewing .eventSection .sectionHead .hint,
 .detailPanel.viewing .mediaSection .sectionHead .hint,
 .detailPanel.viewing .medicalSection .sectionHead .hint{display:none!important}
+
+.treeEdge.spouse.divorced{stroke:#b9a48d;stroke-dasharray:5 4}
+.relStatus{padding:5px 8px;border:1px solid #dcc9b0;border-radius:8px;background:#fffdf8;color:#5a3d22;font:inherit;font-size:13px}
+.detailPanel.viewing .relStatus{display:none}
+.relEnd{font-size:12px;color:#9a8670;margin-left:8px}
