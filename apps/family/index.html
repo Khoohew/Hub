@@ -5,7 +5,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#fdf9f3">
 <title>家庭資料庫</title>
-<link rel="stylesheet" href="./app.css?v=20261126b">
+<link rel="stylesheet" href="./app.css?v=20261126c">
 </head>
 <body>
 <header class="topbar">
@@ -71,9 +71,15 @@
 
     <!-- 右：個人資料 -->
     <section class="detailPanel">
-      <div id="emptyDetail" class="empty"><div>👪</div><h2>選擇家庭成員以編輯個人資料</h2><p>在左側點選人物，右側就會顯示姓名、出生日期、籍貫、生平等個人資料。也可以直接新增人物。</p><button id="emptyAdd" class="primary">＋ 新增人物</button></div>
+      <div id="emptyDetail" class="empty"><div>👪</div><h2>選擇家庭成員查看個人資料</h2><p>在左側清單或中間族譜點選人物，右側會顯示他的資料、履歷與照片；要修改再按「編輯」。也可以直接新增人物。</p><button id="emptyAdd" class="primary">＋ 新增人物</button></div>
+      <section id="personView" class="personView" hidden>
+        <div class="sectionHead"><div><div class="eyebrow">PERSON PROFILE</div><h2 id="viewName"></h2></div><button id="editPersonBtn" type="button" class="secondary small">編輯</button></div>
+        <div id="viewTags" class="viewTags"></div>
+        <div class="card"><dl id="viewInfo" class="viewInfo"></dl></div>
+        <div id="viewBioCard" class="card" hidden><h3 class="cardTitle">個人簡介</h3><p id="viewBio" class="viewBio"></p></div>
+      </section>
       <form id="personForm" hidden>
-        <div class="sectionHead"><div><div class="eyebrow">PERSON PROFILE</div><h2 id="formTitle">新增人物</h2></div><button id="cancelEdit" type="button" class="secondary small">取消</button></div>
+        <div class="sectionHead"><div><div class="eyebrow">PERSON PROFILE</div><h2 id="formTitle">新增人物</h2></div><button id="cancelEdit" type="button" class="secondary small">返回檢視</button></div>
         <div class="card">
           <div class="formGrid">
             <label>姓名<input id="name" required maxlength="120"></label>
@@ -191,7 +197,7 @@
 </section>
 <footer>家庭資料庫 · GitHub 私人倉庫直存 · 明文優先／附件可選加密</footer>
 </main>
-<script type="module" src="./src/main.js?v=20261126b"></script>
-<script type="module" src="./src/ui-extras.js?v=20261126b"></script>
+<script type="module" src="./src/main.js?v=20261126c"></script>
+<script type="module" src="./src/ui-extras.js?v=20261126c"></script>
 </body>
 </html>

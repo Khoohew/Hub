@@ -35,12 +35,12 @@ export function kinshipLabels(persons, relationships, centerId) {
   for (const s of spousesOf(centerId)) set(s, pick(byId.get(s), "丈夫", "妻子", "配偶"));
   for (const s of spousesOf(centerId)) {
     const sp = byId.get(s);
-    for (const p of parentsOf(s)) set(p, female(sp) ? pick(byId.get(p), "岳父", "岳母", "岳父母") : male(sp) ? pick(byId.get(p), "公公", "婆婆", "公婆") : "配偶的父母");
+    for (const p of parentsOf(s)) set(p, female(sp) ? pick(byId.get(p), "岳父", "岳母", "岳父母") : male(sp) ? pick(byId.get(p), "公公", "婆婆", "公婆") : male(C) ? pick(byId.get(p), "岳父", "岳母", "岳父母") : female(C) ? pick(byId.get(p), "公公", "婆婆", "公婆") : "姻親");
   }
   for (const k of childrenOf(centerId)) {
     const kid = byId.get(k);
     set(k, childTerm(kid));
-    for (const ks of spousesOf(k)) set(ks, male(kid) ? "兒媳" : female(kid) ? "女婿" : "子女的配偶");
+    for (const ks of spousesOf(k)) set(ks, male(kid) ? "兒媳" : female(kid) ? "女婿" : "子女配偶");
     for (const g of childrenOf(k)) {
       const gk = byId.get(g);
       set(g, male(kid) ? pick(gk, "孫子", "孫女", "孫輩") : female(kid) ? pick(gk, "外孫", "外孫女", "外孫輩") : "孫輩");
@@ -61,7 +61,7 @@ export function kinshipLabels(persons, relationships, centerId) {
       else if (depth === 3) term = (side === "m" ? "外" : "") + pick(pp, "曾祖父", "曾祖母", "曾祖輩");
       else term = "高祖輩";
       set(p, term);
-      for (const ps of spousesOf(p)) if (!parentsOf(id).includes(ps)) set(ps, depth === 1 ? pick(byId.get(ps), "繼父", "繼母", "父母的配偶") : "祖輩的配偶");
+      for (const ps of spousesOf(p)) if (!parentsOf(id).includes(ps)) set(ps, depth === 1 ? pick(byId.get(ps), "繼父", "繼母", "繼親") : "祖輩配偶");
       walkUp(p, depth + 1, depth === 1 ? (female(pp) ? "m" : "f") : side);
     }
   };
@@ -75,7 +75,7 @@ export function kinshipLabels(persons, relationships, centerId) {
       set(s, male(sp) ? (older === true ? "兄" : older === false ? "弟" : "兄弟") : female(sp) ? (older === true ? "姐" : older === false ? "妹" : "姐妹") : "兄弟姐妹");
       for (const ss of spousesOf(s)) {
         const x = byId.get(ss);
-        set(ss, male(sp) ? (older === false ? "弟媳" : older === true ? "嫂" : "兄弟的配偶") : female(sp) ? (older === true ? "姐夫" : older === false ? "妹夫" : "姐妹的配偶") : "兄弟姐妹的配偶");
+        set(ss, male(sp) ? (older === false ? "弟媳" : older === true ? "嫂" : "兄弟配偶") : female(sp) ? (older === true ? "姐夫" : older === false ? "妹夫" : "姐妹配偶") : "手足配偶");
         void x;
       }
       for (const n of childrenOf(s)) {
@@ -104,7 +104,7 @@ export function kinshipLabels(persons, relationships, centerId) {
         for (const cz of childrenOf(u)) {
           const cp = byId.get(cz);
           const kind = viaFather && male(up) ? "堂" : "表";
-          set(cz, kind + pick(cp, "兄弟", "姐妹", "兄弟姐妹"));
+          set(cz, kind + pick(cp, "兄弟", "姐妹", "手足"));
         }
       }
     }

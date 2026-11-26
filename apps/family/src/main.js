@@ -115,7 +115,7 @@ function renderTree() {
   const lineMarkup=layout.lines.map(l=>'<path class="treeEdge '+l.kind+'" d="'+l.d+'"/>').join("");
   const chipMarkup=layout.chips.map(c=>{const w=c.text.length*11+14;return '<rect class="treeTag" x="'+(c.x-w/2)+'" y="'+(c.y-9)+'" width="'+w+'" height="18" rx="9"/><text class="treeTagText" x="'+c.x+'" y="'+c.y+'">'+safeText(c.text)+'</text>';}).join("");
   const genMarkup=layout.generations.map(g=>'<text class="treeGen" x="26" y="'+g.y+'" style="writing-mode:vertical-rl;text-orientation:upright">'+safeText(g.text)+'</text>').join("");
-  const chips=(list,x,y,max)=>{let cx=x;return list.slice(0,max).map(t=>{const w=t.length*11+14,out='<rect class="treeTag" x="'+cx+'" y="'+y+'" width="'+w+'" height="18" rx="9"/><text class="treeTagText" x="'+(cx+w/2)+'" y="'+(y+9)+'">'+safeText(t)+'</text>';cx+=w+5;return out;}).join("");};
+  const chips=(list,x,y,max)=>{let cx=x;return list.slice(0,max).map(t=>{if(classic)t=String(t).split(" ")[0].slice(0,4);const w=t.length*11+14,out='<rect class="treeTag" x="'+cx+'" y="'+y+'" width="'+w+'" height="18" rx="9"/><text class="treeTagText" x="'+(cx+w/2)+'" y="'+(y+9)+'">'+safeText(t)+'</text>';cx+=w+5;return out;}).join("");};
   const nodeMarkup=layout.nodes.map(node=>{
     const person=node.person,detail=[person.birthDate,person.deathDate?"卒 "+person.deathDate:""].filter(Boolean).join(" · ");
     const cls="treeNode"+(node.id===selectedId?" selected":"")+(person.gender==="male"?" male":person.gender==="female"?" female":"")+(person.deathDate?" deceased":"");
@@ -124,7 +124,7 @@ function renderTree() {
     const head='<g class="'+cls+'" data-id="'+safeText(node.id)+'" transform="translate('+node.x+','+node.y+')"><title>'+safeText(name+(label?"（"+label+"）":"")+(detail?" "+detail:""))+'</title><rect class="nodeBox" width="'+node.width+'" height="'+node.height+'" rx="'+(classic?6:10)+'"/>';
     if(classic){
       const shown=name.length>7?name.slice(0,6)+"…":name;
-      return head+'<text class="treeNameV" x="'+node.width/2+'" y="16" style="writing-mode:vertical-rl;text-orientation:upright">'+safeText(shown)+'</text>'+chips(tagList.slice(0,1),(node.width-(tagList[0]||"").length*11-14)/2,node.height-26,1)+'</g>';
+      return head+'<text class="treeNameV" x="'+node.width/2+'" y="16" style="writing-mode:vertical-rl;text-orientation:upright">'+safeText(shown)+'</text>'+chips(tagList.slice(0,1),(node.width-String(tagList[0]||"").slice(0,4).length*11-14)/2,node.height-26,1)+'</g>';
     }
     const initial=safeText(name.slice(0,1)),shown=name.length>7?name.slice(0,6)+"…":name;
     return head+'<circle class="treeAvatar" cx="28" cy="28" r="14"/><text class="treeAvatarText" x="28" y="28">'+initial+'</text><text class="treeName" x="50" y="33">'+safeText(shown)+'</text>'+(detail?'<text class="treeDetail" x="14" y="56">'+safeText(detail)+'</text>':"")+chips(tagList,14,node.height-26,3)+'</g>';
@@ -157,13 +157,35 @@ function renderPeople() {
   $("peopleList").innerHTML = list.map(p => `<button class="personItem ${p.id===selectedId?"active":""}" data-id="${safeText(p.id)}"><span class="avatar">${safeText((p.name||"?").slice(0,1))}</span><span><strong>${safeText(p.name)}</strong><small>${safeText(p.birthDate||p.birthplace||"")}</small></span></button>`).join("");
   document.querySelectorAll(".personItem").forEach(el => el.addEventListener("click", () => showPerson(el.dataset.id)));
 }
+const GENDER_LABEL={male:"男",female:"女",other:"其他"};
+function setViewing(on){
+  $("personView").hidden=!on;$("personForm").hidden=on;
+  document.querySelector(".detailPanel").classList.toggle("viewing",on);
+}
+function renderView(p){
+  $("viewName").textContent=p.name||"未命名";
+  const tags=[];
+  if(GENDER_LABEL[p.gender])tags.push(GENDER_LABEL[p.gender]);
+  if(p.generation)tags.push("字輩 "+p.generation);
+  if(p.siblingOrder)tags.push("排行第 "+p.siblingOrder);
+  if(p.deathDate)tags.push("已逝世");
+  const tag=tags.map(t=>'<span class="viewTag">'+safeText(t)+'</span>').join("");
+  $("viewTags").innerHTML=tag;$("viewTags").hidden=!tag;
+  const yr=d=>d?Number(String(d).slice(0,4)):null;
+  let age="";
+  if(yr(p.birthDate)){const end=p.deathDate?yr(p.deathDate):new Date().getFullYear();if(end&&end>=yr(p.birthDate))age=(p.deathDate?"享年 ":"約 ")+(end-yr(p.birthDate))+" 歲";}
+  const rows=[["出生日期",p.birthDate],["逝世日期",p.deathDate],["年歲",age],["出生地／籍貫",p.birthplace],["職業",p.occupation]].filter(r=>r[1]);
+  $("viewInfo").innerHTML=rows.map(r=>'<div><dt>'+safeText(r[0])+'</dt><dd>'+safeText(r[1])+'</dd></div>').join("")||'<p class="muted">尚未填寫基本資料，點「編輯」補充。</p>';
+  $("viewBio").textContent=p.biography||"";
+  $("viewBioCard").hidden=!p.biography;
+}
 function clearDetail() {
   selectedId = null; selectedVersion = null; editing = false;
-  $("emptyDetail").hidden = false; $("personForm").hidden = true; $("relationsSection").hidden = true; $("eventSection").hidden = true; $("mediaSection").hidden = true; $("medicalSection").hidden = true;
+  $("emptyDetail").hidden = false; $("personForm").hidden = true; $("personView").hidden = true; $("relationsSection").hidden = true; $("eventSection").hidden = true; $("mediaSection").hidden = true; $("medicalSection").hidden = true;
   const emptyTitle=$("emptyDetail").querySelector("h2"),emptyText=$("emptyDetail").querySelector("p"),emptyButton=$("emptyAdd");
   if(persons.length){
-    emptyTitle.textContent="選擇家庭成員以編輯個人資料";
-    emptyText.textContent="在左側家庭成員清單點選人物，個人資料表單就會顯示在右側；也可以新增人物。";
+    emptyTitle.textContent="選擇家庭成員查看個人資料";
+    emptyText.textContent="在左側清單或中間族譜點選人物，右側會顯示他的資料、履歷與照片；要修改再按「編輯」。";
     emptyButton.textContent="＋ 新增人物";
   }else{
     emptyTitle.textContent="建立你的家庭資料";
@@ -187,9 +209,9 @@ async function showPerson(id) {
   renderPeople(); renderTree();
   const stored = await vault.cache.get("family:persons:" + id);
   selectedVersion = stored?.version ?? null;
-  $("emptyDetail").hidden = true; $("personForm").hidden = false; $("relationsSection").hidden = false; $("eventSection").hidden = false; $("mediaSection").hidden = false;
+  $("emptyDetail").hidden = true; setViewing(true); $("relationsSection").hidden = false; $("eventSection").hidden = false; $("mediaSection").hidden = false;
   resetEventForm();resetMedicalForm();
-  $("formTitle").textContent = p.name; fillForm(p); $("deletePersonBtn").hidden = false; message("已載入家庭資料");
+  $("formTitle").textContent = p.name; fillForm(p); renderView(p); document.querySelector(".detailPanel").scrollTop=0; $("deletePersonBtn").hidden = false; message("已載入家庭資料");
   renderRelations(); renderEvents(); await renderMedia();
   await updateHealthState();
   if((await vault.status("medical")).unlocked)renderMedicalRecords();
@@ -251,7 +273,7 @@ async function deleteSelectedPerson() {
 
 function newPerson() {
   selectedId = null; selectedVersion = null; editing = true;
-  $("emptyDetail").hidden = true; $("personForm").hidden = false; $("relationsSection").hidden = true; $("eventSection").hidden = true; $("mediaSection").hidden = true; $("medicalSection").hidden = true;
+  $("emptyDetail").hidden = true; setViewing(false); $("relationsSection").hidden = true; $("eventSection").hidden = true; $("mediaSection").hidden = true; $("medicalSection").hidden = true;
   resetEventForm();resetMedicalForm();clearMediaUrls();
   $("formTitle").textContent = "新增人物";
   $("deletePersonBtn").hidden = true;
@@ -286,6 +308,7 @@ async function savePerson(event) {
     if(old) persons=persons.map(x=>x.id===p.id?p:x); else persons.push(p);
     selectedId=p.id;selectedVersion=result.version;editing=false;
     $("formTitle").textContent=p.name;$("deletePersonBtn").hidden=false;$("relationsSection").hidden=false;$("eventSection").hidden=false;$("mediaSection").hidden=false;
+    if(old){setViewing(true);renderView(p);}
     message("已保存至 GitHub 私人倉庫（明文）");renderPeople();renderRelations();renderTree();renderEvents();await renderMedia();
     await updateHealthState();if((await vault.status("medical")).unlocked)renderMedicalRecords();
   } catch(error) {
@@ -306,7 +329,7 @@ function renderRelations() {
     .map(r=>{const otherId=r.fromPersonId===selectedId?r.toPersonId:r.fromPersonId,other=personById(otherId);return {r,other,role:relationRoleLabel(r,selectedId,other)};})
     .filter(x=>x.other)
     .sort((x,y)=>(RELATION_ORDER[x.r.type]??9)-(RELATION_ORDER[y.r.type]??9)||x.role.localeCompare(y.role,"zh-Hant"));
-  $("relationsList").innerHTML=rows.map(({r,other,role})=>`<div class="relationRow"><span class="relName"><b>${safeText(role)}</b>${safeText(other.name||"未命名")}</span><button type="button" class="relDel" data-rid="${safeText(r.id)}" title="刪除這條關係">刪除</button></div>`).join("")||'<p class="muted">尚未建立親屬關係。</p>';
+  $("relationsList").innerHTML=rows.map(({r,other,role})=>`<div class="relationRow"><span class="relName"><b>${safeText(role)}</b><a class="relLink" data-pid="${safeText(other.id)}">${safeText(other.name||"未命名")}</a></span><button type="button" class="relDel" data-rid="${safeText(r.id)}" title="刪除這條關係">刪除</button></div>`).join("")||'<p class="muted">尚未建立親屬關係。</p>';
   $("relationPerson").innerHTML=persons.filter(p=>p.id!==selectedId).map(p=>`<label class="pickItem"><input type="checkbox" value="${safeText(p.id)}"><span>${safeText(p.name||"未命名")}</span></label>`).join("")||'<p class="muted">請先新增其他人物。</p>';
   updateRelationOptions();
 }
@@ -634,6 +657,8 @@ async function start() {
   });
   $("addPersonBtn").addEventListener("click",newPerson);$("emptyAdd").addEventListener("click",newPerson);
   $("cancelEdit").addEventListener("click",()=>selectedId?showPerson(selectedId):clearDetail());
+  $("editPersonBtn").addEventListener("click",()=>{const p=personById(selectedId);if(!p)return;editing=true;fillForm(p);setViewing(false);message("");document.querySelector(".detailPanel").scrollTop=0;});
+  $("relationsList").addEventListener("click",e=>{const a=e.target.closest(".relLink");if(a&&document.querySelector(".detailPanel").classList.contains("viewing"))showPerson(a.dataset.pid);});
   $("personForm").addEventListener("submit",savePerson);
   $("hasDeathDate").addEventListener("change",()=>{ $("deathDateWrap").hidden=!$("hasDeathDate").checked; if(!$("hasDeathDate").checked)$("deathDate").value=""; });
   $("deletePersonBtn").addEventListener("click",deleteSelectedPerson);$("search").addEventListener("input",renderPeople);

@@ -135,6 +135,15 @@ export function buildTreeLayout(persons, relationships, centerId, { maxGeneratio
   // 由上而下：先定各世的左右次序，再初步定位
   sortedLevels.forEach((level, rowIndex) => {
     const units = rowUnits.get(level);
+    // 夫妻雙方都有父母時，依各自父母的左右位置排列，讓兩家的連線各走各的、不交叉
+    if (rowIndex > 0) {
+      for (const u of units) {
+        if (u.members.length !== 2) continue;
+        const ax = m => { const xs = (parentsIn.get(m) || []).filter(p => unitOf.get(p.id)?.placed).map(p => center(p.id)); return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null; };
+        const a0 = ax(u.members[0]), a1 = ax(u.members[1]);
+        if (a0 != null && a1 != null && a0 > a1) u.members.reverse();
+      }
+    }
     const info = units.map(unit => ({ unit, anchor: anchorOf(unit), key: unitKey(unit) }));
     info.sort((a, b) => {
       if (a.anchor != null && b.anchor != null && Math.abs(a.anchor - b.anchor) > 1) return a.anchor - b.anchor;
