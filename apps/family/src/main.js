@@ -5,8 +5,8 @@ import { validateFamilyData } from "./core/validate.js";
 import { exportEncryptedBackup, inspectEncryptedBackup, verifyEncryptedBackup, applyEncryptedBackup } from "./core/backup.js";
 import { GitHubReleaseStorage } from "./storage/github-release-storage.js?v=20261125d";
 import { GitHubPlainContentsCache } from "./storage/github-plain-contents-cache.js";
-import { buildTreeLayout } from "./core/tree-layout.js?v=20261126e";
-import { kinshipLabels, relationRoleLabel } from "./core/kinship.js?v=20261126e";
+import { buildTreeLayout } from "./core/tree-layout.js?v=20261126f";
+import { kinshipLabels, relationRoleLabel } from "./core/kinship.js?v=20261126f";
 import { validateMedicalRecord } from "./core/medical-validation.js";
 
 const $ = id => document.getElementById(id);

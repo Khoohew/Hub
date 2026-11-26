@@ -185,6 +185,48 @@ export function buildTreeLayout(persons, relationships, centerId, { maxGeneratio
     placeRow(units, units.map(u => { const a = childAnchorOf(u); return a == null ? null : a - u.width / 2; }));
   }
 
+  // 逐步「鬆弛」：讓每個家庭的子女正對父母連線中點、父母正對子女，同時守住最小間距，使連線盡量垂直、兄弟姐妹間距一致
+  {
+    const fams = new Map();
+    for (const [childId, list] of parentsIn) {
+      if (!unitOf.has(childId)) continue;
+      const ps = [...new Set(list.map(p => p.id))].filter(p => unitOf.has(p)).sort();
+      if (!ps.length) continue;
+      const key = ps.join("|");
+      if (!fams.has(key)) fams.set(key, { ps, kids: [] });
+      fams.get(key).kids.push(childId);
+    }
+    const famList = [...fams.values()];
+    const famAx = f => {
+      if (f.ps.length === 2 && unitOf.get(f.ps[0]) === unitOf.get(f.ps[1]) && spouseAdj.get(f.ps[0])?.has(f.ps[1])) {
+        const u = unitOf.get(f.ps[0]);
+        const i0 = u.members.indexOf(f.ps[0]), i1 = u.members.indexOf(f.ps[1]);
+        if (Math.abs(i0 - i1) === 1) return (center(f.ps[0]) + center(f.ps[1])) / 2;
+      }
+      return f.ps.reduce((s, p) => s + center(p), 0) / f.ps.length;
+    };
+    const allUnits = sortedLevels.flatMap(l => rowUnits.get(l));
+    for (let iter = 0; iter < 300; iter++) {
+      const delta = new Map(allUnits.map(u => [u, { sum: 0, n: 0 }]));
+      for (const f of famList) {
+        const ax = famAx(f);
+        const mk = f.kids.reduce((s, c) => s + center(c), 0) / f.kids.length;
+        for (const c of f.kids) { const d = delta.get(unitOf.get(c)); d.sum += ax - center(c); d.n++; }
+        for (const p of f.ps) { const d = delta.get(unitOf.get(p)); d.sum += 4 * (mk - ax); d.n += 4; } // 父母盡量正對自己的子女，上一代的折線留給「雙方家庭」之間的落差
+      }
+      for (const u of allUnits) { const d = delta.get(u); if (d.n) u.x += 0.5 * d.sum / d.n; }
+      for (const level of sortedLevels) {
+        const units = rowUnits.get(level);
+        for (let rep = 0; rep < 12; rep++) {
+          for (let i = 1; i < units.length; i++) {
+            const over = M.unitGap - (units[i].x - (units[i - 1].x + units[i - 1].width));
+            if (over > 0) { units[i - 1].x -= over / 2; units[i].x += over / 2; }
+          }
+        }
+      }
+    }
+  }
+
   // ---- 4. 座標歸一、輸出節點 ----
   let minX = Infinity, maxX = -Infinity;
   for (const units of rowUnits.values()) for (const u of units) { minX = Math.min(minX, u.x); maxX = Math.max(maxX, u.x + u.width); }
@@ -245,6 +287,7 @@ export function buildTreeLayout(persons, relationships, centerId, { maxGeneratio
       for (const n of pn) trunk += "M " + (n.x + M.w / 2) + " " + (n.y + M.h) + " V " + joinY + " H " + ax + " ";
     }
     const xs = kids.map(k => pos.get(k.id).x + M.w / 2);
+    if (xs.length === 1 && Math.abs(ax - xs[0]) < 16) ax = xs[0]; // 只差幾像素時拉成垂直線
     recs.push({ kids, ax, startY, trunk, xs, bottom, childTop, left: Math.min(ax, ...xs), right: Math.max(ax, ...xs), gap: Math.round(bottom), lane: 0 });
   }
   const byGap = new Map();

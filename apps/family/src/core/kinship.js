@@ -112,6 +112,30 @@ export function kinshipLabels(persons, relationships, centerId) {
       }
     }
   }
+
+  // 祖父母的兄弟姐妹（叔伯公、姑婆、舅公、姨婆）及其配偶；母系再加「外」
+  for (const p of parentsOf(centerId)) {
+    const side = female(byId.get(p)) ? "外" : "";
+    for (const gp of parentsOf(p)) {
+      const g = byId.get(gp);
+      for (const gpp of parentsOf(gp)) {
+        for (const s of childrenOf(gpp)) {
+          if (s === gp) continue;
+          const sp = byId.get(s), older = sib(sp, g);
+          let term, spouseTerm;
+          if (male(g)) { // 祖父一邊
+            term = male(sp) ? (older === true ? "伯公" : older === false ? "叔公" : "叔伯公") : female(sp) ? "姑婆" : "祖輩";
+            spouseTerm = male(sp) ? (older === true ? "伯婆" : older === false ? "叔婆" : "叔伯婆") : "姑公";
+          } else { // 祖母一邊
+            term = male(sp) ? "舅公" : female(sp) ? "姨婆" : "祖輩";
+            spouseTerm = male(sp) ? "舅婆" : "姨公";
+          }
+          set(s, side + term);
+          for (const ss of spousesOf(s)) set(ss, side + spouseTerm);
+        }
+      }
+    }
+  }
   return out;
 }
 
