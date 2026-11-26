@@ -6,6 +6,7 @@ import { exportEncryptedBackup, inspectEncryptedBackup, verifyEncryptedBackup, a
 import { GitHubReleaseStorage } from "./storage/github-release-storage.js?v=20261125d";
 import { GitHubPlainContentsCache } from "./storage/github-plain-contents-cache.js";
 import { buildTreeLayout } from "./core/tree-layout.js";
+import { kinshipLabels, relationRoleLabel } from "./core/kinship.js";
 import { validateMedicalRecord } from "./core/medical-validation.js";
 
 const $ = id => document.getElementById(id);
@@ -15,6 +16,9 @@ let selectedEventId = null, selectedEventVersion = null;
 let medicalRecords = [], medicalMediaItems = [], selectedMedicalId = null, selectedMedicalVersion = null;
 let mediaObjectUrls = new Map();
 let treeZoom = 1.15;
+let treeStyle = "modern";
+let zoomTouched = false; // 使用者手動縮放後，不再自動縮放到完整顯示
+try { if (localStorage.getItem("familyTreeStyle") === "classic") treeStyle = "classic"; } catch {}
 let githubStorage = null;
 
 function message(text, error = false) {
@@ -103,36 +107,27 @@ function renderTree() {
     return;
   }
 
-  const layout=buildTreeLayout(persons,relationships,center);
+  const layout=buildTreeLayout(persons,relationships,center,{mode:treeStyle});
   if(!layout.nodes.length)return;
-  const nodeById=new Map(layout.nodes.map(node=>[node.id,node]));
-  const edgeMarkup=layout.edges.map(edge=>{
-    const a=nodeById.get(edge.from),b=nodeById.get(edge.to);
-    if(!a||!b)return "";
-    let d;
-    if(edge.type==="spouse_of"||edge.type==="sibling_of"){
-      const left=a.x<=b.x?a:b,right=a.x<=b.x?b:a;
-      d="M "+(left.x+left.width)+" "+(left.y+38)+" L "+right.x+" "+(right.y+38);
-    }else{
-      const parent=edge.type==="parent_of"||edge.type==="adoptive_parent_of"?a:a;
-      const child=edge.type==="parent_of"||edge.type==="adoptive_parent_of"?b:b;
-      const x1=parent.x+parent.width/2,y1=parent.y+parent.height,x2=child.x+child.width/2,y2=child.y;
-      const ym=y1+(y2-y1)/2;
-      d="M "+x1+" "+y1+" V "+ym+" H "+x2+" V "+y2;
-    }
-    let label="";
-    if(edge.type==="spouse_of"){
-      const left=a.x<=b.x?a:b,right=a.x<=b.x?b:a;
-      const mx=(left.x+left.width+right.x)/2,my=left.y+38;
-      label='<rect class="treeTag" x="'+(mx-17)+'" y="'+(my-9)+'" width="34" height="18" rx="9"/><text class="treeTagText" x="'+mx+'" y="'+my+'">夫妻</text>';
-    }
-    return '<path class="treeEdge '+edge.type+'" d="'+d+'"/>'+label;
-  }).join("");
+  if(!zoomTouched)treeZoom=Math.max(0.55,Math.min(1.15,Math.min(viewportWidth/layout.width,viewportHeight/layout.height)));
+  const classic=treeStyle==="classic";
+  const tags=kinshipLabels(persons,relationships,center);
+  const lineMarkup=layout.lines.map(l=>'<path class="treeEdge '+l.kind+'" d="'+l.d+'"/>').join("");
+  const chipMarkup=layout.chips.map(c=>{const w=c.text.length*11+14;return '<rect class="treeTag" x="'+(c.x-w/2)+'" y="'+(c.y-9)+'" width="'+w+'" height="18" rx="9"/><text class="treeTagText" x="'+c.x+'" y="'+c.y+'">'+safeText(c.text)+'</text>';}).join("");
+  const genMarkup=layout.generations.map(g=>'<text class="treeGen" x="26" y="'+g.y+'" style="writing-mode:vertical-rl;text-orientation:upright">'+safeText(g.text)+'</text>').join("");
+  const chips=(list,x,y,max)=>{let cx=x;return list.slice(0,max).map(t=>{const w=t.length*11+14,out='<rect class="treeTag" x="'+cx+'" y="'+y+'" width="'+w+'" height="18" rx="9"/><text class="treeTagText" x="'+(cx+w/2)+'" y="'+(y+9)+'">'+safeText(t)+'</text>';cx+=w+5;return out;}).join("");};
   const nodeMarkup=layout.nodes.map(node=>{
     const person=node.person,detail=[person.birthDate,person.deathDate?"卒 "+person.deathDate:""].filter(Boolean).join(" · ");
-    const selected=node.id===selectedId?" selected":"";
-    const initial=safeText((person.name||"?").slice(0,1));
-    return '<g class="treeNode'+selected+'" data-id="'+safeText(node.id)+'" transform="translate('+node.x+','+node.y+')"><rect class="nodeBox" width="'+node.width+'" height="'+node.height+'" rx="10"/><circle class="treeAvatar" cx="27" cy="27" r="13"/><text class="treeAvatarText" x="27" y="27">'+initial+'</text><text class="treeName" x="48" y="32">'+safeText(person.name||"未命名")+'</text><text class="treeDetail" x="14" y="60">'+safeText(detail||"日期未記錄")+'</text></g>';
+    const cls="treeNode"+(node.id===selectedId?" selected":"")+(person.gender==="male"?" male":person.gender==="female"?" female":"")+(person.deathDate?" deceased":"");
+    const label=tags.get(node.id)||"",tagList=label?label.split(" "):[];
+    const name=person.name||"未命名";
+    const head='<g class="'+cls+'" data-id="'+safeText(node.id)+'" transform="translate('+node.x+','+node.y+')"><title>'+safeText(name+(label?"（"+label+"）":"")+(detail?" "+detail:""))+'</title><rect class="nodeBox" width="'+node.width+'" height="'+node.height+'" rx="'+(classic?6:10)+'"/>';
+    if(classic){
+      const shown=name.length>7?name.slice(0,6)+"…":name;
+      return head+'<text class="treeNameV" x="'+node.width/2+'" y="16" style="writing-mode:vertical-rl;text-orientation:upright">'+safeText(shown)+'</text>'+chips(tagList.slice(0,1),(node.width-(tagList[0]||"").length*11-14)/2,node.height-26,1)+'</g>';
+    }
+    const initial=safeText(name.slice(0,1)),shown=name.length>7?name.slice(0,6)+"…":name;
+    return head+'<circle class="treeAvatar" cx="28" cy="28" r="14"/><text class="treeAvatarText" x="28" y="28">'+initial+'</text><text class="treeName" x="50" y="33">'+safeText(shown)+'</text>'+(detail?'<text class="treeDetail" x="14" y="56">'+safeText(detail)+'</text>':"")+chips(tagList,14,node.height-26,3)+'</g>';
   }).join("");
 
   const scaledWidth=layout.width*treeZoom;
@@ -146,7 +141,7 @@ function renderTree() {
   host.setAttribute("width",String(stageWidth));
   host.setAttribute("height",String(stageHeight));
   host.setAttribute("viewBox","0 0 "+stageWidth+" "+stageHeight);
-  host.innerHTML='<g transform="translate('+contentX+','+contentY+') scale('+treeZoom+')">'+edgeMarkup+nodeMarkup+'</g>';
+  host.innerHTML='<g transform="translate('+contentX+','+contentY+') scale('+treeZoom+')">'+genMarkup+lineMarkup+nodeMarkup+chipMarkup+'</g>';
   info.textContent="單擊選取 · 空白拖動畫布 · 滾輪縮放 · 顯示上下三代"+(layout.truncated?" · 人物較多，已限制顯示範圍":"");
   $("treeCenter").textContent="「"+(personById(center)?.name||"所選人物")+"」";
   $("treeZoomLabel").textContent=Math.round(treeZoom*100)+"%";
@@ -294,33 +289,76 @@ async function savePerson(event) {
     message(error.message==="REMOTE_VERSION_CONFLICT"?"資料版本已改變，請重新載入後再保存。":"保存失敗："+error.message,true);
   }
 }
+function relKey(r){
+  const ends=(r.type==="spouse_of"||r.type==="sibling_of")?[r.fromPersonId,r.toPersonId].sort():[r.fromPersonId,r.toPersonId];
+  return [r.type,...ends].join("|");
+}
+const RELATION_ORDER={spouse_of:0,parent_of:1,adoptive_parent_of:1,guardian_of:2,sibling_of:3};
+function updateRelationOptions(){
+  $("relSpouseWrap").hidden=!["parent_of","has_parent"].includes($("relationType").value);
+}
 function renderRelations() {
   if (!selectedId) return;
-  const index=buildRelationshipIndex(persons,relationships);
-  const linked=new Map();
-  for(const id of index.parents.get(selectedId)||[]) linked.set(id,"父母");
-  for(const id of index.children.get(selectedId)||[]) linked.set(id,"子女");
-  for(const id of index.spouses.get(selectedId)||[]) linked.set(id,"配偶");
-  for(const id of index.guardians.get(selectedId)||[]) linked.set(id,"監護人");
-  $("relationsList").innerHTML=[...linked].map(([id,label])=>`<div class="relationRow"><span>${safeText(label)}：${safeText(personById(id)?.name||"未知人物")}</span><span>${safeText(id.slice(0,10))}</span></div>`).join("")||'<p class="muted">尚未建立親屬關係。</p>';
-  $("relationPerson").innerHTML='<option value="">選擇另一位人物</option>'+persons.filter(p=>p.id!==selectedId).map(p=>`<option value="${safeText(p.id)}">${safeText(p.name)}</option>`).join("");
+  const rows=relationships.filter(r=>r.fromPersonId===selectedId||r.toPersonId===selectedId)
+    .map(r=>{const otherId=r.fromPersonId===selectedId?r.toPersonId:r.fromPersonId,other=personById(otherId);return {r,other,role:relationRoleLabel(r,selectedId,other)};})
+    .filter(x=>x.other)
+    .sort((x,y)=>(RELATION_ORDER[x.r.type]??9)-(RELATION_ORDER[y.r.type]??9)||x.role.localeCompare(y.role,"zh-Hant"));
+  $("relationsList").innerHTML=rows.map(({r,other,role})=>`<div class="relationRow"><span class="relName"><b>${safeText(role)}</b>${safeText(other.name||"未命名")}</span><button type="button" class="relDel" data-rid="${safeText(r.id)}" title="刪除這條關係">刪除</button></div>`).join("")||'<p class="muted">尚未建立親屬關係。</p>';
+  $("relationPerson").innerHTML=persons.filter(p=>p.id!==selectedId).map(p=>`<label class="pickItem"><input type="checkbox" value="${safeText(p.id)}"><span>${safeText(p.name||"未命名")}</span></label>`).join("")||'<p class="muted">請先新增其他人物。</p>';
+  updateRelationOptions();
 }
 let relationBusy=false;
 async function addRelation() {
-  if(relationBusy)return;
-  const otherId=$("relationPerson").value,type=$("relationType").value;
-  if(!selectedId||!otherId)return;
-  const exists=relationships.some(r=>r.type===type&&((r.fromPersonId===selectedId&&r.toPersonId===otherId)||(type==="spouse_of"&&r.fromPersonId===otherId&&r.toPersonId===selectedId)));
-  if(exists)return message("這段關係已經存在",true);
-  const rel={schemaVersion:1,id:createId("R"),fromPersonId:selectedId,toPersonId:otherId,type,status:"reported",validFrom:null,validTo:null,notes:"",sourceIds:[],createdAt:nowIso(),updatedAt:nowIso()};
-  const checked=validateFamilyData({persons,relationships:[...relationships,rel],events:[],media:[],sources:[]});
+  if(relationBusy||!selectedId)return;
+  const kind=$("relationType").value;
+  const picked=[...document.querySelectorAll("#relationPerson input:checked")].map(i=>i.value);
+  if(!picked.length)return message("請先在下方勾選要建立關係的人物（可多選）",true);
+  const withSpouse=$("relWithSpouse").checked;
+  const index=buildRelationshipIndex(persons,relationships);
+  const want=[]; // [from,to,type]
+  for(const other of picked){
+    if(kind==="parent_of"){
+      want.push([selectedId,other,"parent_of"]);
+      const sp=index.spouses.get(selectedId)||[];
+      if(withSpouse&&sp.length===1&&sp[0]!==other)want.push([sp[0],other,"parent_of"]);
+    }else if(kind==="has_parent"){
+      want.push([other,selectedId,"parent_of"]);
+      const sp=index.spouses.get(other)||[];
+      if(withSpouse&&sp.length===1&&sp[0]!==selectedId)want.push([sp[0],selectedId,"parent_of"]);
+    }else want.push([selectedId,other,kind]);
+  }
+  const have=new Set(relationships.map(relKey));
+  const fresh=[];
+  for(const [from,to,type] of want){
+    const rel={schemaVersion:1,id:createId("R"),fromPersonId:from,toPersonId:to,type,status:"reported",validFrom:null,validTo:null,notes:"",sourceIds:[],createdAt:nowIso(),updatedAt:nowIso()};
+    const key=relKey(rel);
+    if(have.has(key))continue;
+    have.add(key);fresh.push(rel);
+  }
+  if(!fresh.length)return message("所選的關係都已經存在",true);
+  const checked=validateFamilyData({persons,relationships:[...relationships,...fresh],events:[],media:[],sources:[]});
   if(!checked.valid)return message(checked.errors[0],true);
   relationBusy=true;$("addRelation").disabled=true;
+  let saved=0;
   try {
-    await vault.save("family","relationships",rel.id,1,rel,null);
-    relationships.push(rel);renderRelations();renderTree();message("親屬關係已保存至 GitHub（明文）");
-  } catch(error) { message("關係保存失敗："+error.message,true); }
-  finally { relationBusy=false;$("addRelation").disabled=false; }
+    for(const rel of fresh){await vault.save("family","relationships",rel.id,1,rel,null);relationships.push(rel);saved++;}
+    message("已建立 "+saved+" 條親屬關係並保存至 GitHub");
+  } catch(error) { message("關係保存失敗（已成功 "+saved+" 條）："+error.message,true); }
+  finally { relationBusy=false;$("addRelation").disabled=false;renderRelations();renderTree(); }
+}
+async function deleteRelation(id) {
+  const rel=relationships.find(r=>r.id===id);
+  if(!rel||relationBusy)return;
+  const a=personById(rel.fromPersonId)?.name||"?",b=personById(rel.toPersonId)?.name||"?";
+  const what=rel.type==="spouse_of"?a+" 與 "+b+" 的夫妻關係":rel.type==="guardian_of"?a+" 對 "+b+" 的監護關係":a+" → "+b+" 的"+(rel.type==="adoptive_parent_of"?"養親":"親子")+"關係";
+  if(!confirm("確定刪除這條關係？\n"+what+"\n（只刪除關係，不會刪除人物）"))return;
+  relationBusy=true;
+  try {
+    await vault.delete("family","relationships",id);
+    relationships=relationships.filter(r=>r.id!==id);
+    message("關係已刪除");
+  } catch(error) { message("關係刪除失敗："+error.message,true); }
+  finally { relationBusy=false;renderRelations();renderTree(); }
 }
 
 const EVENT_LABELS={birth:"出生",death:"逝世",marriage:"婚姻",move:"遷居",education:"就學",career:"工作",military:"服役",reunion:"家族聚會",story:"家庭故事",other:"其他"};
@@ -596,12 +634,16 @@ async function start() {
   $("personForm").addEventListener("submit",savePerson);
   $("hasDeathDate").addEventListener("change",()=>{ $("deathDateWrap").hidden=!$("hasDeathDate").checked; if(!$("hasDeathDate").checked)$("deathDate").value=""; });
   $("deletePersonBtn").addEventListener("click",deleteSelectedPerson);$("search").addEventListener("input",renderPeople);
-  $("addRelation").addEventListener("click",addRelation);$("mediaForm").addEventListener("submit",addMedia);
+  $("addRelation").addEventListener("click",addRelation);$("relationType").addEventListener("change",updateRelationOptions);
+  $("relationsList").addEventListener("click",event=>{const btn=event.target.closest(".relDel");if(btn)deleteRelation(btn.dataset.rid);});
+  const styleBtn=$("treeStyle"),syncStyleBtn=()=>{styleBtn.textContent=treeStyle==="classic"?"現代橫排":"古式豎排";styleBtn.title=treeStyle==="classic"?"切換為現代橫排族譜":"切換為古式豎排族譜";};
+  syncStyleBtn();
+  styleBtn.addEventListener("click",()=>{treeStyle=treeStyle==="classic"?"modern":"classic";try{localStorage.setItem("familyTreeStyle",treeStyle);}catch{}syncStyleBtn();renderTree();});$("mediaForm").addEventListener("submit",addMedia);
   $("eventForm").addEventListener("submit",saveEvent);$("eventCancelEdit").addEventListener("click",resetEventForm);
   $("eventDate").addEventListener("change",()=>{if($("eventDate").value&&$("eventDatePrecision").value==="unknown")$("eventDatePrecision").value="day";});
   $("medicalForm").addEventListener("submit",saveMedicalRecord);$("medicalCancelEdit").addEventListener("click",resetMedicalForm);
   $("medicalRecordType").addEventListener("change",toggleMedicalFields);$("medicalAttachmentEncrypt").addEventListener("change",toggleMedicalAttachmentEncryption);$("medicalFiles").addEventListener("change",toggleMedicalAttachmentEncryption);
-  $("treeFit").addEventListener("click",()=>{treeZoom=1;renderTree();});
+  $("treeFit").addEventListener("click",()=>{zoomTouched=false;renderTree();});
   const treeViewport=$("treeViewport");let treeDrag=null;
   treeViewport.addEventListener("pointerdown",event=>{
     if(event.button!==0)return;
@@ -636,7 +678,7 @@ async function start() {
     event.preventDefault();
     if(!persons.length)return;
     const center=selectedId||persons[0]?.id;
-    const layout=buildTreeLayout(persons,relationships,center);
+    const layout=buildTreeLayout(persons,relationships,center,{mode:treeStyle});
     const rect=treeViewport.getBoundingClientRect();
     const focusX=event.clientX-rect.left,focusY=event.clientY-rect.top;
     const before=treeZoom;
@@ -646,7 +688,7 @@ async function start() {
     const oldOffsetY=treeViewport.clientHeight+Math.max(0,(treeViewport.clientHeight-layout.height*before)/2);
     const anchorX=(treeViewport.scrollLeft+focusX-oldOffsetX)/before;
     const anchorY=(treeViewport.scrollTop+focusY-oldOffsetY)/before;
-    treeZoom=next;
+    treeZoom=next;zoomTouched=true;
     renderTree();
     const newOffsetX=treeViewport.clientWidth+Math.max(0,(treeViewport.clientWidth-layout.width*treeZoom)/2);
     const newOffsetY=treeViewport.clientHeight+Math.max(0,(treeViewport.clientHeight-layout.height*treeZoom)/2);
