@@ -130,6 +130,15 @@ export function buildTreeLayout(persons, relationships, centerId, { maxGeneratio
     units.forEach((unit, i) => { if (desiredLeft[i] != null) diffs.push(desiredLeft[i] - placed[i]); });
     const shift = diffs.length ? diffs.reduce((a, b) => a + b, 0) / diffs.length : 0;
     units.forEach((unit, i) => { unit.x = placed[i] + shift; });
+    // 再讓每個單元盡量回到「正對子女／父母」的位置（只受左右鄰居限制），使單親、獨子的連線盡量垂直
+    for (let sweep = 0; sweep < 3; sweep++) {
+      units.forEach((unit, i) => {
+        if (desiredLeft[i] == null) return;
+        const lo = i > 0 ? units[i - 1].x + units[i - 1].width + M.unitGap : -Infinity;
+        const hi = i < units.length - 1 ? units[i + 1].x - M.unitGap - unit.width : Infinity;
+        unit.x = Math.min(Math.max(desiredLeft[i], lo), Math.max(hi, lo));
+      });
+    }
   }
 
   // 由上而下：先定各世的左右次序，再初步定位
@@ -168,6 +177,12 @@ export function buildTreeLayout(persons, relationships, centerId, { maxGeneratio
       const units = rowUnits.get(sortedLevels[r]);
       placeRow(units, units.map(u => { const a = anchorOf(u); return a == null ? null : a - u.width / 2; }));
     }
+  }
+
+  // 最後再讓父母回到子女正上方，單親獨子的連線才會垂直
+  for (let r = sortedLevels.length - 2; r >= 0; r--) {
+    const units = rowUnits.get(sortedLevels[r]);
+    placeRow(units, units.map(u => { const a = childAnchorOf(u); return a == null ? null : a - u.width / 2; }));
   }
 
   // ---- 4. 座標歸一、輸出節點 ----

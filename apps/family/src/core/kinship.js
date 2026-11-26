@@ -35,7 +35,7 @@ export function kinshipLabels(persons, relationships, centerId) {
   for (const s of spousesOf(centerId)) set(s, pick(byId.get(s), "丈夫", "妻子", "配偶"));
   for (const s of spousesOf(centerId)) {
     const sp = byId.get(s);
-    for (const p of parentsOf(s)) set(p, female(sp) ? pick(byId.get(p), "岳父", "岳母", "岳父母") : male(sp) ? pick(byId.get(p), "公公", "婆婆", "公婆") : male(C) ? pick(byId.get(p), "岳父", "岳母", "岳父母") : female(C) ? pick(byId.get(p), "公公", "婆婆", "公婆") : "姻親");
+    for (const p of parentsOf(s)) set(p, female(sp) ? pick(byId.get(p), "岳父", "岳母", "岳父母") : male(sp) ? pick(byId.get(p), "公公", "婆婆", "公婆") : male(C) ? pick(byId.get(p), "岳父", "岳母", "岳父母") : female(C) ? pick(byId.get(p), "公公", "婆婆", "公婆") : pick(byId.get(p), "配偶之父", "配偶之母", "配偶父母"));
   }
   for (const k of childrenOf(centerId)) {
     const kid = byId.get(k);
